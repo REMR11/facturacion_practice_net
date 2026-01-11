@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Reflection.Emit;
-using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Fatura.Models
 {
@@ -21,12 +15,15 @@ namespace Fatura.Models
         {
         }
 
-        public virtual DbSet<Categorium> Categoria { get; set; } = null!;
+        public virtual DbSet<Categoria> Categoria { get; set; } = null!;
+        public virtual DbSet<Cliente> Clientes { get; set; } = null!;
         public virtual DbSet<DetalleFactura> DetalleFacturas { get; set; } = null!;
         public virtual DbSet<Factura> Facturas { get; set; } = null!;
         public virtual DbSet<Marca> Marcas { get; set; } = null!;
         public virtual DbSet<Producto> Productos { get; set; } = null!;
         public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
+        public virtual DbSet<Role> Roles { get; set; } = null!;
+        public virtual DbSet<UsuarioRole> UsuarioRoles { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -36,119 +33,413 @@ namespace Fatura.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Categorium>(entity =>
+            modelBuilder.Entity<Categoria>(entity =>
             {
-                entity.HasKey(e => e.Idcategoria)
-                    .HasName("PK__Categori__70E82E28335B1CB4");
+                entity.ToTable("categoria");
 
-                entity.Property(e => e.Idcategoria).HasColumnName("IDCategoria");
+                entity.HasKey(e => e.IdCategoria)
+                    .HasName("pk_categoria");
+
+                entity.Property(e => e.IdCategoria)
+                    .HasColumnName("id_categoria")
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.NombreCategoria)
+                    .HasColumnName("nombre_categoria")
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(false)
+                    .IsRequired();
             });
 
             modelBuilder.Entity<DetalleFactura>(entity =>
             {
-                entity.HasKey(e => e.IddetalleFactura)
-                    .HasName("PK__DetalleF__EF0E5D9A0E87D534");
+                entity.ToTable("detalle_factura");
 
-                entity.ToTable("DetalleFactura");
+                entity.HasKey(e => e.IdDetalleFactura)
+                    .HasName("pk_detalle_factura");
 
-                entity.Property(e => e.IddetalleFactura).HasColumnName("IDDetalleFactura");
+                entity.Property(e => e.IdDetalleFactura)
+                    .HasColumnName("id_detalle_factura")
+                    .ValueGeneratedOnAdd();
 
-                entity.Property(e => e.FechaCompra).HasColumnType("datetime");
+                entity.Property(e => e.IdFactura)
+                    .HasColumnName("id_factura")
+                    .IsRequired();
 
-                entity.Property(e => e.Idfactura).HasColumnName("IDFactura");
+                entity.Property(e => e.IdProducto)
+                    .HasColumnName("id_producto");
 
-                entity.Property(e => e.Idproducto).HasColumnName("IDProducto");
+                entity.Property(e => e.Cantidad)
+                    .HasColumnName("cantidad")
+                    .IsRequired();
 
-                entity.Property(e => e.Total).HasColumnType("money");
+                entity.Property(e => e.PrecioUnitario)
+                    .HasColumnName("precio_unitario")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
 
-                entity.HasOne(d => d.IdfacturaNavigation)
+                entity.Property(e => e.Descuento)
+                    .HasColumnName("descuento")
+                    .HasColumnType("numeric(18,2)")
+                    .HasDefaultValue(0);
+
+                entity.Ignore(e => e.Total); // Propiedad calculada, no se almacena
+
+                entity.HasOne(d => d.Factura)
                     .WithMany(p => p.DetalleFacturas)
-                    .HasForeignKey(d => d.Idfactura)
-                    .HasConstraintName("FK__DetalleFa__IDFac__33D4B598");
+                    .HasForeignKey(d => d.IdFactura)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_detalle_factura_factura");
 
-                entity.HasOne(d => d.IdproductoNavigation)
+                entity.HasOne(d => d.Producto)
                     .WithMany(p => p.DetalleFacturas)
-                    .HasForeignKey(d => d.Idproducto)
-                    .HasConstraintName("FK__DetalleFa__IDPro__34C8D9D1");
+                    .HasForeignKey(d => d.IdProducto)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_detalle_factura_producto");
+                
+                entity.HasIndex(e => e.IdFactura)
+                    .HasDatabaseName("idx_detalle_factura_id_factura");
+                entity.HasIndex(e => e.IdProducto)
+                    .HasDatabaseName("idx_detalle_factura_id_producto");
             });
 
             modelBuilder.Entity<Factura>(entity =>
             {
-                entity.HasKey(e => e.Idfactura)
-                    .HasName("PK__Factura__492FE9390232D7A0");
+                entity.ToTable("factura");
 
-                entity.ToTable("Factura");
+                entity.HasKey(e => e.IdFactura)
+                    .HasName("pk_factura");
 
-                entity.Property(e => e.Idfactura).HasColumnName("IDFactura");
+                entity.Property(e => e.IdFactura)
+                    .HasColumnName("id_factura")
+                    .ValueGeneratedOnAdd();
 
-                entity.Property(e => e.FechaCreacion).HasColumnType("datetime");
+                entity.Property(e => e.NumeroFactura)
+                    .HasColumnName("numero_factura")
+                    .HasMaxLength(50)
+                    .IsRequired();
 
-                entity.Property(e => e.Total).HasColumnType("money");
+                entity.Property(e => e.SerieFactura)
+                    .HasColumnName("serie_factura")
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.CaiDte)
+                    .HasColumnName("cai_dte")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.FechaLimiteEmision)
+                    .HasColumnName("fecha_limite_emision")
+                    .HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.FechaCreacion)
+                    .HasColumnName("fecha_creacion")
+                    .HasColumnType("timestamp without time zone")
+                    .IsRequired();
+
+                entity.Property(e => e.FechaVencimiento)
+                    .HasColumnName("fecha_vencimiento")
+                    .HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.TipoDocumento)
+                    .HasColumnName("tipo_documento")
+                    .HasMaxLength(50)
+                    .HasDefaultValue("Factura");
+
+                entity.Property(e => e.ClienteId)
+                    .HasColumnName("cliente_id")
+                    .IsRequired();
+
+                entity.Property(e => e.ClienteNitDui)
+                    .HasColumnName("cliente_nit_dui")
+                    .HasMaxLength(20)
+                    .IsRequired();
+
+                entity.Property(e => e.ClienteNombre)
+                    .HasColumnName("cliente_nombre")
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                entity.Property(e => e.ClienteDireccion)
+                    .HasColumnName("cliente_direccion")
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.SubTotal)
+                    .HasColumnName("sub_total")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.Iva)
+                    .HasColumnName("iva")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.Isr)
+                    .HasColumnName("isr")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.OtrosImpuestos)
+                    .HasColumnName("otros_impuestos")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.Total)
+                    .HasColumnName("total")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.Estado)
+                    .HasColumnName("estado")
+                    .HasConversion<int>()
+                    .IsRequired();
+
+                entity.Property(e => e.UsuarioId)
+                    .HasColumnName("usuario_id")
+                    .IsRequired();
+
+                entity.HasOne(d => d.Cliente)
+                    .WithMany(p => p.Facturas)
+                    .HasForeignKey(d => d.ClienteId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_factura_cliente");
+
+                entity.HasOne(d => d.Usuario)
+                    .WithMany(p => p.Facturas)
+                    .HasForeignKey(d => d.UsuarioId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_factura_usuario");
+
+                entity.HasIndex(e => e.NumeroFactura)
+                    .IsUnique()
+                    .HasDatabaseName("uk_factura_numero_factura");
+                entity.HasIndex(e => e.FechaCreacion)
+                    .HasDatabaseName("idx_factura_fecha_creacion");
+                entity.HasIndex(e => e.UsuarioId)
+                    .HasDatabaseName("idx_factura_usuario_id");
+                entity.HasIndex(e => e.ClienteId)
+                    .HasDatabaseName("idx_factura_cliente_id");
+                entity.HasIndex(e => e.Estado)
+                    .HasDatabaseName("idx_factura_estado");
             });
 
             modelBuilder.Entity<Marca>(entity =>
             {
-                entity.HasKey(e => e.Idmarca)
-                    .HasName("PK__Marca__CEC375E729BA7C81");
+                entity.ToTable("marca");
 
-                entity.ToTable("Marca");
+                entity.HasKey(e => e.IdMarca)
+                    .HasName("pk_marca");
 
-                entity.Property(e => e.Idmarca).HasColumnName("IDMarca");
+                entity.Property(e => e.IdMarca)
+                    .HasColumnName("id_marca")
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.NombreMarca)
+                    .HasColumnName("nombre_marca")
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(false)
+                    .IsRequired();
             });
 
             modelBuilder.Entity<Producto>(entity =>
             {
-                entity.HasKey(e => e.Idproducto)
-                    .HasName("PK__Producto__ABDAF2B48FF32BD9");
+                entity.ToTable("producto");
 
-                entity.ToTable("Producto");
+                entity.HasKey(e => e.IdProducto)
+                    .HasName("pk_producto");
 
-                entity.Property(e => e.Idproducto).HasColumnName("IDProducto");
+                entity.Property(e => e.IdProducto)
+                    .HasColumnName("id_producto")
+                    .ValueGeneratedOnAdd();
 
-                entity.Property(e => e.Codigo).HasColumnName("codigo");
+                entity.Property(e => e.Codigo)
+                    .HasColumnName("codigo");
 
-                entity.Property(e => e.Idcategoria).HasColumnName("IDCategoria");
+                entity.Property(e => e.IdCategoria)
+                    .HasColumnName("id_categoria");
 
-                entity.Property(e => e.Idmarca).HasColumnName("IDMarca");
+                entity.Property(e => e.IdMarca)
+                    .HasColumnName("id_marca");
 
                 entity.Property(e => e.NombreProducto)
+                    .HasColumnName("nombre_producto")
                     .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .IsUnicode(false)
+                    .IsRequired();
 
-                entity.Property(e => e.Precio).HasColumnName("precio");
+                entity.Property(e => e.Precio)
+                    .HasColumnName("precio")
+                    .HasColumnType("numeric(18,2)");
 
-                entity.HasOne(d => d.IdcategoriaNavigation)
+                entity.Property(e => e.Stock)
+                    .HasColumnName("stock")
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.StockMinimo)
+                    .HasColumnName("stock_minimo")
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.Activo)
+                    .HasColumnName("activo")
+                    .HasDefaultValue(true);
+
+                entity.HasOne(d => d.Categoria)
                     .WithMany(p => p.Productos)
-                    .HasForeignKey(d => d.Idcategoria)
-                    .HasConstraintName("FK__Producto__IDCate__2F10007B");
+                    .HasForeignKey(d => d.IdCategoria)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_producto_categoria");
 
-                entity.HasOne(d => d.IdmarcaNavigation)
+                entity.HasOne(d => d.Marca)
                     .WithMany(p => p.Productos)
-                    .HasForeignKey(d => d.Idmarca)
-                    .HasConstraintName("FK__Producto__IDMarc__2E1BDC42");
+                    .HasForeignKey(d => d.IdMarca)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_producto_marca");
+                
+                entity.HasIndex(e => e.Codigo)
+                    .IsUnique()
+                    .HasDatabaseName("uk_producto_codigo");
             });
 
             modelBuilder.Entity<Usuario>(entity =>
             {
-                entity.HasKey(e => e.Idusurio)
-                    .HasName("PK__Usuario__60FD6F4FAA1CC3B0");
+                entity.ToTable("usuario");
 
-                entity.ToTable("Usuario");
+                entity.HasKey(e => e.IdUsuario)
+                    .HasName("pk_usuario");
 
-                entity.Property(e => e.Idusurio).HasColumnName("IDUsurio");
+                entity.Property(e => e.IdUsuario)
+                    .HasColumnName("id_usuario")
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.NombreUsuario)
+                    .HasColumnName("nombre_usuario")
                     .HasMaxLength(40)
-                    .IsUnicode(false)
-                    .HasColumnName("NombreUSuario");
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Email)
+                    .HasColumnName("email")
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.ContraseñaHash)
+                    .HasColumnName("contraseña_hash")
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.Salt)
+                    .HasColumnName("salt")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Activo)
+                    .HasColumnName("activo")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.UltimoAcceso)
+                    .HasColumnName("ultimo_acceso")
+                    .HasColumnType("timestamp without time zone");
+
+                entity.HasIndex(e => e.Email)
+                    .IsUnique()
+                    .HasDatabaseName("uk_usuario_email");
+                entity.HasIndex(e => e.NombreUsuario)
+                    .HasDatabaseName("idx_usuario_nombre_usuario");
+            });
+
+            modelBuilder.Entity<Cliente>(entity =>
+            {
+                entity.ToTable("cliente");
+
+                entity.HasKey(e => e.Id)
+                    .HasName("pk_cliente");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.NitDui)
+                    .HasColumnName("nit_dui")
+                    .HasMaxLength(20)
+                    .IsRequired();
+
+                entity.Property(e => e.Nombre)
+                    .HasColumnName("nombre")
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                entity.Property(e => e.Direccion)
+                    .HasColumnName("direccion")
+                    .HasMaxLength(500);
+
+                entity.Property(e => e.Telefono)
+                    .HasColumnName("telefono")
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Email)
+                    .HasColumnName("email")
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Activo)
+                    .HasColumnName("activo")
+                    .HasDefaultValue(true);
+
+                entity.HasIndex(e => e.NitDui)
+                    .IsUnique()
+                    .HasDatabaseName("uk_cliente_nit_dui");
+                entity.HasIndex(e => e.Email)
+                    .HasDatabaseName("idx_cliente_email");
+            });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.ToTable("role");
+
+                entity.HasKey(e => e.Id)
+                    .HasName("pk_role");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("id")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Nombre)
+                    .HasColumnName("nombre")
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(200);
+
+                entity.HasIndex(e => e.Nombre)
+                    .IsUnique()
+                    .HasDatabaseName("uk_role_nombre");
+            });
+
+            modelBuilder.Entity<UsuarioRole>(entity =>
+            {
+                entity.ToTable("usuario_role");
+
+                entity.HasKey(e => new { e.UsuarioId, e.RoleId })
+                    .HasName("pk_usuario_role");
+
+                entity.Property(e => e.UsuarioId)
+                    .HasColumnName("usuario_id");
+
+                entity.Property(e => e.RoleId)
+                    .HasColumnName("role_id");
+
+                entity.Property(e => e.AsignadoEn)
+                    .HasColumnName("asignado_en")
+                    .HasColumnType("timestamp without time zone")
+                    .IsRequired();
+
+                entity.HasOne(d => d.Usuario)
+                    .WithMany(p => p.UsuarioRoles)
+                    .HasForeignKey(d => d.UsuarioId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_usuario_role_usuario");
+
+                entity.HasOne(d => d.Role)
+                    .WithMany(p => p.UsuarioRoles)
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_usuario_role_role");
             });
 
             OnModelCreatingPartial(modelBuilder);
