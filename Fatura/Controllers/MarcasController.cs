@@ -31,7 +31,7 @@ namespace Fatura.Controllers
             }
 
             var marca = await _context.Marcas
-                .FirstOrDefaultAsync(m => m.Idmarca == id);
+                .FirstOrDefaultAsync(m => m.IdMarca == id);
             if (marca == null)
             {
                 return NotFound();
@@ -51,7 +51,7 @@ namespace Fatura.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Idmarca,NombreMarca")] Marca marca)
+        public async Task<IActionResult> Create([Bind("IdMarca,NombreMarca")] Marca marca)
         {
             if (ModelState.IsValid)
             {
@@ -83,9 +83,9 @@ namespace Fatura.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Idmarca,NombreMarca")] Marca marca)
+        public async Task<IActionResult> Edit(int id, [Bind("IdMarca,NombreMarca")] Marca marca)
         {
-            if (id != marca.Idmarca)
+            if (id != marca.IdMarca)
             {
                 return NotFound();
             }
@@ -99,7 +99,7 @@ namespace Fatura.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MarcaExists(marca.Idmarca))
+                    if (!MarcaExists(marca.IdMarca))
                     {
                         return NotFound();
                     }
@@ -122,7 +122,7 @@ namespace Fatura.Controllers
             }
 
             var marca = await _context.Marcas
-                .FirstOrDefaultAsync(m => m.Idmarca == id);
+                .FirstOrDefaultAsync(m => m.IdMarca == id);
             if (marca == null)
             {
                 return NotFound();
@@ -152,7 +152,7 @@ namespace Fatura.Controllers
 
         private bool MarcaExists(int id)
         {
-            return _context.Marcas.Any(e => e.Idmarca == id);
+            return _context.Marcas.Any(e => e.IdMarca == id);
         }
     }
 }

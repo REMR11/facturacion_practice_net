@@ -23,7 +23,7 @@ namespace Fatura.Controllers
         // GET: CategoriaController/Details/5
         public async Task<ActionResult> Details(int id)
         {
-            var categoria = await context.Categoria.FirstOrDefaultAsync((c) => c.Idcategoria == id);
+            var categoria = await context.Categoria.FirstOrDefaultAsync((c) => c.IdCategoria == id);
             return View(categoria);
         }
 
@@ -36,11 +36,11 @@ namespace Fatura.Controllers
         // POST: CategoriaController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(Categorium categorium)
+        public async Task<ActionResult> Create(Categoria categoria)
         {
             try
             {
-                var Categoria = context.Categoria.Add(categorium);
+                var Categoria = context.Categoria.Add(categoria);
                 await context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -53,19 +53,19 @@ namespace Fatura.Controllers
         // GET: CategoriaController/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
-            var Categoria = await context.Categoria.FirstOrDefaultAsync((c) => c.Idcategoria == id);
+            var Categoria = await context.Categoria.FirstOrDefaultAsync((c) => c.IdCategoria == id);
             return View(Categoria);
         }
 
         // POST: CategoriaController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int id, Categorium categorium)
+        public async Task<ActionResult> Edit(int id, Categoria categoria)
         {
             try
             {
-                categorium.Idcategoria = id;
-                context.Categoria.Update(categorium);
+                categoria.IdCategoria = id;
+                context.Categoria.Update(categoria);
                 await context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }

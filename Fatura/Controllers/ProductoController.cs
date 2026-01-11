@@ -23,7 +23,7 @@ namespace Fatura.Controllers
         // GET: ProductoController/Details/5
         public async Task<ActionResult> Details(int id)
         {
-            var Producto = await context.Productos.FirstOrDefaultAsync((c) => c.Idproducto == id);
+            var Producto = await context.Productos.FirstOrDefaultAsync((c) => c.IdProducto == id);
             return View(Producto);
         }
 
@@ -56,7 +56,7 @@ namespace Fatura.Controllers
         // GET: ProductoController/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
-            var Producto = await context.Productos.FirstOrDefaultAsync((c) => c.Idproducto == id);
+            var Producto = await context.Productos.FirstOrDefaultAsync((c) => c.IdProducto == id);
             return View(Producto);
         }
 
@@ -67,7 +67,7 @@ namespace Fatura.Controllers
         {
             try
             {
-                producto.Idproducto = id;
+                producto.IdProducto = id;
                 context.Productos.Update(producto);
                 await context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -87,7 +87,7 @@ namespace Fatura.Controllers
             }
 
             var Producto = await context.Productos
-                .FirstOrDefaultAsync(m => m.Idproducto == id);
+                .FirstOrDefaultAsync(m => m.IdProducto == id);
             if (Producto == null)
             {
                 return NotFound();
@@ -117,7 +117,7 @@ namespace Fatura.Controllers
 
         private bool ProductosExists(int id)
         {
-            return context.Productos.Any(e => e.Idproducto == id);
+            return context.Productos.Any(e => e.IdProducto == id);
         }
     }
 }

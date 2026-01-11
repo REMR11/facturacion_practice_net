@@ -26,19 +26,19 @@ namespace Fatura.Controllers
         {
 
 
-            var detalleFactura = await _context.DetalleFacturas.Include((d) => d.IdproductoNavigation)
-                                                     .Include((c) => c.IdproductoNavigation.IdmarcaNavigation)
-                                                     //.Where((c) => c.FechaCompra >= fechainicio && c.FechaCompra <= fechainicio)
+            var detalleFactura = await _context.DetalleFacturas.Include((d) => d.Producto)
+                                                     .ThenInclude((p) => p.Marca)
+                                                     //.Where((c) => c.CreatedAt >= fechainicio && c.CreatedAt <= fechafin)
                                                      .ToListAsync();
 
-            var ventasProducto = detalleFactura.GroupBy((d) => d.Idproducto)
+            var ventasProducto = detalleFactura.GroupBy((d) => d.IdProducto)
                                         .Select((g) =>
                                             new {
                                                 IdProduct = g.Key,
-                                                Cantidad = (int)g.Sum(p => p.Total),
-                                                NombreProducto = g.First()?.IdproductoNavigation?.NombreProducto,
-                                                Precio = g.First()?.IdproductoNavigation?.Precio,
-                                                Marca = g.First()?.IdproductoNavigation?.IdmarcaNavigation?.NombreMarca
+                                                Cantidad = (int)g.Sum(p => p.Cantidad),
+                                                NombreProducto = g.First()?.Producto?.NombreProducto,
+                                                Precio = g.First()?.Producto?.Precio,
+                                                Marca = g.First()?.Producto?.Marca?.NombreMarca
                                             }).ToList();
 
 

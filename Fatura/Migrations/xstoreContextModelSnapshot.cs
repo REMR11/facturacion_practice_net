@@ -22,204 +22,690 @@ namespace Fatura.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Fatura.Models.Categorium", b =>
+            modelBuilder.Entity("Fatura.Models.Categoria", b =>
                 {
-                    b.Property<int>("Idcategoria")
+                    b.Property<int>("IdCategoria")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("IDCategoria");
+                        .HasColumnName("id_categoria");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Idcategoria"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdCategoria"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("NombreCategoria")
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("nombre_categoria");
 
-                    b.HasKey("Idcategoria")
-                        .HasName("PK__Categori__70E82E28335B1CB4");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("Categoria");
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.HasKey("IdCategoria")
+                        .HasName("pk_categoria");
+
+                    b.ToTable("categoria", (string)null);
+                });
+
+            modelBuilder.Entity("Fatura.Models.Cliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("activo");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("direccion");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("NitDui")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("nit_dui");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("telefono");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cliente");
+
+                    b.HasIndex("Email")
+                        .HasDatabaseName("idx_cliente_email");
+
+                    b.HasIndex("NitDui")
+                        .IsUnique()
+                        .HasDatabaseName("uk_cliente_nit_dui");
+
+                    b.ToTable("cliente", (string)null);
                 });
 
             modelBuilder.Entity("Fatura.Models.DetalleFactura", b =>
                 {
-                    b.Property<int>("IddetalleFactura")
+                    b.Property<int>("IdDetalleFactura")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("IDDetalleFactura");
+                        .HasColumnName("id_detalle_factura");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IddetalleFactura"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdDetalleFactura"));
 
-                    b.Property<DateTime?>("FechaCompra")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("Idfactura")
+                    b.Property<int>("Cantidad")
                         .HasColumnType("integer")
-                        .HasColumnName("IDFactura");
+                        .HasColumnName("cantidad");
 
-                    b.Property<int?>("Idproducto")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Descuento")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("descuento");
+
+                    b.Property<int>("IdFactura")
                         .HasColumnType("integer")
-                        .HasColumnName("IDProducto");
+                        .HasColumnName("id_factura");
 
-                    b.Property<decimal?>("Total")
-                        .HasColumnType("money");
+                    b.Property<int?>("IdProducto")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_producto");
 
-                    b.HasKey("IddetalleFactura")
-                        .HasName("PK__DetalleF__EF0E5D9A0E87D534");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
-                    b.HasIndex("Idfactura");
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("precio_unitario");
 
-                    b.HasIndex("Idproducto");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("DetalleFactura", (string)null);
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.HasKey("IdDetalleFactura")
+                        .HasName("pk_detalle_factura");
+
+                    b.HasIndex("IdFactura")
+                        .HasDatabaseName("idx_detalle_factura_id_factura");
+
+                    b.HasIndex("IdProducto")
+                        .HasDatabaseName("idx_detalle_factura_id_producto");
+
+                    b.ToTable("detalle_factura", (string)null);
                 });
 
             modelBuilder.Entity("Fatura.Models.Factura", b =>
                 {
-                    b.Property<int>("Idfactura")
+                    b.Property<int>("IdFactura")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("IDFactura");
+                        .HasColumnName("id_factura");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Idfactura"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdFactura"));
 
-                    b.Property<DateTime?>("FechaCreacion")
-                        .HasColumnType("datetime");
+                    b.Property<string>("CaiDte")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("cai_dte");
 
-                    b.Property<decimal?>("Total")
-                        .HasColumnType("money");
+                    b.Property<string>("ClienteDireccion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("cliente_direccion");
 
-                    b.HasKey("Idfactura")
-                        .HasName("PK__Factura__492FE9390232D7A0");
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("integer")
+                        .HasColumnName("cliente_id");
 
-                    b.ToTable("Factura", (string)null);
+                    b.Property<string>("ClienteNitDui")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("cliente_nit_dui");
+
+                    b.Property<string>("ClienteNombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("cliente_nombre");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer")
+                        .HasColumnName("estado");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_creacion");
+
+                    b.Property<DateTime?>("FechaLimiteEmision")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_limite_emision");
+
+                    b.Property<DateTime?>("FechaVencimiento")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_vencimiento");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("Isr")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("isr");
+
+                    b.Property<decimal>("Iva")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("iva");
+
+                    b.Property<string>("NumeroFactura")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("numero_factura");
+
+                    b.Property<decimal>("OtrosImpuestos")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("otros_impuestos");
+
+                    b.Property<string>("SerieFactura")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("serie_factura");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("sub_total");
+
+                    b.Property<string>("TipoDocumento")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("Factura")
+                        .HasColumnName("tipo_documento");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("total");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("IdFactura")
+                        .HasName("pk_factura");
+
+                    b.HasIndex("ClienteId")
+                        .HasDatabaseName("idx_factura_cliente_id");
+
+                    b.HasIndex("Estado")
+                        .HasDatabaseName("idx_factura_estado");
+
+                    b.HasIndex("FechaCreacion")
+                        .HasDatabaseName("idx_factura_fecha_creacion");
+
+                    b.HasIndex("NumeroFactura")
+                        .IsUnique()
+                        .HasDatabaseName("uk_factura_numero_factura");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("idx_factura_usuario_id");
+
+                    b.ToTable("factura", (string)null);
                 });
 
             modelBuilder.Entity("Fatura.Models.Marca", b =>
                 {
-                    b.Property<int>("Idmarca")
+                    b.Property<int>("IdMarca")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("IDMarca");
+                        .HasColumnName("id_marca");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Idmarca"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdMarca"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("NombreMarca")
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("nombre_marca");
 
-                    b.HasKey("Idmarca")
-                        .HasName("PK__Marca__CEC375E729BA7C81");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("Marca", (string)null);
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.HasKey("IdMarca")
+                        .HasName("pk_marca");
+
+                    b.ToTable("marca", (string)null);
                 });
 
             modelBuilder.Entity("Fatura.Models.Producto", b =>
                 {
-                    b.Property<int>("Idproducto")
+                    b.Property<int>("IdProducto")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("IDProducto");
+                        .HasColumnName("id_producto");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Idproducto"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdProducto"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("activo");
 
                     b.Property<int?>("Codigo")
                         .HasColumnType("integer")
                         .HasColumnName("codigo");
 
-                    b.Property<int?>("Idcategoria")
-                        .HasColumnType("integer")
-                        .HasColumnName("IDCategoria");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("Idmarca")
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("IdCategoria")
                         .HasColumnType("integer")
-                        .HasColumnName("IDMarca");
+                        .HasColumnName("id_categoria");
+
+                    b.Property<int?>("IdMarca")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_marca");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("NombreProducto")
                         .IsRequired()
                         .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("nombre_producto");
 
-                    b.Property<double?>("Precio")
-                        .HasColumnType("double precision")
+                    b.Property<decimal?>("Precio")
+                        .HasColumnType("numeric(18,2)")
                         .HasColumnName("precio");
 
-                    b.HasKey("Idproducto")
-                        .HasName("PK__Producto__ABDAF2B48FF32BD9");
+                    b.Property<int>("Stock")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("stock");
 
-                    b.HasIndex("Idcategoria");
+                    b.Property<int>("StockMinimo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("stock_minimo");
 
-                    b.HasIndex("Idmarca");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("Producto", (string)null);
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.HasKey("IdProducto")
+                        .HasName("pk_producto");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique()
+                        .HasDatabaseName("uk_producto_codigo");
+
+                    b.HasIndex("IdCategoria");
+
+                    b.HasIndex("IdMarca");
+
+                    b.ToTable("producto", (string)null);
+                });
+
+            modelBuilder.Entity("Fatura.Models.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("nombre");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id")
+                        .HasName("pk_role");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique()
+                        .HasDatabaseName("uk_role_nombre");
+
+                    b.ToTable("role", (string)null);
                 });
 
             modelBuilder.Entity("Fatura.Models.Usuario", b =>
                 {
-                    b.Property<int>("Idusurio")
+                    b.Property<int>("IdUsuario")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("IDUsurio");
+                        .HasColumnName("id_usuario");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Idusurio"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdUsuario"));
 
-                    b.Property<int?>("Contraseña")
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("activo");
+
+                    b.Property<string>("ContraseñaHash")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("contraseña_hash");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("NombreUsuario")
                         .HasMaxLength(40)
                         .IsUnicode(false)
                         .HasColumnType("character varying(40)")
-                        .HasColumnName("NombreUSuario");
+                        .HasColumnName("nombre_usuario");
 
-                    b.HasKey("Idusurio")
-                        .HasName("PK__Usuario__60FD6F4FAA1CC3B0");
+                    b.Property<string>("Salt")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("salt");
 
-                    b.ToTable("Usuario", (string)null);
+                    b.Property<DateTime?>("UltimoAcceso")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("ultimo_acceso");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.HasKey("IdUsuario")
+                        .HasName("pk_usuario");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("uk_usuario_email");
+
+                    b.HasIndex("NombreUsuario")
+                        .HasDatabaseName("idx_usuario_nombre_usuario");
+
+                    b.ToTable("usuario", (string)null);
+                });
+
+            modelBuilder.Entity("Fatura.Models.UsuarioRole", b =>
+                {
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("role_id");
+
+                    b.Property<DateTime>("AsignadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("asignado_en");
+
+                    b.HasKey("UsuarioId", "RoleId")
+                        .HasName("pk_usuario_role");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("usuario_role", (string)null);
                 });
 
             modelBuilder.Entity("Fatura.Models.DetalleFactura", b =>
                 {
-                    b.HasOne("Fatura.Models.Factura", "IdfacturaNavigation")
+                    b.HasOne("Fatura.Models.Factura", "Factura")
                         .WithMany("DetalleFacturas")
-                        .HasForeignKey("Idfactura")
-                        .HasConstraintName("FK__DetalleFa__IDFac__33D4B598");
+                        .HasForeignKey("IdFactura")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_detalle_factura_factura");
 
-                    b.HasOne("Fatura.Models.Producto", "IdproductoNavigation")
+                    b.HasOne("Fatura.Models.Producto", "Producto")
                         .WithMany("DetalleFacturas")
-                        .HasForeignKey("Idproducto")
-                        .HasConstraintName("FK__DetalleFa__IDPro__34C8D9D1");
+                        .HasForeignKey("IdProducto")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_detalle_factura_producto");
 
-                    b.Navigation("IdfacturaNavigation");
+                    b.Navigation("Factura");
 
-                    b.Navigation("IdproductoNavigation");
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("Fatura.Models.Factura", b =>
+                {
+                    b.HasOne("Fatura.Models.Cliente", "Cliente")
+                        .WithMany("Facturas")
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_factura_cliente");
+
+                    b.HasOne("Fatura.Models.Usuario", "Usuario")
+                        .WithMany("Facturas")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_factura_usuario");
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Fatura.Models.Producto", b =>
                 {
-                    b.HasOne("Fatura.Models.Categorium", "IdcategoriaNavigation")
+                    b.HasOne("Fatura.Models.Categoria", "Categoria")
                         .WithMany("Productos")
-                        .HasForeignKey("Idcategoria")
-                        .HasConstraintName("FK__Producto__IDCate__2F10007B");
+                        .HasForeignKey("IdCategoria")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_producto_categoria");
 
-                    b.HasOne("Fatura.Models.Marca", "IdmarcaNavigation")
+                    b.HasOne("Fatura.Models.Marca", "Marca")
                         .WithMany("Productos")
-                        .HasForeignKey("Idmarca")
-                        .HasConstraintName("FK__Producto__IDMarc__2E1BDC42");
+                        .HasForeignKey("IdMarca")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_producto_marca");
 
-                    b.Navigation("IdcategoriaNavigation");
+                    b.Navigation("Categoria");
 
-                    b.Navigation("IdmarcaNavigation");
+                    b.Navigation("Marca");
                 });
 
-            modelBuilder.Entity("Fatura.Models.Categorium", b =>
+            modelBuilder.Entity("Fatura.Models.UsuarioRole", b =>
+                {
+                    b.HasOne("Fatura.Models.Role", "Role")
+                        .WithMany("UsuarioRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_usuario_role_role");
+
+                    b.HasOne("Fatura.Models.Usuario", "Usuario")
+                        .WithMany("UsuarioRoles")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_usuario_role_usuario");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Fatura.Models.Categoria", b =>
                 {
                     b.Navigation("Productos");
+                });
+
+            modelBuilder.Entity("Fatura.Models.Cliente", b =>
+                {
+                    b.Navigation("Facturas");
                 });
 
             modelBuilder.Entity("Fatura.Models.Factura", b =>
@@ -235,6 +721,18 @@ namespace Fatura.Migrations
             modelBuilder.Entity("Fatura.Models.Producto", b =>
                 {
                     b.Navigation("DetalleFacturas");
+                });
+
+            modelBuilder.Entity("Fatura.Models.Role", b =>
+                {
+                    b.Navigation("UsuarioRoles");
+                });
+
+            modelBuilder.Entity("Fatura.Models.Usuario", b =>
+                {
+                    b.Navigation("Facturas");
+
+                    b.Navigation("UsuarioRoles");
                 });
 #pragma warning restore 612, 618
         }

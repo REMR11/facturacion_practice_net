@@ -30,7 +30,7 @@ namespace Fatura.Controllers
             }
 
             var Factura = await context.Facturas
-                .FirstOrDefaultAsync(m => m.Idfactura == id);
+                .FirstOrDefaultAsync(m => m.IdFactura == id);
             if (Factura == null)
             {
                 return NotFound();
@@ -60,10 +60,10 @@ namespace Fatura.Controllers
             else
             {
                 ViewBag.Producto = await context.Productos.ToListAsync();
-                ViewBag.DetalleFacturas = await context.DetalleFacturas.Include((c) => c.IdproductoNavigation)
-                                                                        .Where((df) => df.Idfactura == id)
+                ViewBag.DetalleFacturas = await context.DetalleFacturas.Include((c) => c.Producto)
+                                                                        .Where((df) => df.IdFactura == id)
                                                                         .ToListAsync();
-                var Factura = context.Facturas.FirstOrDefault((c) => c.Idfactura == id);
+                var Factura = context.Facturas.FirstOrDefault((c) => c.IdFactura == id);
                 return View(Factura);
             }
         }
@@ -88,12 +88,19 @@ namespace Fatura.Controllers
 
         public async Task<ActionResult> AgregarProducto(int idProducto, int idFactura)
         {
+            var producto = await context.Productos.FindAsync(idProducto);
+            if (producto == null || producto.Precio == null)
+            {
+                return NotFound();
+            }
+
             var newDetalleFactura = new DetalleFactura()
             {
-                Idfactura = idFactura,
-                Idproducto = idProducto,
-                FechaCompra = DateTime.Now,
-                Total = 1
+                IdFactura = idFactura,
+                IdProducto = idProducto,
+                Cantidad = 1,
+                PrecioUnitario = producto.Precio.Value,
+                Descuento = 0
             };
 
             context.DetalleFacturas.Add(newDetalleFactura);
@@ -107,7 +114,7 @@ namespace Fatura.Controllers
         // GET: FacturaController/Edit/5
         public async Task<ActionResult> Edit(int id)
         {
-            var Factura = await context.Facturas.FirstOrDefaultAsync((c) => c.Idfactura == id);
+            var Factura = await context.Facturas.FirstOrDefaultAsync((c) => c.IdFactura == id);
             return View(Factura);
         }
 
@@ -118,7 +125,7 @@ namespace Fatura.Controllers
         {
             try
             {
-                factura.Idfactura = id;
+                factura.IdFactura = id;
                 context.Facturas.Update(factura);
                 await context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -155,7 +162,7 @@ namespace Fatura.Controllers
         }
         private bool ProductosExists(int id)
         {
-            return context.Facturas.Any(e => e.Idfactura == id);
+            return context.Facturas.Any(e => e.IdFactura == id);
         }
 
 
