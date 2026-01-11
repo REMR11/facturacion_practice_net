@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
-
 using Microsoft.EntityFrameworkCore;
-
-using DocumentFormat.OpenXml.InkML;
+using ClosedXML.Excel;
 
 namespace Fatura.Controllers
 {
