@@ -22,10 +22,10 @@
                 @Html.DisplayNameFor(model => model.Codigo)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IdcategoriaNavigation)
+                @Html.DisplayNameFor(model => model.Categoria)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IdmarcaNavigation)
+                @Html.DisplayNameFor(model => model.Marca)
             </th>
             <th></th>
         </tr>
@@ -44,15 +44,15 @@
                     @Html.DisplayFor(modelItem => item.Codigo)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.IdcategoriaNavigation.Idcategoria)
+                    @Html.DisplayFor(modelItem => item.Categoria != null ? item.Categoria.NombreCategoria : "")
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.IdmarcaNavigation.Idmarca)
+                    @Html.DisplayFor(modelItem => item.Marca != null ? item.Marca.NombreMarca : "")
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Idproducto">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Idproducto">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Idproducto">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.IdProducto">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.IdProducto">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.IdProducto">Delete</a>
                 </td>
             </tr>
         }
