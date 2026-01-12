@@ -1,3 +1,4 @@
+using Fatura.Models.Enums;
 using Fatura.Models.Facturacion;
 
 namespace Fatura.Services.Interfaces
@@ -16,5 +17,9 @@ namespace Fatura.Services.Interfaces
         Task<DetalleFactura> AgregarProductoAsync(int facturaId, int productoId, int cantidad = 1);
         Task CalcularTotalAsync(int facturaId);
         Task<Factura> GetWithDetailsAsync(int id);
+        Task<IEnumerable<Factura>> SearchAsync(string searchTerm);
+        Task<IEnumerable<Factura>> FilterByEstadoAsync(EstadoFactura? estado);
+        Task<IEnumerable<Factura>> FilterByFechaAsync(DateTime? fechaInicio, DateTime? fechaFin);
+        Task<(IEnumerable<Factura> facturas, int total)> GetPagedAsync(int page, int pageSize, string? searchTerm = null, EstadoFactura? estado = null, DateTime? fechaInicio = null, DateTime? fechaFin = null);
     }
 }

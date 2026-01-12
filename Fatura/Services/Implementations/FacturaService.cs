@@ -1,4 +1,5 @@
 using Fatura.Exceptions;
+using Fatura.Models.Enums;
 using Fatura.Models.Facturacion;
 using Fatura.Repositories.Interfaces;
 using Fatura.Services.Interfaces;
@@ -202,6 +203,89 @@ namespace Fatura.Services.Implementations
             var count = await _unitOfWork.Facturas.CountAsync();
             var numero = (count + 1).ToString("D4");
             return $"FAC-{year}-{numero}";
+        }
+
+        public async Task<IEnumerable<Factura>> SearchAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await GetAllAsync();
+            }
+
+            var term = searchTerm.ToLower();
+            var todasFacturas = await _unitOfWork.Facturas.GetAllAsync();
+
+            return todasFacturas.Where(f =>
+                f.NumeroFactura.ToLower().Contains(term) ||
+                f.ClienteNombre.ToLower().Contains(term) ||
+                f.ClienteNitDui.ToLower().Contains(term)
+            );
+        }
+
+        public async Task<IEnumerable<Factura>> FilterByEstadoAsync(EstadoFactura? estado)
+        {
+            if (estado == null)
+            {
+                return await GetAllAsync();
+            }
+
+            var todasFacturas = await _unitOfWork.Facturas.GetAllAsync();
+            return todasFacturas.Where(f => f.Estado == estado);
+        }
+
+        public async Task<IEnumerable<Factura>> FilterByFechaAsync(DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            if (fechaInicio == null && fechaFin == null)
+            {
+                return await GetAllAsync();
+            }
+
+            if (fechaInicio == null)
+            {
+                fechaInicio = DateTime.MinValue;
+            }
+
+            if (fechaFin == null)
+            {
+                fechaFin = DateTime.MaxValue;
+            }
+
+            return await _unitOfWork.Facturas.GetByFechaAsync(fechaInicio.Value, fechaFin.Value);
+        }
+
+        public async Task<(IEnumerable<Factura> facturas, int total)> GetPagedAsync(int page, int pageSize, string? searchTerm = null, EstadoFactura? estado = null, DateTime? fechaInicio = null, DateTime? fechaFin = null)
+        {
+            IEnumerable<Factura> facturas;
+
+            // Aplicar filtros
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                facturas = await SearchAsync(searchTerm);
+            }
+            else
+            {
+                facturas = await GetAllAsync();
+            }
+
+            if (estado.HasValue)
+            {
+                facturas = facturas.Where(f => f.Estado == estado.Value);
+            }
+
+            if (fechaInicio.HasValue || fechaFin.HasValue)
+            {
+                var facturasFiltradas = await FilterByFechaAsync(fechaInicio, fechaFin);
+                facturas = facturas.Where(f => facturasFiltradas.Contains(f));
+            }
+
+            var total = facturas.Count();
+            var pagedFacturas = facturas
+                .OrderByDescending(f => f.FechaCreacion)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (pagedFacturas, total);
         }
     }
 }

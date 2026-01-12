@@ -1,4 +1,5 @@
 using Fatura.Models.Catalogos;
+using Fatura.Models.Enums;
 
 namespace Fatura.Services.Interfaces
 {
@@ -16,5 +17,7 @@ namespace Fatura.Services.Interfaces
         Task<bool> ExistsAsync(int id);
         Task<IEnumerable<Producto>> GetProductosActivosAsync();
         Task<IEnumerable<Producto>> GetProductosConStockBajoAsync();
+        Task<IEnumerable<Producto>> SearchAsync(string searchTerm);
+        Task<IEnumerable<Producto>> FilterByTipoAsync(TipoProducto? tipo);
     }
 }

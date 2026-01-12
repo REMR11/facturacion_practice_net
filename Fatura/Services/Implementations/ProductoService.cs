@@ -1,5 +1,6 @@
 using Fatura.Exceptions;
 using Fatura.Models.Catalogos;
+using Fatura.Models.Enums;
 using Fatura.Repositories.Interfaces;
 using Fatura.Services.Interfaces;
 
@@ -154,6 +155,34 @@ namespace Fatura.Services.Implementations
         public async Task<IEnumerable<Producto>> GetProductosConStockBajoAsync()
         {
             return await _unitOfWork.Productos.GetProductosConStockBajoAsync();
+        }
+
+        public async Task<IEnumerable<Producto>> SearchAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await GetAllAsync();
+            }
+
+            var term = searchTerm.ToLower();
+            var todosProductos = await _unitOfWork.Productos.GetAllAsync();
+
+            return todosProductos.Where(p =>
+                p.NombreProducto.ToLower().Contains(term) ||
+                (p.Codigo != null && p.Codigo.ToString()!.ToLower().Contains(term)) ||
+                (p.Descripcion != null && p.Descripcion.ToLower().Contains(term))
+            );
+        }
+
+        public async Task<IEnumerable<Producto>> FilterByTipoAsync(TipoProducto? tipo)
+        {
+            if (tipo == null)
+            {
+                return await GetAllAsync();
+            }
+
+            var todosProductos = await _unitOfWork.Productos.GetAllAsync();
+            return todosProductos.Where(p => p.Tipo == tipo);
         }
     }
 }
