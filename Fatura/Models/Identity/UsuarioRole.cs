@@ -1,4 +1,4 @@
-namespace Fatura.Models
+namespace Fatura.Models.Identity
 {
     /// <summary>
     /// Tabla intermedia para la relación muchos a muchos entre Usuario y Role.

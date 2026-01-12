@@ -1,4 +1,8 @@
-﻿namespace Fatura.Models
+﻿using Fatura.Models.Core;
+using Fatura.Models.Enums;
+using Fatura.Models.Facturacion;
+
+namespace Fatura.Models.Catalogos
 {
     /// <summary>
     /// Representa un producto en el catálogo del sistema.
@@ -8,9 +12,15 @@
         public Producto()
         {
             DetalleFacturas = new HashSet<DetalleFactura>();
+            ProductoImpuestos = new HashSet<ProductoImpuesto>();
         }
 
         public int IdProducto { get; set; }
+        
+        /// <summary>
+        /// Tipo de producto: Producto físico o Servicio.
+        /// </summary>
+        public TipoProducto Tipo { get; set; } = TipoProducto.Producto;
         
         /// <summary>
         /// ID de la marca del producto.
@@ -23,9 +33,19 @@
         public int? IdCategoria { get; set; }
         
         /// <summary>
+        /// ID de la unidad de medida del producto/servicio.
+        /// </summary>
+        public int? IdUnidadMedida { get; set; }
+        
+        /// <summary>
         /// Nombre del producto.
         /// </summary>
         public string NombreProducto { get; set; } = null!;
+        
+        /// <summary>
+        /// Descripción detallada del producto o servicio.
+        /// </summary>
+        public string? Descripcion { get; set; }
         
         /// <summary>
         /// Precio actual del producto.
@@ -67,9 +87,19 @@
         public virtual Marca? Marca { get; set; }
         
         /// <summary>
+        /// Relación con la unidad de medida del producto/servicio.
+        /// </summary>
+        public virtual UnidadMedida? UnidadMedida { get; set; }
+        
+        /// <summary>
         /// Colección de detalles de factura donde se ha vendido este producto.
         /// </summary>
         public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; }
+        
+        /// <summary>
+        /// Colección de impuestos aplicables a este producto (relación muchos a muchos).
+        /// </summary>
+        public virtual ICollection<ProductoImpuesto> ProductoImpuestos { get; set; }
     }
 }
 

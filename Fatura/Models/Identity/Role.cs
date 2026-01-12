@@ -1,4 +1,6 @@
-namespace Fatura.Models
+using Fatura.Models.Core;
+
+namespace Fatura.Models.Identity
 {
     /// <summary>
     /// Representa un rol en el sistema de autorización.

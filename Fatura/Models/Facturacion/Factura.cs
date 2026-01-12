@@ -1,4 +1,10 @@
-﻿namespace Fatura.Models
+﻿using Fatura.Models.Core;
+using Fatura.Models.Enums;
+using Fatura.Models.Identity;
+using Fatura.Models.Catalogos;
+using Fatura.Models.Auditoria;
+
+namespace Fatura.Models.Facturacion
 {
     /// <summary>
     /// Representa una factura en el sistema.
@@ -9,6 +15,7 @@
         public Factura()
         {
             DetalleFacturas = new HashSet<DetalleFactura>();
+            HistorialTransacciones = new HashSet<HistorialTransaccion>();
         }
 
         public int IdFactura { get; set; }
@@ -116,6 +123,27 @@
         public int UsuarioId { get; set; }
         
         /// <summary>
+        /// ID del método de pago utilizado (opcional).
+        /// </summary>
+        public int? IdMetodoPago { get; set; }
+        
+        /// <summary>
+        /// Número de referencia del método de pago (opcional).
+        /// Por ejemplo, número de transacción bancaria.
+        /// </summary>
+        public string? ReferenciaMetodoPago { get; set; }
+        
+        /// <summary>
+        /// Fecha en que se realizó el pago (opcional).
+        /// </summary>
+        public DateTime? FechaPago { get; set; }
+        
+        /// <summary>
+        /// Símbolo de la moneda (siempre USD: "$").
+        /// </summary>
+        public string MonedaSimbolo { get; set; } = "$";
+        
+        /// <summary>
         /// Relación con el cliente.
         /// </summary>
         public virtual Cliente Cliente { get; set; } = null!;
@@ -126,8 +154,18 @@
         public virtual Usuario Usuario { get; set; } = null!;
         
         /// <summary>
+        /// Relación con el método de pago utilizado.
+        /// </summary>
+        public virtual MetodoPago? MetodoPago { get; set; }
+        
+        /// <summary>
         /// Colección de detalles (productos) de la factura.
         /// </summary>
         public virtual ICollection<DetalleFactura> DetalleFacturas { get; set; }
+        
+        /// <summary>
+        /// Historial de transacciones relacionadas con esta factura.
+        /// </summary>
+        public virtual ICollection<HistorialTransaccion> HistorialTransacciones { get; set; }
     }
 }

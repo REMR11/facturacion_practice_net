@@ -1,4 +1,4 @@
-namespace Fatura.Models
+namespace Fatura.Models.Enums
 {
     public enum EstadoFactura
     {

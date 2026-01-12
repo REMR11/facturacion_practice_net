@@ -1,4 +1,7 @@
-namespace Fatura.Models
+using Fatura.Models.Core;
+using Fatura.Models.Auditoria;
+
+namespace Fatura.Models.Facturacion
 {
     /// <summary>
     /// Representa un cliente del sistema de facturación.
@@ -6,6 +9,12 @@ namespace Fatura.Models
     /// </summary>
     public class Cliente : BaseEntity
     {
+        public Cliente()
+        {
+            Facturas = new HashSet<Factura>();
+            HistorialTransacciones = new HashSet<HistorialTransaccion>();
+        }
+
         public int Id { get; set; }
         
         /// <summary>
@@ -45,5 +54,10 @@ namespace Fatura.Models
         /// Relación con las facturas emitidas a este cliente.
         /// </summary>
         public virtual ICollection<Factura> Facturas { get; set; } = new HashSet<Factura>();
+        
+        /// <summary>
+        /// Historial de transacciones relacionadas con este cliente.
+        /// </summary>
+        public virtual ICollection<HistorialTransaccion> HistorialTransacciones { get; set; } = new HashSet<HistorialTransaccion>();
     }
 }

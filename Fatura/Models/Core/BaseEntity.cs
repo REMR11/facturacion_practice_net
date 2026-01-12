@@ -1,4 +1,4 @@
-namespace Fatura.Models
+namespace Fatura.Models.Core
 {
     /// <summary>
     /// Clase base abstracta que proporciona campos de auditoría comunes a todas las entidades.

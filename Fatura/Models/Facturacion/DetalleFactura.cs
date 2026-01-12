@@ -1,4 +1,7 @@
-﻿namespace Fatura.Models
+﻿using Fatura.Models.Core;
+using Fatura.Models.Catalogos;
+
+namespace Fatura.Models.Facturacion
 {
     /// <summary>
     /// Representa un detalle (línea) de una factura.
@@ -6,6 +9,11 @@
     /// </summary>
     public class DetalleFactura : BaseEntity
     {
+        public DetalleFactura()
+        {
+            Impuestos = new HashSet<DetalleFacturaImpuesto>();
+        }
+
         public int IdDetalleFactura { get; set; }
         
         /// <summary>
@@ -17,6 +25,18 @@
         /// ID del producto facturado.
         /// </summary>
         public int? IdProducto { get; set; }
+        
+        /// <summary>
+        /// Nombre del producto al momento de la facturación.
+        /// Se almacena para mantener integridad histórica.
+        /// </summary>
+        public string NombreProducto { get; set; } = null!;
+        
+        /// <summary>
+        /// Unidad de medida del producto al momento de la facturación (opcional).
+        /// Se almacena para mantener integridad histórica.
+        /// </summary>
+        public string? UnidadMedida { get; set; }
         
         /// <summary>
         /// Cantidad de unidades del producto facturadas.
@@ -58,5 +78,10 @@
         /// Relación con el producto facturado (opcional, puede ser null si el producto fue eliminado).
         /// </summary>
         public virtual Producto? Producto { get; set; }
+        
+        /// <summary>
+        /// Colección de impuestos aplicados a este detalle.
+        /// </summary>
+        public virtual ICollection<DetalleFacturaImpuesto> Impuestos { get; set; }
     }
 }

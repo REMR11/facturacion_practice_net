@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Fatura.Models
+namespace Fatura.Models.ViewModels
 {
     public class DetalleFaturaProductoModels 
     {

@@ -1,4 +1,6 @@
-﻿namespace Fatura.Models
+﻿using Fatura.Models.Core;
+
+namespace Fatura.Models.Catalogos
 {
     /// <summary>
     /// Representa una marca de productos.

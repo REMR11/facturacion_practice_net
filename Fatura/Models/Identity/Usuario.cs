@@ -1,4 +1,8 @@
-﻿namespace Fatura.Models
+﻿using Fatura.Models.Core;
+using Fatura.Models.Facturacion;
+using Fatura.Models.Auditoria;
+
+namespace Fatura.Models.Identity
 {
     /// <summary>
     /// Representa un usuario del sistema.
@@ -12,6 +16,11 @@
         /// Nombre de usuario para autenticación.
         /// </summary>
         public string? NombreUsuario { get; set; }
+        
+        /// <summary>
+        /// Nombre completo del usuario para mostrar en la interfaz.
+        /// </summary>
+        public string? NombreCompleto { get; set; }
         
         /// <summary>
         /// Hash de la contraseña del usuario (BCrypt, Argon2, etc.).
@@ -48,5 +57,15 @@
         /// Colección de roles asignados al usuario (relación muchos a muchos).
         /// </summary>
         public virtual ICollection<UsuarioRole> UsuarioRoles { get; set; } = new HashSet<UsuarioRole>();
+        
+        /// <summary>
+        /// Historial de transacciones realizadas por este usuario.
+        /// </summary>
+        public virtual ICollection<HistorialTransaccion> HistorialTransacciones { get; set; } = new HashSet<HistorialTransaccion>();
+        
+        /// <summary>
+        /// Configuración del dashboard del usuario (relación 1:1).
+        /// </summary>
+        public virtual ConfiguracionDashboard? ConfiguracionDashboard { get; set; }
     }
 }

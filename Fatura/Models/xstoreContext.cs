@@ -1,4 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Fatura.Models.Core;
+using Fatura.Models.Identity;
+using Fatura.Models.Catalogos;
+using Fatura.Models.Facturacion;
+using Fatura.Models.Auditoria;
+using Fatura.Models.Enums;
 
 namespace Fatura.Models
 {
@@ -15,15 +21,22 @@ namespace Fatura.Models
         {
         }
 
-        public virtual DbSet<Categoria> Categoria { get; set; } = null!;
-        public virtual DbSet<Cliente> Clientes { get; set; } = null!;
-        public virtual DbSet<DetalleFactura> DetalleFacturas { get; set; } = null!;
-        public virtual DbSet<Factura> Facturas { get; set; } = null!;
-        public virtual DbSet<Marca> Marcas { get; set; } = null!;
-        public virtual DbSet<Producto> Productos { get; set; } = null!;
-        public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
-        public virtual DbSet<Role> Roles { get; set; } = null!;
-        public virtual DbSet<UsuarioRole> UsuarioRoles { get; set; } = null!;
+        public virtual DbSet<Catalogos.Categoria> Categoria { get; set; } = null!;
+        public virtual DbSet<Facturacion.Cliente> Clientes { get; set; } = null!;
+        public virtual DbSet<Identity.ConfiguracionDashboard> ConfiguracionDashboards { get; set; } = null!;
+        public virtual DbSet<Facturacion.DetalleFactura> DetalleFacturas { get; set; } = null!;
+        public virtual DbSet<Facturacion.DetalleFacturaImpuesto> DetalleFacturaImpuestos { get; set; } = null!;
+        public virtual DbSet<Facturacion.Factura> Facturas { get; set; } = null!;
+        public virtual DbSet<Auditoria.HistorialTransaccion> HistorialTransacciones { get; set; } = null!;
+        public virtual DbSet<Catalogos.Marca> Marcas { get; set; } = null!;
+        public virtual DbSet<Catalogos.MetodoPago> MetodoPagos { get; set; } = null!;
+        public virtual DbSet<Catalogos.Producto> Productos { get; set; } = null!;
+        public virtual DbSet<Catalogos.ProductoImpuesto> ProductoImpuestos { get; set; } = null!;
+        public virtual DbSet<Identity.Role> Roles { get; set; } = null!;
+        public virtual DbSet<Catalogos.TipoImpuesto> TipoImpuestos { get; set; } = null!;
+        public virtual DbSet<Catalogos.UnidadMedida> UnidadMedidas { get; set; } = null!;
+        public virtual DbSet<Identity.Usuario> Usuarios { get; set; } = null!;
+        public virtual DbSet<Identity.UsuarioRole> UsuarioRoles { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -33,7 +46,7 @@ namespace Fatura.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Categoria>(entity =>
+            modelBuilder.Entity<Catalogos.Categoria>(entity =>
             {
                 entity.ToTable("categoria");
 
@@ -51,7 +64,7 @@ namespace Fatura.Models
                     .IsRequired();
             });
 
-            modelBuilder.Entity<DetalleFactura>(entity =>
+            modelBuilder.Entity<Facturacion.DetalleFactura>(entity =>
             {
                 entity.ToTable("detalle_factura");
 
@@ -68,6 +81,15 @@ namespace Fatura.Models
 
                 entity.Property(e => e.IdProducto)
                     .HasColumnName("id_producto");
+
+                entity.Property(e => e.NombreProducto)
+                    .HasColumnName("nombre_producto")
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                entity.Property(e => e.UnidadMedida)
+                    .HasColumnName("unidad_medida")
+                    .HasMaxLength(20);
 
                 entity.Property(e => e.Cantidad)
                     .HasColumnName("cantidad")
@@ -103,7 +125,7 @@ namespace Fatura.Models
                     .HasDatabaseName("idx_detalle_factura_id_producto");
             });
 
-            modelBuilder.Entity<Factura>(entity =>
+            modelBuilder.Entity<Facturacion.Factura>(entity =>
             {
                 entity.ToTable("factura");
 
@@ -197,6 +219,22 @@ namespace Fatura.Models
                     .HasColumnName("usuario_id")
                     .IsRequired();
 
+                entity.Property(e => e.IdMetodoPago)
+                    .HasColumnName("id_metodo_pago");
+
+                entity.Property(e => e.ReferenciaMetodoPago)
+                    .HasColumnName("referencia_metodo_pago")
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.FechaPago)
+                    .HasColumnName("fecha_pago")
+                    .HasColumnType("timestamp without time zone");
+
+                entity.Property(e => e.MonedaSimbolo)
+                    .HasColumnName("moneda_simbolo")
+                    .HasMaxLength(5)
+                    .HasDefaultValue("$");
+
                 entity.HasOne(d => d.Cliente)
                     .WithMany(p => p.Facturas)
                     .HasForeignKey(d => d.ClienteId)
@@ -209,6 +247,12 @@ namespace Fatura.Models
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("fk_factura_usuario");
 
+                entity.HasOne(d => d.MetodoPago)
+                    .WithMany(p => p.Facturas)
+                    .HasForeignKey(d => d.IdMetodoPago)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_factura_metodo_pago");
+
                 entity.HasIndex(e => e.NumeroFactura)
                     .IsUnique()
                     .HasDatabaseName("uk_factura_numero_factura");
@@ -220,9 +264,279 @@ namespace Fatura.Models
                     .HasDatabaseName("idx_factura_cliente_id");
                 entity.HasIndex(e => e.Estado)
                     .HasDatabaseName("idx_factura_estado");
+                entity.HasIndex(e => e.IdMetodoPago)
+                    .HasDatabaseName("idx_factura_id_metodo_pago");
             });
 
-            modelBuilder.Entity<Marca>(entity =>
+            modelBuilder.Entity<Catalogos.MetodoPago>(entity =>
+            {
+                entity.ToTable("metodo_pago");
+
+                entity.HasKey(e => e.IdMetodoPago)
+                    .HasName("pk_metodo_pago");
+
+                entity.Property(e => e.IdMetodoPago)
+                    .HasColumnName("id_metodo_pago")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Nombre)
+                    .HasColumnName("nombre")
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.RequiereReferencia)
+                    .HasColumnName("requiere_referencia")
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.Activo)
+                    .HasColumnName("activo")
+                    .HasDefaultValue(true);
+
+                entity.HasIndex(e => e.Nombre)
+                    .IsUnique()
+                    .HasDatabaseName("uk_metodo_pago_nombre");
+            });
+
+            modelBuilder.Entity<Catalogos.UnidadMedida>(entity =>
+            {
+                entity.ToTable("unidad_medida");
+
+                entity.HasKey(e => e.IdUnidadMedida)
+                    .HasName("pk_unidad_medida");
+
+                entity.Property(e => e.IdUnidadMedida)
+                    .HasColumnName("id_unidad_medida")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Nombre)
+                    .HasColumnName("nombre")
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(e => e.Abreviatura)
+                    .HasColumnName("abreviatura")
+                    .HasMaxLength(10)
+                    .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.Activo)
+                    .HasColumnName("activo")
+                    .HasDefaultValue(true);
+
+                entity.HasIndex(e => e.Nombre)
+                    .IsUnique()
+                    .HasDatabaseName("uk_unidad_medida_nombre");
+            });
+
+            modelBuilder.Entity<Catalogos.TipoImpuesto>(entity =>
+            {
+                entity.ToTable("tipo_impuesto");
+
+                entity.HasKey(e => e.IdTipoImpuesto)
+                    .HasName("pk_tipo_impuesto");
+
+                entity.Property(e => e.IdTipoImpuesto)
+                    .HasColumnName("id_tipo_impuesto")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Nombre)
+                    .HasColumnName("nombre")
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.Porcentaje)
+                    .HasColumnName("porcentaje")
+                    .HasColumnType("numeric(5,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.AplicaProductos)
+                    .HasColumnName("aplica_productos")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.AplicaServicios)
+                    .HasColumnName("aplica_servicios")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.Activo)
+                    .HasColumnName("activo")
+                    .HasDefaultValue(true);
+
+                entity.HasIndex(e => e.Nombre)
+                    .IsUnique()
+                    .HasDatabaseName("uk_tipo_impuesto_nombre");
+            });
+
+            modelBuilder.Entity<Catalogos.ProductoImpuesto>(entity =>
+            {
+                entity.ToTable("producto_impuesto");
+
+                entity.HasKey(e => new { e.IdProducto, e.IdTipoImpuesto })
+                    .HasName("pk_producto_impuesto");
+
+                entity.Property(e => e.IdProducto)
+                    .HasColumnName("id_producto");
+
+                entity.Property(e => e.IdTipoImpuesto)
+                    .HasColumnName("id_tipo_impuesto");
+
+                entity.Property(e => e.PorcentajePersonalizado)
+                    .HasColumnName("porcentaje_personalizado")
+                    .HasColumnType("numeric(5,2)");
+
+                entity.HasOne(d => d.Producto)
+                    .WithMany(p => p.ProductoImpuestos)
+                    .HasForeignKey(d => d.IdProducto)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_producto_impuesto_producto");
+
+                entity.HasOne(d => d.TipoImpuesto)
+                    .WithMany(p => p.ProductoImpuestos)
+                    .HasForeignKey(d => d.IdTipoImpuesto)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_producto_impuesto_tipo_impuesto");
+            });
+
+            modelBuilder.Entity<Facturacion.DetalleFacturaImpuesto>(entity =>
+            {
+                entity.ToTable("detalle_factura_impuesto");
+
+                entity.HasKey(e => e.IdDetalleFacturaImpuesto)
+                    .HasName("pk_detalle_factura_impuesto");
+
+                entity.Property(e => e.IdDetalleFacturaImpuesto)
+                    .HasColumnName("id_detalle_factura_impuesto")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.IdDetalleFactura)
+                    .HasColumnName("id_detalle_factura")
+                    .IsRequired();
+
+                entity.Property(e => e.IdTipoImpuesto)
+                    .HasColumnName("id_tipo_impuesto")
+                    .IsRequired();
+
+                entity.Property(e => e.NombreImpuesto)
+                    .HasColumnName("nombre_impuesto")
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(e => e.Porcentaje)
+                    .HasColumnName("porcentaje")
+                    .HasColumnType("numeric(5,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.BaseImponible)
+                    .HasColumnName("base_imponible")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
+
+                entity.Property(e => e.MontoImpuesto)
+                    .HasColumnName("monto_impuesto")
+                    .HasColumnType("numeric(18,2)")
+                    .IsRequired();
+
+                entity.HasOne(d => d.DetalleFactura)
+                    .WithMany(p => p.Impuestos)
+                    .HasForeignKey(d => d.IdDetalleFactura)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_detalle_factura_impuesto_detalle_factura");
+
+                entity.HasOne(d => d.TipoImpuesto)
+                    .WithMany(p => p.DetalleFacturaImpuestos)
+                    .HasForeignKey(d => d.IdTipoImpuesto)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_detalle_factura_impuesto_tipo_impuesto");
+
+                entity.HasIndex(e => e.IdDetalleFactura)
+                    .HasDatabaseName("idx_detalle_factura_impuesto_id_detalle_factura");
+            });
+
+            modelBuilder.Entity<Auditoria.HistorialTransaccion>(entity =>
+            {
+                entity.ToTable("historial_transaccion");
+
+                entity.HasKey(e => e.IdHistorial)
+                    .HasName("pk_historial_transaccion");
+
+                entity.Property(e => e.IdHistorial)
+                    .HasColumnName("id_historial")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.IdFactura)
+                    .HasColumnName("id_factura");
+
+                entity.Property(e => e.IdUsuarioEmisor)
+                    .HasColumnName("id_usuario_emisor")
+                    .IsRequired();
+
+                entity.Property(e => e.IdCliente)
+                    .HasColumnName("id_cliente");
+
+                entity.Property(e => e.TipoTransaccion)
+                    .HasColumnName("tipo_transaccion")
+                    .HasConversion<int>()
+                    .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(500)
+                    .IsRequired();
+
+                entity.Property(e => e.Monto)
+                    .HasColumnName("monto")
+                    .HasColumnType("numeric(18,2)");
+
+                entity.Property(e => e.FechaTransaccion)
+                    .HasColumnName("fecha_transaccion")
+                    .HasColumnType("timestamp without time zone")
+                    .IsRequired();
+
+                entity.Property(e => e.DatosAdicionales)
+                    .HasColumnName("datos_adicionales")
+                    .HasColumnType("jsonb");
+
+                entity.HasOne(d => d.Factura)
+                    .WithMany(p => p.HistorialTransacciones)
+                    .HasForeignKey(d => d.IdFactura)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_historial_transaccion_factura");
+
+                entity.HasOne(d => d.UsuarioEmisor)
+                    .WithMany(p => p.HistorialTransacciones)
+                    .HasForeignKey(d => d.IdUsuarioEmisor)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_historial_transaccion_usuario");
+
+                entity.HasOne(d => d.Cliente)
+                    .WithMany(p => p.HistorialTransacciones)
+                    .HasForeignKey(d => d.IdCliente)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_historial_transaccion_cliente");
+
+                entity.HasIndex(e => e.IdFactura)
+                    .HasDatabaseName("idx_historial_transaccion_id_factura");
+                entity.HasIndex(e => e.IdUsuarioEmisor)
+                    .HasDatabaseName("idx_historial_transaccion_id_usuario_emisor");
+                entity.HasIndex(e => e.IdCliente)
+                    .HasDatabaseName("idx_historial_transaccion_id_cliente");
+                entity.HasIndex(e => e.FechaTransaccion)
+                    .HasDatabaseName("idx_historial_transaccion_fecha_transaccion");
+                entity.HasIndex(e => e.TipoTransaccion)
+                    .HasDatabaseName("idx_historial_transaccion_tipo_transaccion");
+            });
+
+            modelBuilder.Entity<Catalogos.Marca>(entity =>
             {
                 entity.ToTable("marca");
 
@@ -240,7 +554,7 @@ namespace Fatura.Models
                     .IsRequired();
             });
 
-            modelBuilder.Entity<Producto>(entity =>
+            modelBuilder.Entity<Catalogos.Producto>(entity =>
             {
                 entity.ToTable("producto");
 
@@ -251,6 +565,11 @@ namespace Fatura.Models
                     .HasColumnName("id_producto")
                     .ValueGeneratedOnAdd();
 
+                entity.Property(e => e.Tipo)
+                    .HasColumnName("tipo")
+                    .HasConversion<int>()
+                    .IsRequired();
+
                 entity.Property(e => e.Codigo)
                     .HasColumnName("codigo");
 
@@ -260,11 +579,18 @@ namespace Fatura.Models
                 entity.Property(e => e.IdMarca)
                     .HasColumnName("id_marca");
 
+                entity.Property(e => e.IdUnidadMedida)
+                    .HasColumnName("id_unidad_medida");
+
                 entity.Property(e => e.NombreProducto)
                     .HasColumnName("nombre_producto")
                     .HasMaxLength(50)
                     .IsUnicode(false)
                     .IsRequired();
+
+                entity.Property(e => e.Descripcion)
+                    .HasColumnName("descripcion")
+                    .HasMaxLength(500);
 
                 entity.Property(e => e.Precio)
                     .HasColumnName("precio")
@@ -293,13 +619,19 @@ namespace Fatura.Models
                     .HasForeignKey(d => d.IdMarca)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("fk_producto_marca");
+
+                entity.HasOne(d => d.UnidadMedida)
+                    .WithMany(p => p.Productos)
+                    .HasForeignKey(d => d.IdUnidadMedida)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_producto_unidad_medida");
                 
                 entity.HasIndex(e => e.Codigo)
                     .IsUnique()
                     .HasDatabaseName("uk_producto_codigo");
             });
 
-            modelBuilder.Entity<Usuario>(entity =>
+            modelBuilder.Entity<Identity.Usuario>(entity =>
             {
                 entity.ToTable("usuario");
 
@@ -331,6 +663,10 @@ namespace Fatura.Models
                     .HasColumnName("activo")
                     .HasDefaultValue(true);
 
+                entity.Property(e => e.NombreCompleto)
+                    .HasColumnName("nombre_completo")
+                    .HasMaxLength(100);
+
                 entity.Property(e => e.UltimoAcceso)
                     .HasColumnName("ultimo_acceso")
                     .HasColumnType("timestamp without time zone");
@@ -342,7 +678,62 @@ namespace Fatura.Models
                     .HasDatabaseName("idx_usuario_nombre_usuario");
             });
 
-            modelBuilder.Entity<Cliente>(entity =>
+            modelBuilder.Entity<Identity.ConfiguracionDashboard>(entity =>
+            {
+                entity.ToTable("configuracion_dashboard");
+
+                entity.HasKey(e => e.IdConfiguracion)
+                    .HasName("pk_configuracion_dashboard");
+
+                entity.Property(e => e.IdConfiguracion)
+                    .HasColumnName("id_configuracion")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.IdUsuario)
+                    .HasColumnName("id_usuario")
+                    .IsRequired();
+
+                entity.Property(e => e.MostrarIngresosMes)
+                    .HasColumnName("mostrar_ingresos_mes")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.MostrarFacturasEmitidas)
+                    .HasColumnName("mostrar_facturas_emitidas")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.MostrarClientesActivos)
+                    .HasColumnName("mostrar_clientes_activos")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.MostrarTasaCobro)
+                    .HasColumnName("mostrar_tasa_cobro")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.MostrarIngresosMensuales)
+                    .HasColumnName("mostrar_ingresos_mensuales")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.MostrarFacturasRecientes)
+                    .HasColumnName("mostrar_facturas_recientes")
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.PeriodoGraficoMeses)
+                    .HasColumnName("periodo_grafico_meses")
+                    .HasDefaultValue(7);
+
+                // Configuración de relación uno-a-uno: ConfiguracionDashboard es la entidad dependiente
+                entity.HasOne(d => d.Usuario)
+                    .WithOne(p => p.ConfiguracionDashboard)
+                    .HasForeignKey<ConfiguracionDashboard>(d => d.IdUsuario)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("fk_configuracion_dashboard_usuario");
+
+                entity.HasIndex(e => e.IdUsuario)
+                    .IsUnique()
+                    .HasDatabaseName("uk_configuracion_dashboard_usuario");
+            });
+
+            modelBuilder.Entity<Facturacion.Cliente>(entity =>
             {
                 entity.ToTable("cliente");
 
@@ -386,7 +777,7 @@ namespace Fatura.Models
                     .HasDatabaseName("idx_cliente_email");
             });
 
-            modelBuilder.Entity<Role>(entity =>
+            modelBuilder.Entity<Identity.Role>(entity =>
             {
                 entity.ToTable("role");
 
@@ -411,7 +802,7 @@ namespace Fatura.Models
                     .HasDatabaseName("uk_role_nombre");
             });
 
-            modelBuilder.Entity<UsuarioRole>(entity =>
+            modelBuilder.Entity<Identity.UsuarioRole>(entity =>
             {
                 entity.ToTable("usuario_role");
 

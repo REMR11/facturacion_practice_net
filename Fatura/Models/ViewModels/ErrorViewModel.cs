@@ -1,4 +1,4 @@
-namespace Fatura.Models
+namespace Fatura.Models.ViewModels
 {
     public class ErrorViewModel
     {
