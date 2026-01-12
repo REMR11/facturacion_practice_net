@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Fatura.Models;
+using Fatura.Repositories.Interfaces;
+using Fatura.Repositories.Implementations;
+using Fatura.Services.Interfaces;
+using Fatura.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +23,21 @@ builder.Services.AddDbContext<xstoreContext>(options =>
             errorCodesToAdd: null);
     });
 });
+
+// Registrar Repositories
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Registrar Services
+builder.Services.AddScoped<IFacturaService, FacturaService>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IMarcaService, MarcaService>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var app = builder.Build();
 
