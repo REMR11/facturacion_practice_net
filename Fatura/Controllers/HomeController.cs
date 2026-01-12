@@ -1,4 +1,5 @@
 ﻿using Fatura.Models;
+using Fatura.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;

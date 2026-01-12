@@ -1,0 +1,253 @@
+using Fatura.Models.Catalogos;
+using Fatura.Models.Enums;
+using Fatura.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Fatura.Controllers
+{
+    /// <summary>
+    /// Controlador para gestionar productos y servicios.
+    /// Proporciona funcionalidad para listar, buscar, filtrar, crear, editar y eliminar productos.
+    /// </summary>
+    [Route("Productos")]
+    public class ProductosController : Controller
+    {
+        private readonly IProductoService _productoService;
+        private readonly ICategoriaService _categoriaService;
+        private readonly IMarcaService _marcaService;
+
+        public ProductosController(
+            IProductoService productoService,
+            ICategoriaService categoriaService,
+            IMarcaService marcaService)
+        {
+            _productoService = productoService;
+            _categoriaService = categoriaService;
+            _marcaService = marcaService;
+        }
+
+        /// <summary>
+        /// Lista todos los productos con opciones de búsqueda y filtros.
+        /// </summary>
+        public async Task<IActionResult> Index(string? searchTerm = null, TipoProducto? tipo = null)
+        {
+            IEnumerable<Producto> productos;
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                productos = await _productoService.SearchAsync(searchTerm);
+            }
+            else
+            {
+                productos = await _productoService.GetAllAsync();
+            }
+
+            if (tipo.HasValue)
+            {
+                productos = await _productoService.FilterByTipoAsync(tipo);
+                productos = productos.Where(p => p.Tipo == tipo.Value);
+            }
+
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.Tipo = tipo;
+            ViewBag.Categorias = await _categoriaService.GetAllAsync();
+            ViewBag.Marcas = await _marcaService.GetAllAsync();
+
+            return View(productos);
+        }
+
+        /// <summary>
+        /// Endpoint API para búsqueda de productos (para AJAX).
+        /// </summary>
+        [HttpGet("api/search")]
+        public async Task<IActionResult> Search([FromQuery] string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                var todos = await _productoService.GetAllAsync();
+                return Json(todos);
+            }
+
+            var resultados = await _productoService.SearchAsync(term);
+            return Json(resultados);
+        }
+
+        /// <summary>
+        /// Obtiene los detalles de un producto.
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var producto = await _productoService.GetByIdAsync(id);
+                if (producto == null)
+                {
+                    return NotFound();
+                }
+                return View(producto);
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
+        /// Muestra el formulario para crear un nuevo producto.
+        /// </summary>
+        [HttpGet("Create")]
+        public async Task<IActionResult> Create()
+        {
+            ViewBag.Marcas = await _marcaService.GetAllAsync();
+            ViewBag.Categorias = await _categoriaService.GetAllAsync();
+
+            return View();
+        }
+
+        /// <summary>
+        /// Crea un nuevo producto.
+        /// </summary>
+        [HttpPost("Create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Producto producto)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    await _productoService.CreateAsync(producto);
+                    return RedirectToAction(nameof(Index));
+                }
+                ViewBag.Marcas = await _marcaService.GetAllAsync();
+                ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                return View(producto);
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                ViewBag.Marcas = await _marcaService.GetAllAsync();
+                ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                return View(producto);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error al crear el producto: {ex.Message}");
+                ViewBag.Marcas = await _marcaService.GetAllAsync();
+                ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                return View(producto);
+            }
+        }
+
+        /// <summary>
+        /// Muestra el formulario para editar un producto.
+        /// </summary>
+        [HttpGet("Edit/{id}")]
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                var producto = await _productoService.GetByIdAsync(id);
+                if (producto == null)
+                {
+                    return NotFound();
+                }
+                ViewBag.Marcas = await _marcaService.GetAllAsync();
+                ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                return View(producto);
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
+        /// Actualiza un producto existente.
+        /// </summary>
+        [HttpPost("Edit/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Producto producto)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    await _productoService.UpdateAsync(id, producto);
+                    return RedirectToAction(nameof(Index));
+                }
+                ViewBag.Marcas = await _marcaService.GetAllAsync();
+                ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                return View(producto);
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                ViewBag.Marcas = await _marcaService.GetAllAsync();
+                ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                return View(producto);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error al actualizar el producto: {ex.Message}");
+                ViewBag.Marcas = await _marcaService.GetAllAsync();
+                ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                return View(producto);
+            }
+        }
+
+        /// <summary>
+        /// Muestra la confirmación para eliminar un producto.
+        /// </summary>
+        [HttpGet("Delete/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var producto = await _productoService.GetByIdAsync(id);
+                if (producto == null)
+                {
+                    return NotFound();
+                }
+                return View(producto);
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
+        /// Elimina un producto.
+        /// </summary>
+        [HttpPost("Delete/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id, IFormCollection collection)
+        {
+            try
+            {
+                await _productoService.DeleteAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                var producto = await _productoService.GetByIdAsync(id);
+                return View(producto);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error al eliminar el producto: {ex.Message}");
+                return View();
+            }
+        }
+    }
+}
