@@ -2,6 +2,7 @@ using Fatura.Models.Enums;
 using Fatura.Models.Facturacion;
 using Fatura.Repositories.Interfaces;
 using Fatura.Services.Interfaces;
+using System.Linq;
 
 namespace Fatura.Services.Implementations
 {

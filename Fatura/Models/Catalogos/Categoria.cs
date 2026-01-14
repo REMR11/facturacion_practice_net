@@ -1,4 +1,6 @@
-﻿using Fatura.Models.Core;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Fatura.Models.Core;
 
 namespace Fatura.Models.Catalogos
 {
@@ -13,11 +15,14 @@ namespace Fatura.Models.Catalogos
             Productos = new HashSet<Producto>();
         }
 
+        [Key]
         public int IdCategoria { get; set; }
         
         /// <summary>
         /// Nombre de la categoría.
         /// </summary>
+        [Required]
+        [StringLength(100)]
         public string NombreCategoria { get; set; } = null!;
 
         /// <summary>

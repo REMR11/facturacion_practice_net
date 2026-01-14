@@ -1,4 +1,6 @@
-﻿using Fatura.Models.Core;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Fatura.Models.Core;
 using Fatura.Models.Catalogos;
 
 namespace Fatura.Models.Facturacion
@@ -14,28 +16,34 @@ namespace Fatura.Models.Facturacion
             Impuestos = new HashSet<DetalleFacturaImpuesto>();
         }
 
+        [Key]
         public int IdDetalleFactura { get; set; }
         
         /// <summary>
         /// ID de la factura a la que pertenece este detalle.
         /// </summary>
+        [ForeignKey("Factura")]
         public int IdFactura { get; set; }
         
         /// <summary>
         /// ID del producto facturado.
         /// </summary>
+        [ForeignKey("Producto")]
         public int? IdProducto { get; set; }
         
         /// <summary>
         /// Nombre del producto al momento de la facturación.
         /// Se almacena para mantener integridad histórica.
         /// </summary>
+        [Required]
+        [StringLength(200)]
         public string NombreProducto { get; set; } = null!;
         
         /// <summary>
         /// Unidad de medida del producto al momento de la facturación (opcional).
         /// Se almacena para mantener integridad histórica.
         /// </summary>
+        [StringLength(20)]
         public string? UnidadMedida { get; set; }
         
         /// <summary>
@@ -56,11 +64,13 @@ namespace Fatura.Models.Facturacion
         /// Ejemplo: Si un producto costaba $10.00 cuando se facturó, pero luego
         /// su precio cambia a $12.00, la factura debe seguir mostrando $10.00.
         /// </summary>
+        [Column(TypeName = "decimal(18,2)")]
         public decimal PrecioUnitario { get; set; }
         
         /// <summary>
         /// Descuento aplicado a este detalle (en monto, no porcentaje).
         /// </summary>
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Descuento { get; set; } = 0;
         
         /// <summary>

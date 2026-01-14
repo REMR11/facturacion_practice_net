@@ -1,4 +1,6 @@
-﻿using Fatura.Models.Core;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Fatura.Models.Core;
 using Fatura.Models.Facturacion;
 using Fatura.Models.Auditoria;
 
@@ -10,32 +12,42 @@ namespace Fatura.Models.Identity
     /// </summary>
     public partial class Usuario : BaseEntity
     {
+        [Key]
         public int IdUsuario { get; set; }
         
         /// <summary>
         /// Nombre de usuario para autenticación.
         /// </summary>
+        [Required]
+        [StringLength(50)]
         public string? NombreUsuario { get; set; }
         
         /// <summary>
         /// Nombre completo del usuario para mostrar en la interfaz.
         /// </summary>
+        [Required]
+        [StringLength(200)]
         public string? NombreCompleto { get; set; }
         
         /// <summary>
         /// Hash de la contraseña del usuario (BCrypt, Argon2, etc.).
         /// Nunca se almacena la contraseña en texto plano.
         /// </summary>
+        [Required]
+        [StringLength(500)]
         public string? ContraseñaHash { get; set; }
         
         /// <summary>
         /// Salt utilizado para el hash de la contraseña (si es necesario).
         /// </summary>
+        [StringLength(255)]
         public string? Salt { get; set; }
         
         /// <summary>
         /// Correo electrónico del usuario.
         /// </summary>
+        [Required]
+        [StringLength(100)]
         public string? Email { get; set; }
         
         /// <summary>
