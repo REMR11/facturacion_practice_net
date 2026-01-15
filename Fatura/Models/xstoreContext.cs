@@ -151,16 +151,16 @@ namespace Fatura.Models
 
                 entity.Property(e => e.FechaLimiteEmision)
                     .HasColumnName("fecha_limite_emision")
-                    .HasColumnType("timestamp without time zone");
+                    .HasColumnType("datetime2");
 
                 entity.Property(e => e.FechaCreacion)
                     .HasColumnName("fecha_creacion")
-                    .HasColumnType("timestamp without time zone")
+                    .HasColumnType("datetime2")
                     .IsRequired();
 
                 entity.Property(e => e.FechaVencimiento)
                     .HasColumnName("fecha_vencimiento")
-                    .HasColumnType("timestamp without time zone");
+                    .HasColumnType("datetime2");
 
                 entity.Property(e => e.TipoDocumento)
                     .HasColumnName("tipo_documento")
@@ -228,7 +228,7 @@ namespace Fatura.Models
 
                 entity.Property(e => e.FechaPago)
                     .HasColumnName("fecha_pago")
-                    .HasColumnType("timestamp without time zone");
+                    .HasColumnType("datetime2");
 
                 entity.Property(e => e.MonedaSimbolo)
                     .HasColumnName("moneda_simbolo")
@@ -499,12 +499,12 @@ namespace Fatura.Models
 
                 entity.Property(e => e.FechaTransaccion)
                     .HasColumnName("fecha_transaccion")
-                    .HasColumnType("timestamp without time zone")
+                    .HasColumnType("datetime2")
                     .IsRequired();
 
                 entity.Property(e => e.DatosAdicionales)
                     .HasColumnName("datos_adicionales")
-                    .HasColumnType("jsonb");
+                    .HasColumnType("nvarchar(max)");
 
                 entity.HasOne(d => d.Factura)
                     .WithMany(p => p.HistorialTransacciones)
@@ -669,7 +669,7 @@ namespace Fatura.Models
 
                 entity.Property(e => e.UltimoAcceso)
                     .HasColumnName("ultimo_acceso")
-                    .HasColumnType("timestamp without time zone");
+                    .HasColumnType("datetime2");
 
                 entity.HasIndex(e => e.Email)
                     .IsUnique()
@@ -817,7 +817,7 @@ namespace Fatura.Models
 
                 entity.Property(e => e.AsignadoEn)
                     .HasColumnName("asignado_en")
-                    .HasColumnType("timestamp without time zone")
+                    .HasColumnType("datetime2")
                     .IsRequired();
 
                 entity.HasOne(d => d.Usuario)

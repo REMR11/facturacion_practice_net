@@ -10,17 +10,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Registrar DbContext con PostgreSQL
+// Registrar DbContext con SQL Server
 builder.Services.AddDbContext<xstoreContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseNpgsql(connectionString, npgsqlOptions =>
+    options.UseSqlServer(connectionString, sqlServerOptions =>
     {
-        npgsqlOptions.CommandTimeout(120); // Timeout aumentado para migraciones con pooler de Supabase
-        npgsqlOptions.EnableRetryOnFailure(
+        sqlServerOptions.CommandTimeout(120);
+        sqlServerOptions.EnableRetryOnFailure(
             maxRetryCount: 3,
             maxRetryDelay: TimeSpan.FromSeconds(5),
-            errorCodesToAdd: null);
+            errorNumbersToAdd: null);
     });
 });
 
