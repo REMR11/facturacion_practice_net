@@ -162,7 +162,7 @@
                 <h3 class="widget-title">Acciones Rápidas</h3>
             </div>
             <div class="widget-content">
-                <div class="quick-action-item">
+                <div class="quick-action-item" onclick="location.href='@Url.Action("Create", "Facturas")'">
                     <div class="action-icon" style="background-color: #10b98133;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke="#10b981">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -271,19 +271,24 @@
             var ctx = document.getElementById('chartIngresos');
             if (ctx) {
                 const ingresosMensuales = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.IngresosMensuales ?? new List<object>()));
+                const esObjeto = ingresosMensuales && !Array.isArray(ingresosMensuales) && typeof ingresosMensuales === 'object';
+                const etiquetas = esObjeto
+                    ? Object.keys(ingresosMensuales)
+                    : ingresosMensuales.map((_, i) => {
+                        const date = new Date();
+                        date.setMonth(date.getMonth() - (ingresosMensuales.length - 1 - i));
+                        return date.toLocaleDateString('es-ES', { month: 'short' });
+                    });
+                const valores = esObjeto ? Object.values(ingresosMensuales) : ingresosMensuales;
                 
-                if (ingresosMensuales && ingresosMensuales.length > 0) {
+                if (valores && valores.length > 0) {
                     new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: ingresosMensuales.map((_, i) => {
-                                const date = new Date();
-                                date.setMonth(date.getMonth() - (ingresosMensuales.length - 1 - i));
-                                return date.toLocaleDateString('es-ES', { month: 'short' });
-                            }),
+                            labels: etiquetas,
                             datasets: [{
                                 label: 'Ingresos',
-                                data: ingresosMensuales,
+                                data: valores,
                                 borderColor: '#10b981',
                                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                                 borderWidth: 2,
