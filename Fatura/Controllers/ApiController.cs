@@ -89,7 +89,7 @@ namespace Fatura.Controllers
                 {
                     type = "Producto",
                     title = p.NombreProducto,
-                    subtitle = p.Codigo.HasValue ? $"Código {p.Codigo}" : "Sin código",
+                    subtitle = !string.IsNullOrWhiteSpace(p.Codigo) ? $"Código {p.Codigo}" : "Sin código",
                     url = $"/Productos/{p.IdProducto}"
                 }));
 
