@@ -2,6 +2,7 @@ using Fatura.Models;
 using Fatura.Models.Facturacion;
 using Fatura.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Fatura.Repositories.Implementations
 {

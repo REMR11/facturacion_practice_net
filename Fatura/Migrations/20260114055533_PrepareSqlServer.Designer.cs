@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Fatura.Migrations
 {
     [DbContext(typeof(xstoreContext))]
-    [Migration("20260115035452_InitialSqlServer")]
-    partial class InitialSqlServer
+    [Migration("20260114055533_PrepareSqlServer")]
+    partial class PrepareSqlServer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -137,8 +137,7 @@ namespace Fatura.Migrations
                     b.Property<string>("NombreCategoria")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("nombre_categoria");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -180,8 +179,7 @@ namespace Fatura.Migrations
                     b.Property<string>("NombreMarca")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("nombre_marca");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -274,8 +272,9 @@ namespace Fatura.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("activo");
 
-                    b.Property<int?>("Codigo")
-                        .HasColumnType("int")
+                    b.Property<string>("Codigo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("codigo");
 
                     b.Property<DateTime>("CreatedAt")
@@ -313,8 +312,7 @@ namespace Fatura.Migrations
                     b.Property<string>("NombreProducto")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("nombre_producto");
 
                     b.Property<decimal?>("Precio")
@@ -1071,6 +1069,7 @@ namespace Fatura.Migrations
                         .HasColumnName("activo");
 
                     b.Property<string>("ContraseñaHash")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("contraseña_hash");
@@ -1088,6 +1087,7 @@ namespace Fatura.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("email");
@@ -1096,14 +1096,15 @@ namespace Fatura.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("NombreCompleto")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("nombre_completo");
 
                     b.Property<string>("NombreUsuario")
+                        .IsRequired()
                         .HasMaxLength(40)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(40)")
+                        .HasColumnType("nvarchar(40)")
                         .HasColumnName("nombre_usuario");
 
                     b.Property<string>("Salt")
@@ -1126,8 +1127,7 @@ namespace Fatura.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("uk_usuario_email")
-                        .HasFilter("[email] IS NOT NULL");
+                        .HasDatabaseName("uk_usuario_email");
 
                     b.HasIndex("NombreUsuario")
                         .HasDatabaseName("idx_usuario_nombre_usuario");
@@ -1146,7 +1146,7 @@ namespace Fatura.Migrations
                         .HasColumnName("role_id");
 
                     b.Property<DateTime>("AsignadoEn")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("asignado_en");
 
                     b.HasKey("UsuarioId", "RoleId")

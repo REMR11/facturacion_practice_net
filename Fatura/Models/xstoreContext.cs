@@ -60,7 +60,6 @@ namespace Fatura.Models
                 entity.Property(e => e.NombreCategoria)
                     .HasColumnName("nombre_categoria")
                     .HasMaxLength(50)
-                    .IsUnicode(false)
                     .IsRequired();
             });
 
@@ -550,7 +549,6 @@ namespace Fatura.Models
                 entity.Property(e => e.NombreMarca)
                     .HasColumnName("nombre_marca")
                     .HasMaxLength(50)
-                    .IsUnicode(false)
                     .IsRequired();
             });
 
@@ -585,7 +583,6 @@ namespace Fatura.Models
                 entity.Property(e => e.NombreProducto)
                     .HasColumnName("nombre_producto")
                     .HasMaxLength(50)
-                    .IsUnicode(false)
                     .IsRequired();
 
                 entity.Property(e => e.Descripcion)
@@ -644,8 +641,7 @@ namespace Fatura.Models
 
                 entity.Property(e => e.NombreUsuario)
                     .HasColumnName("nombre_usuario")
-                    .HasMaxLength(40)
-                    .IsUnicode(false);
+                    .HasMaxLength(40);
 
                 entity.Property(e => e.Email)
                     .HasColumnName("email")

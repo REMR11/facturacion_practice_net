@@ -1,4 +1,6 @@
-﻿using Fatura.Models.Core;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Fatura.Models.Core;
 using Fatura.Models.Enums;
 using Fatura.Models.Facturacion;
 
@@ -15,6 +17,7 @@ namespace Fatura.Models.Catalogos
             ProductoImpuestos = new HashSet<ProductoImpuesto>();
         }
 
+        [Key]
         public int IdProducto { get; set; }
         
         /// <summary>
@@ -25,26 +28,32 @@ namespace Fatura.Models.Catalogos
         /// <summary>
         /// ID de la marca del producto.
         /// </summary>
+        [ForeignKey("Marca")]
         public int? IdMarca { get; set; }
         
         /// <summary>
         /// ID de la categoría del producto.
         /// </summary>
+        [ForeignKey("Categoria")]
         public int? IdCategoria { get; set; }
         
         /// <summary>
         /// ID de la unidad de medida del producto/servicio.
         /// </summary>
+        [ForeignKey("UnidadMedida")]
         public int? IdUnidadMedida { get; set; }
         
         /// <summary>
         /// Nombre del producto.
         /// </summary>
+        [Required]
+        [StringLength(200)]
         public string NombreProducto { get; set; } = null!;
         
         /// <summary>
         /// Descripción detallada del producto o servicio.
         /// </summary>
+        [StringLength(500)]
         public string? Descripcion { get; set; }
         
         /// <summary>
@@ -54,12 +63,14 @@ namespace Fatura.Models.Catalogos
         /// se copia el PrecioUnitario desde aquí para mantener el precio histórico.
         /// Ver comentario en DetalleFactura.PrecioUnitario para más detalles.
         /// </summary>
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? Precio { get; set; }
         
         /// <summary>
         /// Código único del producto (SKU, código de barras, etc.).
         /// </summary>
-        public int? Codigo { get; set; }
+        [StringLength(50)]
+        public string? Codigo { get; set; }
         
         /// <summary>
         /// Cantidad disponible en inventario.

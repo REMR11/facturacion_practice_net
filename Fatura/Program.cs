@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // Registrar DbContext con SQL Server
+// Registrar DbContext con SQL Server
 builder.Services.AddDbContext<xstoreContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
