@@ -1,171 +1,88 @@
 ﻿@model IEnumerable<Fatura.Models.Catalogos.Producto>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Inventario";
 }
 
-<h1>Index</h1>
+<h2 class="mb-3">📦 Inventario de Productos</h2>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-success">
+        ➕ Nuevo Producto
+    </a>
 </p>
-<table class="table">
-    <thead>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-dark">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.NombreProducto)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Precio)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Codigo)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Categoria)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Marca)
-            </th>
-            <th></th>
+            <th>Nombre</th>
+            <th>Código</th>
+            <th>Categoría</th>
+            <th>Marca</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acciones</th>
         </tr>
     </thead>
+
     <tbody>
-        @foreach (var item in Model)
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.NombreProducto</td>
+                    <td>@item.Codigo</td>
+
+                    <td>
+                        @(item.Categoria != null ? item.Categoria.NombreCategoria : "—")
+                    </td>
+
+                    <td>
+                        @(item.Marca != null ? item.Marca.NombreMarca : "—")
+                    </td>
+
+                    <td>$@item.Precio</td>
+
+                    <td>
+                        @if (item.Stock <= 0)
+                        {
+                            <span class="badge bg-danger">Agotado</span>
+                        }
+                        else if (item.Stock < 5)
+                        {
+                            <span class="badge bg-warning text-dark">@item.Stock</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">@item.Stock</span>
+                        }
+                    </td>
+
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IdProducto"
+                           class="btn btn-sm btn-primary">Editar</a>
+
+                        <a asp-action="Details" asp-route-id="@item.IdProducto"
+                           class="btn btn-sm btn-info text-white">Ver</a>
+
+                        <a asp-action="Delete" asp-route-id="@item.IdProducto"
+                           class="btn btn-sm btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.NombreProducto)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Precio)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Codigo)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Categoria != null ? item.Categoria.NombreCategoria : "")
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Marca != null ? item.Marca.NombreMarca : "")
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.IdProducto">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.IdProducto">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.IdProducto">Delete</a>
+                <td colspan="7" class="text-center">
+                    No hay productos en el inventario
                 </td>
             </tr>
         }
     </tbody>
 </table>
 
-@{
-    ViewData["Title"] = "Venta de Productos";
-}
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <title>Motos & Repuestos</title>
-
-    <!-- BOOTSTRAP -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-    <!-- ICONOS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-</head>
-
-<body class="bg-light d-flex flex-column min-vh-100">
-
-    <!-- ======= CONTENIDO ======= -->
-    <main class="container my-5 flex-fill">
-
-        <h2 class="text-center fw-bold mb-4">🛒 Venta de Productos para Motos</h2>
-
-        <div class="row g-4">
-
-            <!-- PRODUCTO -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://i.imgur.com/4ZQZ4ZP.png" class="card-img-top p-3" alt="Casco">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Casco Integral</h5>
-                        <p class="text-muted">Alta seguridad y comodidad</p>
-                        <p class="fw-bold text-success">$65.00</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-success btn-sm w-100">
-                            <i class="fas fa-cart-plus"></i> Agregar al carrito
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRODUCTO -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://i.imgur.com/5z5Z5Z5.png" class="card-img-top p-3" alt="Aceite">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Aceite para Motor</h5>
-                        <p class="text-muted">Protección y rendimiento</p>
-                        <p class="fw-bold text-success">$12.00</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-success btn-sm w-100">
-                            <i class="fas fa-cart-plus"></i> Agregar al carrito
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRODUCTO -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://i.imgur.com/8YQZ4ZP.png" class="card-img-top p-3" alt="Guantes">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Guantes de Protección</h5>
-                        <p class="text-muted">Máximo agarre</p>
-                        <p class="fw-bold text-success">$18.00</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-success btn-sm w-100">
-                            <i class="fas fa-cart-plus"></i> Agregar al carrito
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRODUCTO -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://i.imgur.com/9QZ4Z4Z.png" class="card-img-top p-3" alt="Bujía">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Bujía NGK</h5>
-                        <p class="text-muted">Arranque eficiente</p>
-                        <p class="fw-bold text-success">$6.50</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-success btn-sm w-100">
-                            <i class="fas fa-cart-plus"></i> Agregar al carrito
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-    </main>
-
-    <!-- ======= FOOTER ======= -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
-        &copy; Taller de Motos Rodriguez
-    </footer>
-
-    <!-- SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+<footer class="bg-dark text-white text-center py-3 mt-4">
+    &copy; Taller de Motos Rodríguez
+</footer>

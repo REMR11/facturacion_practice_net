@@ -18,27 +18,51 @@
     <!-- TU CSS -->
     <link href="~/css/site.css" rel="stylesheet" />
     <link href="~/css/fonts.css" rel="stylesheet" />
+
+    <!-- 🔴 FIX ESPACIOS -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            padding-top: 0;
+            padding-bottom: 0;
+            min-height: 64px;
+        }
+
+        .navbar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            height: 64px;
+        }
+    </style>
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">
 
-
     <!-- ======= NAVBAR ======= -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
-        <div class="container">
-            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+    <!-- 🔴 QUITAMOS shadow si quieres más limpio -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-4">
+
+            <a class="navbar-brand fw-bold d-flex align-items-center"
+               asp-controller="Home" asp-action="Index">
                 🏍️ Motos Rodriguez
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu">
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mainMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="mainMenu">
-                <ul class="navbar-nav ms-auto align-items-lg-center">
+            <div class="collapse navbar-collapse justify-content-end" id="mainMenu">
+                <ul class="navbar-nav align-items-center">
 
                     <li class="nav-item">
-                        <a class="nav-link active" asp-controller="Home" asp-action="Index">Inicio</a>
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
                     </li>
 
                     <li class="nav-item">
@@ -46,21 +70,19 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Dasboard" asp-action="Index">Factura </a>
+                        <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Factura</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Sobre Nosotros</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Album" asp-action="Index">Inventario</a>
+                        <a class="nav-link" asp-controller="Inventario" asp-action="Index">Inventario</a>
                     </li>
 
                     <!-- BUSCADOR -->
-                    <li class="nav-item ms-lg-3">
-                        <form class="d-flex" method="get" asp-controller="Customer" asp-action="Index">
-                            <input class="form-control form-control-sm" type="search" name="search" placeholder="Buscar">
+                    <li class="nav-item ms-3">
+                        <form class="d-flex align-items-center" method="get"
+                              asp-controller="Customer" asp-action="Index">
+                            <input class="form-control form-control-sm"
+                                   type="search" name="search" placeholder="Buscar">
                             <button class="btn btn-outline-light btn-sm ms-1" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -68,7 +90,7 @@
                     </li>
 
                     <!-- CARRITO -->
-                    <li class="nav-item ms-lg-3">
+                    <li class="nav-item ms-3">
                         <a class="nav-link text-warning" asp-controller="Cart" asp-action="Index">
                             <i class="fas fa-shopping-cart fa-lg"></i>
                         </a>
@@ -81,140 +103,46 @@
 
     <!-- ======= CONTENIDO ======= -->
     <main class="container my-4 flex-fill">
-
         @RenderBody()
     </main>
-    <section class="my-5">
-        <h2 class="text-center fw-bold mb-4">🛒 Productos para Motos</h2>
-
-        <div class="row g-4">
-
-            <!-- PRODUCTO 1 -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="~/css/Image/Casco.png" class="card-img-top p-3" alt="Casco">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Casco Integral</h5>
-                        <p class="card-text text-muted">Alta seguridad y comodidad</p>
-                        <p class="fw-bold text-success">$65.00</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-sm btn-success">
-                            <i class="fas fa-cart-plus"></i> Agregar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRODUCTO 2 -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://www.valvolineglobal.com/49f94e/globalassets/vcom/product%20detail%20pages/motorengine%20oil/full-synthetic/ex_euro_full_syn_xl-iii_5w30_beauty_5qt.png?format=webp&quality=80" class="card-img-top p-3" alt="Aceite">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Aceite para Motor</h5>
-                        <p class="card-text text-muted">Rendimiento y protección</p>
-                        <p class="fw-bold text-success">$12.00</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-sm btn-success">
-                            <i class="fas fa-cart-plus"></i> Agregar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRODUCTO 3 -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://ferreteriavidri.com/images/items/large/145246.jpg" class="card-img-top p-3" alt="Guantes">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Guantes de Protección</h5>
-                        <p class="card-text text-muted">Seguridad y agarre</p>
-                        <p class="fw-bold text-success">$18.00</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-sm btn-success">
-                            <i class="fas fa-cart-plus"></i> Agregar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRODUCTO 4 -->
-            <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://i0.wp.com/www.redd.es/wp-content/uploads/2020/01/bujia_NGK.jpg?resize=1080%2C719" class="card-img-top p-3" alt="Bujía">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Bujía NGK</h5>
-                        <p class="card-text text-muted">Arranque eficiente</p>
-                        <p class="fw-bold text-success">$6.50</p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <button class="btn btn-sm btn-success">
-                            <i class="fas fa-cart-plus"></i> Agregar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
 
     <!-- ======= FOOTER ======= -->
     <footer class="mt-auto">
 
-        <!-- INFO (AMARILLO) -->
-        <div class="bg-warning py-4">
+        <div class="bg-warning py-3">
             <div class="container">
-                <div class="row text-center gy-3">
-
-                    <div class="col-md-4 d-flex justify-content-center align-items-center gap-2">
-                        <i class="fas fa-map-marker-alt fa-lg"></i>
-                        <span>Lourdes Colón</span>
+                <div class="row text-center gy-2">
+                    <div class="col-md-4">
+                        <i class="fas fa-map-marker-alt"></i> Lourdes Colón
                     </div>
-
-                    <div class="col-md-4 d-flex justify-content-center align-items-center gap-2">
-                        <i class="fab fa-whatsapp fa-lg"></i>
-                        <span>+503 5226-3652</span>
+                    <div class="col-md-4">
+                        <i class="fab fa-whatsapp"></i> +503 5226-3652
                     </div>
-
-                    <div class="col-md-4 d-flex justify-content-center align-items-center gap-2">
-                        <i class="fas fa-envelope fa-lg"></i>
-                        <span>tallerrodriguez0@gmail.com</span>
+                    <div class="col-md-4">
+                        <i class="fas fa-envelope"></i> tallerrodriguez0@gmail.com
                     </div>
-
                 </div>
             </div>
         </div>
 
-        <!-- REDES (NEGRO) -->
         <div class="bg-dark text-center py-3">
-            <a href="#" class="text-white mx-3 fs-4">
-                <i class="fab fa-facebook"></i>
-            </a>
-            <a href="#" class="text-white mx-3 fs-4">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" class="text-white mx-3 fs-4">
-                <i class="fab fa-tiktok"></i>
-            </a>
+            <a href="#" class="text-white mx-3 fs-4"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="text-white mx-3 fs-4"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-white mx-3 fs-4"><i class="fab fa-tiktok"></i></a>
         </div>
 
-        <!-- COPYRIGHT (GRIS) -->
         <div class="bg-secondary text-white text-center py-2">
             &copy; Taller de Motos Rodriguez
         </div>
 
     </footer>
 
-
-    
-  
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>
