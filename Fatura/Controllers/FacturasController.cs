@@ -116,7 +116,7 @@ namespace Fatura.Controllers
         {
             if (id == null)
             {
-                var newFactura = new Factura()
+                var factura = new Factura
                 {
                     Total = 0,
                     SubTotal = 0,
@@ -125,8 +125,6 @@ namespace Fatura.Controllers
                     OtrosImpuestos = 0,
                     FechaCreacion = DateTime.UtcNow
                 };
-
-                var factura = await _facturaService.CreateAsync(newFactura);
 
                 ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                 ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
