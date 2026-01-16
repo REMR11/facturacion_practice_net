@@ -12,6 +12,7 @@ namespace Fatura.Repositories.Interfaces
         IRepository<Categoria> Categorias { get; }
         IProductoRepository Productos { get; }
         IRepository<Marca> Marcas { get; }
+        IRepository<UnidadMedida> UnidadesMedida { get; }
         IFacturaRepository Facturas { get; }
         IRepository<Cliente> Clientes { get; }
         IRepository<DetalleFactura> DetalleFacturas { get; }

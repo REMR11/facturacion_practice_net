@@ -19,6 +19,7 @@ namespace Fatura.Repositories.Implementations
         private IRepository<Categoria>? _categorias;
         private IProductoRepository? _productos;
         private IRepository<Marca>? _marcas;
+        private IRepository<UnidadMedida>? _unidadesMedida;
         private IFacturaRepository? _facturas;
         private IRepository<Cliente>? _clientes;
         private IRepository<DetalleFactura>? _detalleFacturas;
@@ -55,6 +56,15 @@ namespace Fatura.Repositories.Implementations
             {
                 _marcas ??= new Repository<Marca>(_context);
                 return _marcas;
+            }
+        }
+
+        public IRepository<UnidadMedida> UnidadesMedida
+        {
+            get
+            {
+                _unidadesMedida ??= new Repository<UnidadMedida>(_context);
+                return _unidadesMedida;
             }
         }
 
