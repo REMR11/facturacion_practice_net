@@ -40,6 +40,7 @@ namespace Fatura.Models.Catalogos
         /// <summary>
         /// ID de la unidad de medida del producto/servicio.
         /// </summary>
+        [Required]
         [ForeignKey("UnidadMedida")]
         public int? IdUnidadMedida { get; set; }
         
@@ -63,12 +64,15 @@ namespace Fatura.Models.Catalogos
         /// se copia el PrecioUnitario desde aquí para mantener el precio histórico.
         /// Ver comentario en DetalleFactura.PrecioUnitario para más detalles.
         /// </summary>
+        [Required]
+        [Range(0, 99999999.99)]
         [Column(TypeName = "decimal(18,2)")]
         public decimal? Precio { get; set; }
         
         /// <summary>
         /// Código único del producto (SKU, código de barras, etc.).
         /// </summary>
+        [Required]
         [StringLength(50)]
         public string? Codigo { get; set; }
         
