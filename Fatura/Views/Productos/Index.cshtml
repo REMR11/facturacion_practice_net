@@ -1,0 +1,165 @@
+﻿@using System.Linq
+@using Fatura.Models.Catalogos
+@using Fatura.Models.Enums
+@using Fatura.Models.ViewModels
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model ProductoIndexViewModel
+
+@{
+    ViewData["Title"] = "Productos";
+    Layout = "_DashboardLayout";
+    var unidades = ViewBag.UnidadesMedida as IEnumerable<UnidadMedida> ?? Enumerable.Empty<UnidadMedida>();
+    var searchTerm = ViewBag.SearchTerm as string ?? string.Empty;
+    var tipoSeleccionado = ViewBag.Tipo as TipoProducto?;
+}
+
+<div class="productos-page">
+    <div class="productos-header">
+        <div>
+            <h1 class="page-title">Productos y Servicios</h1>
+            <p class="page-subtitle">Gestiona tu catálogo de productos y servicios</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-new" data-bs-toggle="modal" data-bs-target="#productoModal">
+            + Nuevo Producto
+        </button>
+    </div>
+
+    <form method="get" class="productos-filters">
+        <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" name="searchTerm" value="@searchTerm" placeholder="Buscar por código o nombre..." />
+        </div>
+        <div class="filter-select">
+            <select name="tipo" onchange="this.form.submit()">
+                <option value="">Todos los tipos</option>
+                @foreach (var tipo in Enum.GetValues(typeof(TipoProducto)).Cast<TipoProducto>())
+                {
+                    if (tipoSeleccionado == tipo)
+                    {
+                        <option value="@tipo" selected>@tipo</option>
+                    }
+                    else
+                    {
+                        <option value="@tipo">@tipo</option>
+                    }
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-outline-secondary btn-filter">Filtrar</button>
+    </form>
+
+    <div class="productos-table">
+        <div class="productos-row productos-header-row">
+            <div>Producto / Servicio</div>
+            <div>Código</div>
+            <div>Tipo</div>
+            <div>Unidad</div>
+            <div>Precio</div>
+            <div></div>
+        </div>
+
+        @if (Model.Productos.Any())
+        {
+            foreach (var item in Model.Productos)
+            {
+                <div class="productos-row">
+                    <div class="producto-info">
+                        <div class="producto-icon @(item.Tipo == TipoProducto.Servicio ? "icon-servicio" : "icon-producto")">
+                            <i class="@(item.Tipo == TipoProducto.Servicio ? "fas fa-wrench" : "fas fa-cube")"></i>
+                        </div>
+                        <div>
+                            <div class="producto-nombre">@item.NombreProducto</div>
+                            <div class="producto-descripcion">@(item.Descripcion ?? "Sin descripción")</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="codigo-chip">@item.Codigo</span>
+                    </div>
+                    <div>
+                        <span class="tipo-chip @(item.Tipo == TipoProducto.Servicio ? "tipo-servicio" : "tipo-producto")">
+                            @item.Tipo
+                        </span>
+                    </div>
+                    <div>@(item.UnidadMedida?.Nombre ?? "—")</div>
+                    <div class="precio-text">@($"{item.Precio ?? 0:C}")</div>
+                    <div class="row-actions">
+                        <a asp-action="Edit" asp-route-id="@item.IdProducto" class="btn btn-light btn-sm">Editar</a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="productos-empty">No hay productos registrados.</div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="productoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Nuevo Producto / Servicio</h5>
+                    <p class="text-muted mb-0">Agrega un nuevo producto o servicio a tu catálogo.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-action="Create" asp-controller="Productos" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" asp-for="NuevoProducto.Tipo" asp-items="Html.GetEnumSelectList<TipoProducto>()"></select>
+                            <span asp-validation-for="NuevoProducto.Tipo" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Código</label>
+                            <input class="form-control" asp-for="NuevoProducto.Codigo" placeholder="PROD-001" />
+                            <span asp-validation-for="NuevoProducto.Codigo" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Nombre</label>
+                            <input class="form-control" asp-for="NuevoProducto.NombreProducto" placeholder="Nombre del producto o servicio" />
+                            <span asp-validation-for="NuevoProducto.NombreProducto" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" asp-for="NuevoProducto.Descripcion" rows="3" placeholder="Descripción detallada..."></textarea>
+                            <span asp-validation-for="NuevoProducto.Descripcion" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Unidad de medida</label>
+                            <select class="form-select" asp-for="NuevoProducto.IdUnidadMedida" asp-items="@(new SelectList(unidades, "IdUnidadMedida", "Nombre"))">
+                                <option value="">Selecciona una unidad</option>
+                            </select>
+                            <span asp-validation-for="NuevoProducto.IdUnidadMedida" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Precio (sin IGV)</label>
+                            <input class="form-control" asp-for="NuevoProducto.Precio" type="number" step="0.01" min="0" placeholder="0.00" />
+                            <span asp-validation-for="NuevoProducto.Precio" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @if (ViewBag.ShowModal == true)
+    {
+        <script>
+            const modal = new bootstrap.Modal(document.getElementById('productoModal'));
+            modal.show();
+        </script>
+    }
+}
