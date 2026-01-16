@@ -51,6 +51,15 @@ namespace Fatura.Services.Implementations
                 }
             }
 
+            if (producto.IdUnidadMedida.HasValue)
+            {
+                var unidad = await _unitOfWork.UnidadesMedida.GetByIdAsync(producto.IdUnidadMedida.Value);
+                if (unidad == null)
+                {
+                    throw new EntityNotFoundException("UnidadMedida", producto.IdUnidadMedida.Value);
+                }
+            }
+
             // Validar precio
             if (producto.Precio.HasValue && producto.Precio.Value < 0)
             {
@@ -94,6 +103,15 @@ namespace Fatura.Services.Implementations
                 if (marca == null)
                 {
                     throw new EntityNotFoundException("Marca", producto.IdMarca.Value);
+                }
+            }
+
+            if (producto.IdUnidadMedida.HasValue)
+            {
+                var unidad = await _unitOfWork.UnidadesMedida.GetByIdAsync(producto.IdUnidadMedida.Value);
+                if (unidad == null)
+                {
+                    throw new EntityNotFoundException("UnidadMedida", producto.IdUnidadMedida.Value);
                 }
             }
 

@@ -15,6 +15,15 @@ namespace Fatura.Repositories.Implementations
         {
         }
 
+        public override async Task<IEnumerable<Producto>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(p => p.Categoria)
+                .Include(p => p.Marca)
+                .Include(p => p.UnidadMedida)
+                .ToListAsync();
+        }
+
         public async Task<Producto?> GetWithRelationsAsync(int id)
         {
             return await _dbSet
