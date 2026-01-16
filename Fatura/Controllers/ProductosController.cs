@@ -1,5 +1,6 @@
 using Fatura.Models.Catalogos;
 using Fatura.Models.Enums;
+using Fatura.Models.ViewModels;
 using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,15 +16,18 @@ namespace Fatura.Controllers
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
         private readonly IMarcaService _marcaService;
+        private readonly IUnidadMedidaService _unidadMedidaService;
 
         public ProductosController(
             IProductoService productoService,
             ICategoriaService categoriaService,
-            IMarcaService marcaService)
+            IMarcaService marcaService,
+            IUnidadMedidaService unidadMedidaService)
         {
             _productoService = productoService;
             _categoriaService = categoriaService;
             _marcaService = marcaService;
+            _unidadMedidaService = unidadMedidaService;
         }
 
         /// <summary>
@@ -52,8 +56,18 @@ namespace Fatura.Controllers
             ViewBag.Tipo = tipo;
             ViewBag.Categorias = await _categoriaService.GetAllAsync();
             ViewBag.Marcas = await _marcaService.GetAllAsync();
+            ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
 
-            return View(productos);
+            var viewModel = new ProductoIndexViewModel
+            {
+                Productos = productos,
+                NuevoProducto = new Producto
+                {
+                    Tipo = TipoProducto.Servicio
+                }
+            };
+
+            return View(viewModel);
         }
 
         /// <summary>
@@ -101,8 +115,9 @@ namespace Fatura.Controllers
         {
             ViewBag.Marcas = await _marcaService.GetAllAsync();
             ViewBag.Categorias = await _categoriaService.GetAllAsync();
+            ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
 
-            return View();
+            return RedirectToAction(nameof(Index));
         }
 
         /// <summary>
@@ -110,7 +125,7 @@ namespace Fatura.Controllers
         /// </summary>
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Producto producto)
+        public async Task<IActionResult> Create([Bind(Prefix = "NuevoProducto")] Producto producto)
         {
             try
             {
@@ -119,23 +134,44 @@ namespace Fatura.Controllers
                     await _productoService.CreateAsync(producto);
                     return RedirectToAction(nameof(Index));
                 }
+                var productos = await _productoService.GetAllAsync();
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
-                return View(producto);
+                ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
+                ViewBag.ShowModal = true;
+                return View("Index", new ProductoIndexViewModel
+                {
+                    Productos = productos,
+                    NuevoProducto = producto
+                });
             }
             catch (Fatura.Exceptions.BusinessRuleException ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                var productos = await _productoService.GetAllAsync();
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
-                return View(producto);
+                ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
+                ViewBag.ShowModal = true;
+                return View("Index", new ProductoIndexViewModel
+                {
+                    Productos = productos,
+                    NuevoProducto = producto
+                });
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error al crear el producto: {ex.Message}");
+                var productos = await _productoService.GetAllAsync();
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
-                return View(producto);
+                ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
+                ViewBag.ShowModal = true;
+                return View("Index", new ProductoIndexViewModel
+                {
+                    Productos = productos,
+                    NuevoProducto = producto
+                });
             }
         }
 
@@ -154,6 +190,7 @@ namespace Fatura.Controllers
                 }
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
                 return View(producto);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
@@ -178,6 +215,7 @@ namespace Fatura.Controllers
                 }
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
                 return View(producto);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
@@ -189,6 +227,7 @@ namespace Fatura.Controllers
                 ModelState.AddModelError("", ex.Message);
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
                 return View(producto);
             }
             catch (Exception ex)
@@ -196,6 +235,7 @@ namespace Fatura.Controllers
                 ModelState.AddModelError("", $"Error al actualizar el producto: {ex.Message}");
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
+                ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
                 return View(producto);
             }
         }
