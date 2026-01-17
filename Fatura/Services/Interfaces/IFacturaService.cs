@@ -13,6 +13,7 @@ namespace Fatura.Services.Interfaces
         Task<Factura?> GetByIdAsync(int id);
         Task<Factura> CreateAsync(Factura factura);
         Task<Factura> UpdateAsync(int id, Factura factura);
+        Task<Factura> UpdateEstadoAsync(int id, EstadoFactura estado);
         Task DeleteAsync(int id);
         Task<DetalleFactura> AgregarProductoAsync(int facturaId, int productoId, int cantidad = 1);
         Task CalcularTotalAsync(int facturaId);

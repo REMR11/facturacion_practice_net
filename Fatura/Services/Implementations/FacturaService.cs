@@ -85,6 +85,30 @@ namespace Fatura.Services.Implementations
             return existingFactura;
         }
 
+        public async Task<Factura> UpdateEstadoAsync(int id, EstadoFactura estado)
+        {
+            var existingFactura = await _unitOfWork.Facturas.GetByIdAsync(id);
+            if (existingFactura == null)
+            {
+                throw new EntityNotFoundException("Factura", id);
+            }
+
+            existingFactura.Estado = estado;
+            if (estado == EstadoFactura.Pagada)
+            {
+                existingFactura.FechaPago ??= DateTime.UtcNow;
+            }
+            else
+            {
+                existingFactura.FechaPago = null;
+            }
+
+            await _unitOfWork.Facturas.UpdateAsync(existingFactura);
+            await _unitOfWork.SaveChangesAsync();
+
+            return existingFactura;
+        }
+
         public async Task DeleteAsync(int id)
         {
             var factura = await _unitOfWork.Facturas.GetByIdAsync(id);

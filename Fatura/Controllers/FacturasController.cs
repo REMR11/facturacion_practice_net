@@ -138,6 +138,28 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
+        /// Actualiza el estado de una factura (Pendiente, Pagada, Cancelada, etc.).
+        /// </summary>
+        [HttpPost("{id}/Estado")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateEstado(int id, EstadoFactura estado, string? returnUrl = null)
+        {
+            try
+            {
+                await _facturaService.UpdateEstadoAsync(id, estado);
+                if (!string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
         /// Muestra el formulario para crear una nueva factura.
         /// </summary>
         [HttpGet("Create")]
@@ -319,8 +341,7 @@ namespace Fatura.Controllers
                 {
                     return NotFound();
                 }
-                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
-                return View(factura);
+                return RedirectToAction(nameof(Details), new { id });
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
@@ -342,8 +363,7 @@ namespace Fatura.Controllers
                     await _facturaService.UpdateAsync(id, factura);
                     return RedirectToAction(nameof(Index));
                 }
-                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
-                return View(factura);
+                return RedirectToAction(nameof(Details), new { id });
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
@@ -352,8 +372,7 @@ namespace Fatura.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error al actualizar la factura: {ex.Message}");
-                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
-                return View(factura);
+                return RedirectToAction(nameof(Details), new { id });
             }
         }
 
