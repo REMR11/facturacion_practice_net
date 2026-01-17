@@ -1,7 +1,10 @@
+using Fatura.Models;
 using Fatura.Models.Enums;
 using Fatura.Models.Facturacion;
+using Fatura.Models.ViewModels;
 using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fatura.Controllers
 {
@@ -15,15 +18,21 @@ namespace Fatura.Controllers
         private readonly IFacturaService _facturaService;
         private readonly IProductoService _productoService;
         private readonly IClienteService _clienteService;
+        private readonly IFacturaPdfService _facturaPdfService;
+        private readonly xstoreContext _context;
 
         public FacturasController(
             IFacturaService facturaService, 
             IProductoService productoService,
-            IClienteService clienteService)
+            IClienteService clienteService,
+            IFacturaPdfService facturaPdfService,
+            xstoreContext context)
         {
             _facturaService = facturaService;
             _productoService = productoService;
             _clienteService = clienteService;
+            _facturaPdfService = facturaPdfService;
+            _context = context;
         }
 
         /// <summary>
@@ -95,12 +104,32 @@ namespace Fatura.Controllers
         /// Obtiene los detalles de una factura.
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id, bool download = false)
         {
             try
             {
                 var factura = await _facturaService.GetWithDetailsAsync(id);
+                ViewBag.AutoDownload = download;
                 return View(factura);
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
+        /// Genera el PDF de una factura.
+        /// </summary>
+        [HttpGet("{id}/Pdf")]
+        public async Task<IActionResult> Pdf(int id)
+        {
+            try
+            {
+                var factura = await _facturaService.GetWithDetailsAsync(id);
+                var pdfBytes = _facturaPdfService.GenerarPdf(factura);
+                var fileName = $"Factura_{factura.NumeroFactura ?? id.ToString()}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
@@ -114,31 +143,40 @@ namespace Fatura.Controllers
         [HttpGet("Create")]
         public async Task<IActionResult> Create(int? id)
         {
-            if (id == null)
+            var viewModel = new FacturaCreateViewModel
             {
-                var factura = new Factura
-                {
-                    Total = 0,
-                    SubTotal = 0,
-                    Iva = 0,
-                    Isr = 0,
-                    OtrosImpuestos = 0,
-                    FechaCreacion = DateTime.UtcNow
-                };
+                FechaEmision = DateTime.Today,
+                FechaVencimiento = DateTime.Today.AddDays(30),
+                MonedaSimbolo = "S/",
+                TipoDocumento = "01",
+                SerieFactura = "F001"
+            };
 
-                ViewBag.Productos = await _productoService.GetProductosActivosAsync();
-                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
-
-                return View(factura);
-            }
-            else
+            if (id.HasValue)
             {
-                ViewBag.Productos = await _productoService.GetProductosActivosAsync();
-                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
                 var factura = await _facturaService.GetWithDetailsAsync(id.Value);
-                ViewBag.DetalleFacturas = factura.DetalleFacturas;
-                return View(factura);
+                viewModel.ClienteId = factura.ClienteId;
+                viewModel.TipoDocumento = factura.TipoDocumento;
+                viewModel.SerieFactura = factura.SerieFactura;
+                viewModel.FechaEmision = factura.FechaCreacion;
+                viewModel.FechaVencimiento = factura.FechaVencimiento;
+                viewModel.MonedaSimbolo = factura.MonedaSimbolo;
+                viewModel.Items = factura.DetalleFacturas
+                    .Where(d => d.IdProducto.HasValue)
+                    .Select(d => new FacturaItemCreateViewModel
+                    {
+                        IdProducto = d.IdProducto!.Value,
+                        Cantidad = d.Cantidad,
+                        Descuento = d.Descuento,
+                        PrecioUnitario = d.PrecioUnitario
+                    })
+                    .ToList();
             }
+
+            ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+            ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+
+            return View(viewModel);
         }
 
         /// <summary>
@@ -146,25 +184,103 @@ namespace Fatura.Controllers
         /// </summary>
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Factura factura)
+        public async Task<IActionResult> Create(FacturaCreateViewModel model)
         {
             try
             {
-                if (ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
-                    await _facturaService.CreateAsync(factura);
-                    return RedirectToAction(nameof(Index));
+                    ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                    ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    return View(model);
                 }
-                ViewBag.Productos = await _productoService.GetProductosActivosAsync();
-                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
-                return View(factura);
+
+                var cliente = await _clienteService.GetByIdAsync(model.ClienteId);
+                if (cliente == null)
+                {
+                    ModelState.AddModelError("", "Cliente no encontrado.");
+                    ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                    ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    return View(model);
+                }
+
+                var items = model.Items?.Where(i => i.IdProducto > 0).ToList() ?? new List<FacturaItemCreateViewModel>();
+                if (items.Count == 0)
+                {
+                    ModelState.AddModelError("", "Agrega al menos un producto válido.");
+                    ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                    ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    return View(model);
+                }
+
+                var detalles = new List<DetalleFactura>();
+                foreach (var item in items)
+                {
+                    var producto = await _productoService.GetByIdAsync(item.IdProducto);
+                    if (producto == null)
+                    {
+                        ModelState.AddModelError("", $"Producto no encontrado: {item.IdProducto}");
+                        ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                        ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                        return View(model);
+                    }
+
+                    detalles.Add(new DetalleFactura
+                    {
+                        IdProducto = producto.IdProducto,
+                        NombreProducto = producto.NombreProducto,
+                        Cantidad = item.Cantidad,
+                        PrecioUnitario = producto.Precio ?? 0,
+                        Descuento = item.Descuento
+                    });
+                }
+
+                var usuarioId = await _context.Usuarios
+                    .Where(u => u.Activo)
+                    .Select(u => u.IdUsuario)
+                    .FirstOrDefaultAsync();
+
+                if (usuarioId == 0)
+                {
+                    ModelState.AddModelError("", "No hay usuarios activos para asignar a la factura.");
+                    ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                    ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    return View(model);
+                }
+
+                var factura = new Factura
+                {
+                    ClienteId = cliente.Id,
+                    ClienteNitDui = cliente.NitDui,
+                    ClienteNombre = cliente.Nombre,
+                    ClienteDireccion = cliente.Direccion,
+                    TipoDocumento = model.TipoDocumento,
+                    SerieFactura = model.SerieFactura,
+                    FechaCreacion = model.FechaEmision ?? DateTime.UtcNow,
+                    FechaVencimiento = model.FechaVencimiento,
+                    MonedaSimbolo = model.MonedaSimbolo,
+                    Estado = EstadoFactura.Pendiente,
+                    UsuarioId = usuarioId,
+                    DetalleFacturas = detalles
+                };
+
+                var subTotal = detalles.Sum(d => d.Total);
+                var iva = subTotal * 0.18m;
+                factura.SubTotal = subTotal;
+                factura.Iva = iva;
+                factura.Isr = 0;
+                factura.OtrosImpuestos = 0;
+                factura.Total = subTotal + iva;
+
+                var creada = await _facturaService.CreateAsync(factura);
+                return RedirectToAction(nameof(Details), new { id = creada.IdFactura, download = true });
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error al crear la factura: {ex.Message}");
                 ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                 ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
-                return View(factura);
+                return View(model);
             }
         }
 

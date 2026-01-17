@@ -4,11 +4,14 @@ using Fatura.Repositories.Interfaces;
 using Fatura.Repositories.Implementations;
 using Fatura.Services.Interfaces;
 using Fatura.Services.Implementations;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Registrar DbContext con SQL Server
 // Registrar DbContext con SQL Server
@@ -40,6 +43,7 @@ builder.Services.AddScoped<IReporteService, ReporteService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IUnidadMedidaService, UnidadMedidaService>();
+builder.Services.AddScoped<IFacturaPdfService, FacturaPdfService>();
 
 var app = builder.Build();
 

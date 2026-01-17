@@ -69,29 +69,29 @@
                     @foreach (var factura in Model ?? new List<Factura>())
                     {
                         <tr>
-                            <td><strong>#@factura.Id</strong></td>
+                            <td><strong>#@factura.IdFactura</strong></td>
                             <td>@factura.ClienteNombre</td>
-                            <td>@factura.FechaEmision?.ToString("dd/MM/yyyy")</td>
-                            <td>@factura.Total?.ToString("C")</td>
+                            <td>@factura.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                            <td>@factura.Total.ToString("C")</td>
                             <td>
-                                <span class="badge badge-@factura.Estado?.ToLower()">
+                                <span class="badge badge-@factura.Estado.ToString().ToLowerInvariant()">
                                     @factura.Estado
                                 </span>
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="@Url.Action("Details", "Facturas", new { id = factura.Id })" class="btn-action" title="Ver">
+                                    <a href="@Url.Action("Details", "Facturas", new { id = factura.IdFactura })" class="btn-action" title="Ver">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
-                                    <a href="@Url.Action("Edit", "Facturas", new { id = factura.Id })" class="btn-action" title="Editar">
+                                    <a href="@Url.Action("Edit", "Facturas", new { id = factura.IdFactura })" class="btn-action" title="Editar">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </a>
-                                    <a href="@Url.Action("Download", "Facturas", new { id = factura.Id })" class="btn-action" title="Descargar">
+                                    <a href="@Url.Action("Pdf", "Facturas", new { id = factura.IdFactura })" class="btn-action" title="Descargar PDF">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>

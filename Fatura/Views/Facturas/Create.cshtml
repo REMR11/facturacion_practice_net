@@ -1,9 +1,9 @@
-@using Fatura.Models.Facturacion
+@using Fatura.Models.ViewModels
+@model FacturaCreateViewModel
 
 @{
     ViewData["Title"] = "Nueva Factura";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
-    var factura = Model as Factura;
 }
 
 <div class="factura-page">
@@ -29,7 +29,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 Previsualizar
             </button>
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('facturaForm').requestSubmit()">
+            <button type="submit" class="btn btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 Emitir Factura
             </button>
@@ -37,6 +37,8 @@
     </div>
 
     <form method="post" asp-action="Create" id="facturaForm">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
         <div class="factura-grid">
             <!-- Left Main Column -->
             <div class="factura-main">
@@ -93,18 +95,18 @@
                         <div id="productosBody">
                             <div id="item-1" class="product-row">
                                 <div class="col-producto">
-                                    <select class="form-control producto-select" name="DetalleFactura[0].ProductoId" required>
+                                    <select class="form-control producto-select" name="Items[0].IdProducto" required>
                                         <option value="">Seleccionar...</option>
                                     </select>
                                 </div>
                                 <div class="col-cantidad">
-                                    <input type="number" class="form-control text-center cantidad" name="DetalleFactura[0].Cantidad" value="1" min="1" step="1" required>
+                                    <input type="number" class="form-control text-center cantidad" name="Items[0].Cantidad" value="1" min="1" step="1" required>
                                 </div>
                                 <div class="col-precio">
-                                    <input type="number" class="form-control text-end precio-unit" name="DetalleFactura[0].PrecioUnitario" step="0.01" value="0" readonly>
+                                    <input type="number" class="form-control text-end precio-unit" name="Items[0].PrecioUnitario" step="0.01" value="0" readonly>
                                 </div>
                                 <div class="col-desc">
-                                    <input type="number" class="form-control text-center descuento" name="DetalleFactura[0].Descuento" step="0.01" value="0" min="0">
+                                    <input type="number" class="form-control text-center descuento" name="Items[0].Descuento" step="0.01" value="0" min="0">
                                 </div>
                                 <div class="col-subtotal">
                                     <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
@@ -132,7 +134,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Tipo de documento</label>
-                        <select id="tipoDocumento" name="TipoDocumento" class="form-select custom-select" required>
+                <select id="tipoDocumento" name="TipoDocumento" class="form-select custom-select" required>
                             <option value="01">Factura Electrónica</option>
                             <option value="03">Comprobante de Crédito Fiscal</option>
                             <option value="04">Nota de Remisión</option>
@@ -151,14 +153,14 @@
                     <div class="mb-3">
                         <label class="form-label">Fecha de emisión</label>
                         <div class="input-icon-wrapper">
-                            <input type="date" id="fechaEmision" name="FechaEmision" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                            <input type="date" id="fechaEmision" name="FechaEmision" class="form-control" value="@(Model?.FechaEmision?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"))" required>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Fecha de vencimiento</label>
                         <div class="input-icon-wrapper">
-                            <input type="date" id="fechaVencimiento" name="FechaVencimiento" class="form-control" value="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")" required>
+                            <input type="date" id="fechaVencimiento" name="FechaVencimiento" class="form-control" value="@(Model?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? DateTime.Today.AddDays(30).ToString("yyyy-MM-dd"))" required>
                         </div>
                     </div>
 
@@ -629,10 +631,15 @@
     let productos = [];
     let contador = 1;
 
-    document.addEventListener('DOMContentLoaded', function () {
-        cargarClientes();
-        cargarProductos();
+    const BORRADOR_KEY = 'factura_borrador';
+    const BORRADOR_TTL_MS = 60 * 60 * 1000;
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        limpiarBorradorExpirado();
+        await cargarClientes();
+        await cargarProductos();
         inicializarEventos();
+        cargarBorradorLocal();
     });
 
     async function cargarClientes() {
@@ -757,6 +764,14 @@
         document.getElementById('btnPreview').addEventListener('click', mostrarPreview);
 
         document.getElementById('facturaForm').addEventListener('submit', emitirFactura);
+
+        const btnGuardar = document.getElementById('btnGuardar');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', function () {
+                guardarBorradorLocal();
+                alert('Borrador guardado por 1 hora.');
+            });
+        }
     }
 
     function seleccionarCliente(id, nombre, nit, email, direccion) {
@@ -776,19 +791,19 @@
         fila.className = 'product-row';
         fila.innerHTML = `
             <div class="col-producto">
-                <select class="form-control producto-select" name="DetalleFactura[${contador - 1}].ProductoId" required>
+                <select class="form-control producto-select" name="Items[${contador - 1}].IdProducto" required>
                     <option value="">Seleccionar...</option>
                     ${construirOpcionesProductos()}
                 </select>
             </div>
             <div class="col-cantidad">
-                <input type="number" class="form-control text-center cantidad" name="DetalleFactura[${contador - 1}].Cantidad" value="1" min="1" step="1" required>
+                <input type="number" class="form-control text-center cantidad" name="Items[${contador - 1}].Cantidad" value="1" min="1" step="1" required>
             </div>
             <div class="col-precio">
-                <input type="number" class="form-control text-end precio-unit" name="DetalleFactura[${contador - 1}].PrecioUnitario" step="0.01" value="0.00" readonly>
+                <input type="number" class="form-control text-end precio-unit" name="Items[${contador - 1}].PrecioUnitario" step="0.01" value="0.00" readonly>
             </div>
             <div class="col-desc">
-                <input type="number" class="form-control text-center descuento" name="DetalleFactura[${contador - 1}].Descuento" step="0.01" value="0" min="0">
+                <input type="number" class="form-control text-center descuento" name="Items[${contador - 1}].Descuento" step="0.01" value="0" min="0">
             </div>
             <div class="col-subtotal">
                 <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
@@ -930,6 +945,145 @@
             return;
         }
 
-        form.requestSubmit();
+        guardarBorradorLocal();
+        form.submit();
+    }
+
+    function limpiarBorradorExpirado() {
+        try {
+            const raw = localStorage.getItem(BORRADOR_KEY);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (!data?.expiresAt || Date.now() > data.expiresAt) {
+                localStorage.removeItem(BORRADOR_KEY);
+            }
+        } catch (error) {
+            console.warn('No se pudo limpiar el borrador local:', error);
+        }
+    }
+
+    function cargarBorradorLocal() {
+        try {
+            const raw = localStorage.getItem(BORRADOR_KEY);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (!data?.expiresAt || Date.now() > data.expiresAt) {
+                localStorage.removeItem(BORRADOR_KEY);
+                return;
+            }
+
+            const payload = data.payload || {};
+
+            document.getElementById('clienteId').value = payload.clienteId || '';
+            document.getElementById('clienteSearch').value = payload.clienteNombre || '';
+            document.getElementById('nit').value = payload.nit || '';
+            document.getElementById('email').value = payload.email || '';
+            document.getElementById('direccion').value = payload.direccion || '';
+            document.getElementById('tipoDocumento').value = payload.tipoDocumento || '01';
+            document.getElementById('serie').value = payload.serie || 'F001';
+            document.getElementById('fechaEmision').value = payload.fechaEmision || '';
+            document.getElementById('fechaVencimiento').value = payload.fechaVencimiento || '';
+            document.getElementById('moneda').value = payload.moneda || 'S/';
+            document.getElementById('descripcion').value = payload.descripcion || '';
+
+            const detalle = Array.isArray(payload.detalle) ? payload.detalle : [];
+            const tbody = document.getElementById('productosBody');
+
+            if (detalle.length > 0) {
+                tbody.innerHTML = '';
+                detalle.forEach((item, index) => {
+                    const rowIndex = index + 1;
+                    const fila = document.createElement('div');
+                    fila.id = `item-${rowIndex}`;
+                    fila.className = 'product-row';
+                    fila.innerHTML = `
+                        <div class="col-producto">
+                            <select class="form-control producto-select" name="Items[${index}].IdProducto" required>
+                                <option value="">Seleccionar...</option>
+                                ${construirOpcionesProductos()}
+                            </select>
+                        </div>
+                        <div class="col-cantidad">
+                            <input type="number" class="form-control text-center cantidad" name="Items[${index}].Cantidad" value="${item.cantidad ?? 1}" min="1" step="1" required>
+                        </div>
+                        <div class="col-precio">
+                            <input type="number" class="form-control text-end precio-unit" name="Items[${index}].PrecioUnitario" step="0.01" value="${(parseFloat(item.precioUnitario) || 0).toFixed(2)}" readonly>
+                        </div>
+                        <div class="col-desc">
+                            <input type="number" class="form-control text-center descuento" name="Items[${index}].Descuento" step="0.01" value="${item.descuento ?? 0}" min="0">
+                        </div>
+                        <div class="col-subtotal">
+                            <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
+                        </div>
+                        <div class="col-action">
+                            <button type="button" class="btn-icon-danger" onclick="eliminarProducto(${rowIndex})">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                    `;
+                    tbody.appendChild(fila);
+
+                    const select = fila.querySelector('.producto-select');
+                    if (select) {
+                        select.value = item.productoId || '';
+                    }
+                });
+
+                contador = detalle.length;
+            } else {
+                contador = 1;
+            }
+
+            actualizarSelectsProductos();
+            calcularTotales();
+        } catch (error) {
+            console.warn('No se pudo cargar el borrador local:', error);
+        }
+    }
+
+    function guardarBorradorLocal() {
+        try {
+            const detalle = [];
+            document.querySelectorAll('.product-row').forEach((row) => {
+                const productoId = row.querySelector('.producto-select')?.value || '';
+                if (!productoId) return;
+
+                detalle.push({
+                    productoId,
+                    cantidad: parseFloat(row.querySelector('.cantidad')?.value) || 0,
+                    descuento: parseFloat(row.querySelector('.descuento')?.value) || 0,
+                    precioUnitario: parseFloat(row.querySelector('.precio-unit')?.value) || 0
+                });
+            });
+
+            const payload = {
+                clienteId: document.getElementById('clienteId').value || '',
+                clienteNombre: document.getElementById('clienteSearch').value || '',
+                nit: document.getElementById('nit').value || '',
+                email: document.getElementById('email').value || '',
+                direccion: document.getElementById('direccion').value || '',
+                tipoDocumento: document.getElementById('tipoDocumento').value || '',
+                serie: document.getElementById('serie').value || '',
+                fechaEmision: document.getElementById('fechaEmision').value || '',
+                fechaVencimiento: document.getElementById('fechaVencimiento').value || '',
+                moneda: document.getElementById('moneda').value || '',
+                descripcion: document.getElementById('descripcion').value || '',
+                subtotal: document.getElementById('subtotalValue').textContent || '',
+                igv: document.getElementById('ivaValue').textContent || '',
+                total: document.getElementById('totalValue').textContent || '',
+                detalle
+            };
+
+            const data = {
+                expiresAt: Date.now() + BORRADOR_TTL_MS,
+                payload
+            };
+
+            const serialized = JSON.stringify(data);
+            localStorage.setItem(BORRADOR_KEY, serialized);
+            sessionStorage.setItem(BORRADOR_KEY, serialized);
+        } catch (error) {
+            console.warn('No se pudo guardar el borrador local:', error);
+        }
     }
 </script>
