@@ -23,7 +23,7 @@ namespace Fatura.Services.Implementations
         {
             var ahora = DateTime.UtcNow;
             var inicioMes = new DateTime(ahora.Year, ahora.Month, 1);
-            var finMes = inicioMes.AddMonths(1).AddDays(-1);
+            var finMes = inicioMes.AddMonths(1).AddTicks(-1);
 
             var facturas = await _unitOfWork.Facturas.GetByFechaAsync(inicioMes, finMes);
             return facturas
@@ -35,10 +35,10 @@ namespace Fatura.Services.Implementations
         {
             var ahora = DateTime.UtcNow;
             var inicioMesActual = new DateTime(ahora.Year, ahora.Month, 1);
-            var finMesActual = inicioMesActual.AddMonths(1).AddDays(-1);
+            var finMesActual = inicioMesActual.AddMonths(1).AddTicks(-1);
 
             var inicioMesAnterior = inicioMesActual.AddMonths(-1);
-            var finMesAnterior = inicioMesActual.AddDays(-1);
+            var finMesAnterior = inicioMesActual.AddTicks(-1);
 
             var facturasMesActual = await _unitOfWork.Facturas.GetByFechaAsync(inicioMesActual, finMesActual);
             var facturasMesAnterior = await _unitOfWork.Facturas.GetByFechaAsync(inicioMesAnterior, finMesAnterior);
@@ -63,7 +63,7 @@ namespace Fatura.Services.Implementations
         {
             var ahora = DateTime.UtcNow;
             var inicioMes = new DateTime(ahora.Year, ahora.Month, 1);
-            var finMes = inicioMes.AddMonths(1).AddDays(-1);
+            var finMes = inicioMes.AddMonths(1).AddTicks(-1);
 
             var facturas = await _unitOfWork.Facturas.GetByFechaAsync(inicioMes, finMes);
             return facturas.Count();
@@ -73,10 +73,10 @@ namespace Fatura.Services.Implementations
         {
             var ahora = DateTime.UtcNow;
             var inicioMesActual = new DateTime(ahora.Year, ahora.Month, 1);
-            var finMesActual = inicioMesActual.AddMonths(1).AddDays(-1);
+            var finMesActual = inicioMesActual.AddMonths(1).AddTicks(-1);
 
             var inicioMesAnterior = inicioMesActual.AddMonths(-1);
-            var finMesAnterior = inicioMesActual.AddDays(-1);
+            var finMesAnterior = inicioMesActual.AddTicks(-1);
 
             var facturasMesActual = await _unitOfWork.Facturas.GetByFechaAsync(inicioMesActual, finMesActual);
             var facturasMesAnterior = await _unitOfWork.Facturas.GetByFechaAsync(inicioMesAnterior, finMesAnterior);
@@ -100,29 +100,72 @@ namespace Fatura.Services.Implementations
 
         public async Task<decimal> GetCambioClientesPorcentajeAsync()
         {
-            // Para simplificar, retornamos 0. En producción se podría calcular comparando con el mes anterior
-            // Esto requeriría un campo de fecha de registro o consultar el historial
-            return 0;
+            var ahora = DateTime.UtcNow;
+            var inicioMesActual = new DateTime(ahora.Year, ahora.Month, 1);
+            var finMesActual = inicioMesActual.AddMonths(1).AddTicks(-1);
+
+            var inicioMesAnterior = inicioMesActual.AddMonths(-1);
+            var finMesAnterior = inicioMesActual.AddTicks(-1);
+
+            var totalActivosActual = await _unitOfWork.Clientes.CountAsync(c =>
+                c.Activo && c.CreatedAt <= finMesActual);
+
+            var totalActivosAnterior = await _unitOfWork.Clientes.CountAsync(c =>
+                c.Activo && c.CreatedAt <= finMesAnterior);
+
+            if (totalActivosAnterior == 0)
+            {
+                return totalActivosActual > 0 ? 100 : 0;
+            }
+
+            return ((totalActivosActual - totalActivosAnterior) / (decimal)totalActivosAnterior) * 100;
         }
 
         public async Task<decimal> GetTasaDeCobroAsync()
         {
-            var todasFacturas = await _unitOfWork.Facturas.GetAllAsync();
-            var facturasPagadas = todasFacturas.Count(f => f.Estado == EstadoFactura.Pagada);
-            var totalFacturas = todasFacturas.Count(f => f.Estado != EstadoFactura.Borrador);
+            var ahora = DateTime.UtcNow;
+            var inicioMes = new DateTime(ahora.Year, ahora.Month, 1);
+            var finMes = inicioMes.AddMonths(1).AddTicks(-1);
+
+            var facturasMes = await _unitOfWork.Facturas.GetByFechaAsync(inicioMes, finMes);
+            var facturasPagadas = facturasMes.Count(f => f.Estado == EstadoFactura.Pagada);
+            var totalFacturas = facturasMes.Count(f => f.Estado != EstadoFactura.Borrador);
 
             if (totalFacturas == 0)
             {
                 return 0;
             }
 
-            return (facturasPagadas / (decimal)totalFacturas) * 100;
+            return facturasPagadas / (decimal)totalFacturas;
         }
 
         public async Task<decimal> GetCambioTasaCobroPorcentajeAsync()
         {
-            // Para simplificar, retornamos 0. En producción se calcularía comparando con el mes anterior
-            return 0;
+            var ahora = DateTime.UtcNow;
+            var inicioMesActual = new DateTime(ahora.Year, ahora.Month, 1);
+            var finMesActual = inicioMesActual.AddMonths(1).AddTicks(-1);
+
+            var inicioMesAnterior = inicioMesActual.AddMonths(-1);
+            var finMesAnterior = inicioMesActual.AddTicks(-1);
+
+            var facturasMesActual = await _unitOfWork.Facturas.GetByFechaAsync(inicioMesActual, finMesActual);
+            var facturasMesAnterior = await _unitOfWork.Facturas.GetByFechaAsync(inicioMesAnterior, finMesAnterior);
+
+            var pagadasActual = facturasMesActual.Count(f => f.Estado == EstadoFactura.Pagada);
+            var totalActual = facturasMesActual.Count(f => f.Estado != EstadoFactura.Borrador);
+
+            var pagadasAnterior = facturasMesAnterior.Count(f => f.Estado == EstadoFactura.Pagada);
+            var totalAnterior = facturasMesAnterior.Count(f => f.Estado != EstadoFactura.Borrador);
+
+            var tasaActual = totalActual == 0 ? 0 : pagadasActual / (decimal)totalActual;
+            var tasaAnterior = totalAnterior == 0 ? 0 : pagadasAnterior / (decimal)totalAnterior;
+
+            if (tasaAnterior == 0)
+            {
+                return tasaActual > 0 ? 100 : 0;
+            }
+
+            return ((tasaActual - tasaAnterior) / tasaAnterior) * 100;
         }
 
         public async Task<Dictionary<string, decimal>> GetIngresosMensualesAsync(int meses = 7)
@@ -134,7 +177,7 @@ namespace Fatura.Services.Implementations
             {
                 var fecha = ahora.AddMonths(-i);
                 var inicioMes = new DateTime(fecha.Year, fecha.Month, 1);
-                var finMes = inicioMes.AddMonths(1).AddDays(-1);
+                var finMes = inicioMes.AddMonths(1).AddTicks(-1);
 
                 var facturas = await _unitOfWork.Facturas.GetByFechaAsync(inicioMes, finMes);
                 var ingresos = facturas

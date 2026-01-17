@@ -240,12 +240,12 @@
                         @foreach (var factura in ViewBag.FacturasRecientes)
                         {
                             <tr>
-                                <td><strong>#@factura.Id</strong></td>
+                                <td><strong>#@factura.IdFactura</strong></td>
                                 <td>@factura.ClienteNombre</td>
-                                <td>@factura.FechaEmision?.ToString("dd/MM/yyyy")</td>
-                                <td>@factura.Total?.ToString("C")</td>
+                                <td>@factura.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                                <td>@factura.Total.ToString("C")</td>
                                 <td>
-                                    <span class="badge badge-@factura.Estado?.ToLower()">
+                                    <span class="badge badge-@factura.Estado.ToString().ToLowerInvariant()">
                                         @factura.Estado
                                     </span>
                                 </td>
