@@ -33,7 +33,7 @@ namespace Fatura.Controllers
         /// <summary>
         /// Lista todos los productos con opciones de búsqueda y filtros.
         /// </summary>
-        public async Task<IActionResult> Index(string? searchTerm = null, TipoProducto? tipo = null)
+        public async Task<IActionResult> Index(string? searchTerm = null, TipoProducto? tipo = null, bool showModal = false, int? editId = null)
         {
             IEnumerable<Producto> productos;
 
@@ -57,6 +57,12 @@ namespace Fatura.Controllers
             ViewBag.Categorias = await _categoriaService.GetAllAsync();
             ViewBag.Marcas = await _marcaService.GetAllAsync();
             ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
+            ViewBag.ShowModal = showModal;
+            if (editId.HasValue)
+            {
+                ViewBag.ShowEditModal = true;
+                ViewBag.EditProductoId = editId.Value;
+            }
 
             var viewModel = new ProductoIndexViewModel
             {
@@ -117,7 +123,7 @@ namespace Fatura.Controllers
             ViewBag.Categorias = await _categoriaService.GetAllAsync();
             ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { showModal = true });
         }
 
         /// <summary>
@@ -191,7 +197,7 @@ namespace Fatura.Controllers
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
                 ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
-                return View(producto);
+                return RedirectToAction(nameof(Index), new { editId = id });
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
@@ -213,10 +219,24 @@ namespace Fatura.Controllers
                     await _productoService.UpdateAsync(id, producto);
                     return RedirectToAction(nameof(Index));
                 }
+                producto.IdProducto = id;
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
                 ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
-                return View(producto);
+                ViewBag.ShowEditModal = true;
+                ViewBag.EditProductoId = id;
+                var productos = await _productoService.GetAllAsync();
+                var productosActualizados = productos
+                    .Select(p => p.IdProducto == id ? producto : p)
+                    .ToList();
+                return View("Index", new ProductoIndexViewModel
+                {
+                    Productos = productosActualizados,
+                    NuevoProducto = new Producto
+                    {
+                        Tipo = TipoProducto.Servicio
+                    }
+                });
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
@@ -225,18 +245,46 @@ namespace Fatura.Controllers
             catch (Fatura.Exceptions.BusinessRuleException ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                producto.IdProducto = id;
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
                 ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
-                return View(producto);
+                ViewBag.ShowEditModal = true;
+                ViewBag.EditProductoId = id;
+                var productos = await _productoService.GetAllAsync();
+                var productosActualizados = productos
+                    .Select(p => p.IdProducto == id ? producto : p)
+                    .ToList();
+                return View("Index", new ProductoIndexViewModel
+                {
+                    Productos = productosActualizados,
+                    NuevoProducto = new Producto
+                    {
+                        Tipo = TipoProducto.Servicio
+                    }
+                });
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error al actualizar el producto: {ex.Message}");
+                producto.IdProducto = id;
                 ViewBag.Marcas = await _marcaService.GetAllAsync();
                 ViewBag.Categorias = await _categoriaService.GetAllAsync();
                 ViewBag.UnidadesMedida = await _unidadMedidaService.GetAllAsync();
-                return View(producto);
+                ViewBag.ShowEditModal = true;
+                ViewBag.EditProductoId = id;
+                var productos = await _productoService.GetAllAsync();
+                var productosActualizados = productos
+                    .Select(p => p.IdProducto == id ? producto : p)
+                    .ToList();
+                return View("Index", new ProductoIndexViewModel
+                {
+                    Productos = productosActualizados,
+                    NuevoProducto = new Producto
+                    {
+                        Tipo = TipoProducto.Servicio
+                    }
+                });
             }
         }
 

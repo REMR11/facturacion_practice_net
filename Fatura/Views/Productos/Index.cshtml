@@ -13,6 +13,139 @@
     var tipoSeleccionado = ViewBag.Tipo as TipoProducto?;
 }
 
+<style>
+    .producto-preview-card {
+        position: fixed;
+        z-index: 1055;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        padding: 20px;
+        min-width: 320px;
+        max-width: 400px;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
+        border: 1px solid #e5e7eb;
+    }
+
+    .producto-preview-card.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .producto-preview-card .preview-header {
+        display: flex;
+        align-items: start;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .producto-preview-card .preview-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .producto-preview-card .preview-icon.icon-producto {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .producto-preview-card .preview-icon.icon-servicio {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .producto-preview-card .preview-title {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .producto-preview-card .preview-nombre {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 4px;
+        word-wrap: break-word;
+    }
+
+    .producto-preview-card .preview-codigo {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
+        background: #f3f4f6;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .producto-preview-card .preview-info {
+        display: grid;
+        gap: 12px;
+    }
+
+    .producto-preview-card .preview-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .producto-preview-card .preview-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+        min-width: 80px;
+    }
+
+    .producto-preview-card .preview-value {
+        font-size: 14px;
+        color: #111827;
+        font-weight: 500;
+    }
+
+    .producto-preview-card .preview-descripcion {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f3f4f6;
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .producto-preview-card .preview-tipo-chip {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .producto-preview-card .preview-tipo-chip.tipo-producto {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+
+    .producto-preview-card .preview-tipo-chip.tipo-servicio {
+        background: #fce7f3;
+        color: #ec4899;
+    }
+
+    .producto-preview-card .preview-precio {
+        font-size: 18px;
+        font-weight: 700;
+        color: #059669;
+    }
+</style>
+
 <div class="productos-page">
     <div class="productos-header">
         <div>
@@ -62,28 +195,39 @@
         {
             foreach (var item in Model.Productos)
             {
-                <div class="productos-row">
+                <div class="productos-row"
+                     data-producto-nombre="@item.NombreProducto"
+                     data-producto-codigo="@item.Codigo"
+                     data-producto-tipo="@item.Tipo"
+                     data-producto-unidad="@(item.UnidadMedida?.Nombre ?? "—")"
+                     data-producto-precio="@($"{item.Precio ?? 0:C}")"
+                     data-producto-descripcion="@(item.Descripcion ?? "Sin descripción")">
                     <div class="producto-info">
                         <div class="producto-icon @(item.Tipo == TipoProducto.Servicio ? "icon-servicio" : "icon-producto")">
                             <i class="@(item.Tipo == TipoProducto.Servicio ? "fas fa-wrench" : "fas fa-cube")"></i>
                         </div>
                         <div>
-                            <div class="producto-nombre">@item.NombreProducto</div>
+                            <div class="producto-nombre producto-detail-trigger">@item.NombreProducto</div>
                             <div class="producto-descripcion">@(item.Descripcion ?? "Sin descripción")</div>
                         </div>
                     </div>
                     <div>
-                        <span class="codigo-chip">@item.Codigo</span>
+                        <span class="codigo-chip producto-detail-trigger">@item.Codigo</span>
                     </div>
                     <div>
-                        <span class="tipo-chip @(item.Tipo == TipoProducto.Servicio ? "tipo-servicio" : "tipo-producto")">
+                        <span class="tipo-chip producto-detail-trigger @(item.Tipo == TipoProducto.Servicio ? "tipo-servicio" : "tipo-producto")">
                             @item.Tipo
                         </span>
                     </div>
-                    <div>@(item.UnidadMedida?.Nombre ?? "—")</div>
-                    <div class="precio-text">@($"{item.Precio ?? 0:C}")</div>
+                    <div class="producto-detail-trigger">@(item.UnidadMedida?.Nombre ?? "—")</div>
+                    <div class="precio-text producto-detail-trigger">@($"{item.Precio ?? 0:C}")</div>
                     <div class="row-actions">
-                        <a asp-action="Edit" asp-route-id="@item.IdProducto" class="btn btn-light btn-sm">Editar</a>
+                        <button type="button"
+                                class="btn btn-light btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#productoEditModal-@item.IdProducto">
+                            Editar
+                        </button>
                     </div>
                 </div>
             }
@@ -94,6 +238,112 @@
         }
     </div>
 </div>
+
+<!-- Card flotante de preview -->
+<div id="productoPreviewCard" class="producto-preview-card">
+    <div class="preview-header">
+        <div class="preview-icon" id="previewIcon">
+            <i id="previewIconClass"></i>
+        </div>
+        <div class="preview-title">
+            <div class="preview-nombre" id="previewNombre"></div>
+            <span class="preview-codigo" id="previewCodigo"></span>
+        </div>
+    </div>
+    <div class="preview-info">
+        <div class="preview-row">
+            <span class="preview-label">Tipo:</span>
+            <span class="preview-tipo-chip" id="previewTipoChip"></span>
+        </div>
+        <div class="preview-row">
+            <span class="preview-label">Unidad:</span>
+            <span class="preview-value" id="previewUnidad"></span>
+        </div>
+        <div class="preview-row">
+            <span class="preview-label">Precio:</span>
+            <span class="preview-precio" id="previewPrecio"></span>
+        </div>
+    </div>
+    <div class="preview-descripcion" id="previewDescripcion"></div>
+</div>
+
+@foreach (var item in Model.Productos)
+{
+    <div class="modal fade" id="productoEditModal-@item.IdProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Modificar Producto / Servicio</h5>
+                        <p class="text-muted mb-0">Actualiza la información del producto seleccionado.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form asp-action="Edit" asp-controller="Productos" asp-route-id="@item.IdProducto" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <input type="hidden" name="IdProducto" value="@item.IdProducto" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo</label>
+                                <select class="form-select" name="Tipo">
+                                    @foreach (var tipo in Enum.GetValues(typeof(TipoProducto)).Cast<TipoProducto>())
+                                    {
+                                        if (item.Tipo == tipo)
+                                        {
+                                            <option value="@tipo" selected="selected">@tipo</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@tipo">@tipo</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Código</label>
+                                <input class="form-control" name="Codigo" value="@item.Codigo" placeholder="PROD-001" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Nombre</label>
+                                <input class="form-control" name="NombreProducto" value="@item.NombreProducto" placeholder="Nombre del producto o servicio" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Descripción</label>
+                                <textarea class="form-control" name="Descripcion" rows="3" placeholder="Descripción detallada...">@item.Descripcion</textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Unidad de medida</label>
+                                <select class="form-select" name="IdUnidadMedida">
+                                    <option value="">Selecciona una unidad</option>
+                                    @foreach (var unidad in unidades)
+                                    {
+                                        if (item.IdUnidadMedida == unidad.IdUnidadMedida)
+                                        {
+                                            <option value="@unidad.IdUnidadMedida" selected="selected">@unidad.Nombre</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@unidad.IdUnidadMedida">@unidad.Nombre</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Precio (sin IGV)</label>
+                                <input class="form-control" name="Precio" type="number" step="0.01" min="0" value="@(item.Precio?.ToString("0.##") ?? "")" placeholder="0.00" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
 
 <div class="modal fade" id="productoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -162,4 +412,140 @@
             modal.show();
         </script>
     }
+    @if (ViewBag.ShowEditModal == true && ViewBag.EditProductoId != null)
+    {
+        <script>
+            const editModal = new bootstrap.Modal(document.getElementById('productoEditModal-@ViewBag.EditProductoId'));
+            editModal.show();
+        </script>
+    }
+    <script>
+        (function() {
+            const previewCard = document.getElementById('productoPreviewCard');
+            if (!previewCard) return;
+
+            let hoverTimeout = null;
+            let hideTimeout = null;
+            let currentRow = null;
+
+            const showPreview = (row, event) => {
+                // Cancelar cualquier timeout de ocultar pendiente
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = null;
+                }
+
+                currentRow = row;
+
+                // Actualizar contenido
+                const tipo = row.dataset.productoTipo;
+                const esServicio = tipo === 'Servicio';
+
+                document.getElementById('previewNombre').textContent = row.dataset.productoNombre || 'Producto';
+                document.getElementById('previewCodigo').textContent = row.dataset.productoCodigo || '—';
+                document.getElementById('previewUnidad').textContent = row.dataset.productoUnidad || '—';
+                document.getElementById('previewPrecio').textContent = row.dataset.productoPrecio || '—';
+                document.getElementById('previewDescripcion').textContent = row.dataset.productoDescripcion || 'Sin descripción';
+
+                // Configurar tipo
+                const tipoChip = document.getElementById('previewTipoChip');
+                tipoChip.textContent = tipo || '—';
+                tipoChip.className = 'preview-tipo-chip ' + (esServicio ? 'tipo-servicio' : 'tipo-producto');
+
+                // Configurar icono
+                const previewIcon = document.getElementById('previewIcon');
+                const iconClass = document.getElementById('previewIconClass');
+                previewIcon.className = 'preview-icon ' + (esServicio ? 'icon-servicio' : 'icon-producto');
+                iconClass.className = esServicio ? 'fas fa-wrench' : 'fas fa-cube';
+
+                // Posicionar card
+                const rect = event.target.getBoundingClientRect();
+                const cardWidth = 400;
+                const cardHeight = previewCard.offsetHeight || 300;
+                const margin = 10;
+
+                let left = rect.right + margin;
+                let top = rect.top;
+
+                // Ajustar si se sale por la derecha
+                if (left + cardWidth > window.innerWidth) {
+                    left = rect.left - cardWidth - margin;
+                }
+
+                // Ajustar si se sale por abajo
+                if (top + cardHeight > window.innerHeight) {
+                    top = window.innerHeight - cardHeight - margin;
+                }
+
+                // Ajustar si se sale por arriba
+                if (top < margin) {
+                    top = margin;
+                }
+
+                previewCard.style.left = left + 'px';
+                previewCard.style.top = top + 'px';
+
+                // Mostrar con animación
+                previewCard.classList.add('show');
+            };
+
+            const hidePreview = () => {
+                previewCard.classList.remove('show');
+                currentRow = null;
+            };
+
+            // Agregar listeners a todos los triggers
+            document.querySelectorAll('.producto-detail-trigger').forEach(trigger => {
+                trigger.addEventListener('mouseenter', (e) => {
+                    const row = trigger.closest('.productos-row');
+                    if (!row) return;
+
+                    // Cancelar timeout anterior si existe
+                    if (hoverTimeout) {
+                        clearTimeout(hoverTimeout);
+                    }
+
+                    // Agregar delay de 500ms antes de mostrar
+                    hoverTimeout = setTimeout(() => {
+                        showPreview(row, e);
+                    }, 500);
+                });
+
+                trigger.addEventListener('mouseleave', () => {
+                    // Cancelar el timeout de mostrar si aún no se ha mostrado
+                    if (hoverTimeout) {
+                        clearTimeout(hoverTimeout);
+                        hoverTimeout = null;
+                    }
+
+                    // Agregar delay de 300ms antes de ocultar
+                    hideTimeout = setTimeout(() => {
+                        hidePreview();
+                    }, 300);
+                });
+
+                // Si el mouse se mueve sobre el trigger, cancelar el hide
+                trigger.addEventListener('mouseenter', () => {
+                    if (hideTimeout) {
+                        clearTimeout(hideTimeout);
+                        hideTimeout = null;
+                    }
+                });
+            });
+
+            // Prevenir que el preview se cierre si el mouse pasa sobre él
+            previewCard.addEventListener('mouseenter', () => {
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = null;
+                }
+            });
+
+            previewCard.addEventListener('mouseleave', () => {
+                hideTimeout = setTimeout(() => {
+                    hidePreview();
+                }, 200);
+            });
+        })();
+    </script>
 }

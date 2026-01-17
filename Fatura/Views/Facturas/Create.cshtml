@@ -29,7 +29,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 Previsualizar
             </button>
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('facturaForm').submit()">
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('facturaForm').requestSubmit()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 Emitir Factura
             </button>
@@ -48,7 +48,7 @@
                         <label class="form-label">Cliente</label>
                         <div class="search-wrapper">
                             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <input type="text" id="clienteSearch" class="form-control search-input" placeholder="Buscar cliente por nombre o RUC..." autocomplete="off">
+                            <input type="text" id="clienteSearch" class="form-control search-input" placeholder="Buscar cliente por nombre o RUC..." autocomplete="off" required>
                             <div id="clienteList" class="autocomplete-list"></div>
                         </div>
                         <input type="hidden" id="clienteId" name="ClienteId" />
@@ -93,21 +93,21 @@
                         <div id="productosBody">
                             <div id="item-1" class="product-row">
                                 <div class="col-producto">
-                                    <select class="form-control producto-select" name="DetalleFactura[0].ProductoId">
+                                    <select class="form-control producto-select" name="DetalleFactura[0].ProductoId" required>
                                         <option value="">Seleccionar...</option>
                                     </select>
                                 </div>
                                 <div class="col-cantidad">
-                                    <input type="number" class="form-control text-center cantidad" name="DetalleFactura[0].Cantidad" value="1" min="1">
+                                    <input type="number" class="form-control text-center cantidad" name="DetalleFactura[0].Cantidad" value="1" min="1" step="1" required>
                                 </div>
                                 <div class="col-precio">
                                     <input type="number" class="form-control text-end precio-unit" name="DetalleFactura[0].PrecioUnitario" step="0.01" value="0" readonly>
                                 </div>
                                 <div class="col-desc">
-                                    <input type="number" class="form-control text-center descuento" name="DetalleFactura[0].Descuento" step="0.01" value="0">
+                                    <input type="number" class="form-control text-center descuento" name="DetalleFactura[0].Descuento" step="0.01" value="0" min="0">
                                 </div>
                                 <div class="col-subtotal">
-                                    <input type="text" class="form-control text-end subtotal bg-light" value="$0.00" readonly>
+                                    <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
                                 </div>
                                 <div class="col-action">
                                     <button type="button" class="btn-icon-danger" onclick="eliminarProducto(1)">
@@ -132,7 +132,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Tipo de documento</label>
-                        <select id="tipoDocumento" name="TipoDocumento" class="form-select custom-select">
+                        <select id="tipoDocumento" name="TipoDocumento" class="form-select custom-select" required>
                             <option value="01">Factura Electrónica</option>
                             <option value="03">Comprobante de Crédito Fiscal</option>
                             <option value="04">Nota de Remisión</option>
@@ -141,7 +141,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Serie</label>
-                        <select id="serie" name="SerieFactura" class="form-select custom-select">
+                        <select id="serie" name="SerieFactura" class="form-select custom-select" required>
                             <option value="F001">F001</option>
                             <option value="F002">F002</option>
                             <option value="F003">F003</option>
@@ -151,20 +151,20 @@
                     <div class="mb-3">
                         <label class="form-label">Fecha de emisión</label>
                         <div class="input-icon-wrapper">
-                            <input type="date" id="fechaEmision" name="FechaEmision" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")">
+                            <input type="date" id="fechaEmision" name="FechaEmision" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Fecha de vencimiento</label>
                         <div class="input-icon-wrapper">
-                            <input type="date" id="fechaVencimiento" name="FechaVencimiento" class="form-control" value="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")">
+                            <input type="date" id="fechaVencimiento" name="FechaVencimiento" class="form-control" value="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")" required>
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label">Moneda</label>
-                        <select id="moneda" name="MonedaSimbolo" class="form-select custom-select">
+                        <select id="moneda" name="MonedaSimbolo" class="form-select custom-select" required>
                             <option value="S/">Soles (PEN)</option>
                             <option value="USD">Dólares (USD)</option>
                         </select>
@@ -198,6 +198,79 @@
             </div>
         </div>
     </form>
+
+    <!-- Modal de previsualización -->
+    <div class="modal fade" id="facturaPreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Previsualización de Factura</h5>
+                        <p class="text-muted mb-0">Revisa la información antes de emitir.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="mb-2">Cliente</h6>
+                            <div class="text-muted small" id="previewClienteNombre">—</div>
+                            <div class="text-muted small" id="previewClienteDocumento">—</div>
+                            <div class="text-muted small" id="previewClienteEmail">—</div>
+                            <div class="text-muted small" id="previewClienteDireccion">—</div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-2">Documento</h6>
+                            <div class="text-muted small" id="previewTipoDocumento">—</div>
+                            <div class="text-muted small" id="previewSerie">—</div>
+                            <div class="text-muted small" id="previewFechaEmision">—</div>
+                            <div class="text-muted small" id="previewFechaVencimiento">—</div>
+                            <div class="text-muted small" id="previewMoneda">—</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6 class="mb-2">Detalle</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle preview-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto/Servicio</th>
+                                        <th class="text-center">Cant.</th>
+                                        <th class="text-end">Precio Unit.</th>
+                                        <th class="text-end">Desc.</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="previewItems">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Sin ítems</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="mb-2">Descripción adicional</h6>
+                        <div class="text-muted small" id="previewDescripcion">—</div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <div class="text-end">
+                            <div class="text-muted">Subtotal: <span id="previewSubtotal">—</span></div>
+                            <div class="text-muted">IGV (18%): <span id="previewIgv">—</span></div>
+                            <div class="fw-bold">Total: <span id="previewTotal">—</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('facturaForm').requestSubmit()">Emitir Factura</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -504,6 +577,13 @@
         font-size: 1rem;
     }
 
+    .preview-table th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--text-light);
+        letter-spacing: 0.02em;
+    }
+
     /* Responsive */
     @@media (max-width: 1024px) {
         .factura-grid {
@@ -567,19 +647,50 @@
     async function cargarProductos() {
         try {
             const response = await fetch('/api/productos');
-            productos = await response.json();
+            const data = await response.json();
+            productos = (Array.isArray(data) ? data : [])
+                .map(normalizarProducto)
+                .filter(p => p.id !== null && p.nombre);
             actualizarSelectsProductos();
+            calcularTotales();
         } catch (error) {
             console.error('Error cargando productos:', error);
         }
     }
 
+    function normalizarProducto(producto) {
+        const id = producto?.id_producto ?? producto?.idProducto ?? producto?.IdProducto ?? producto?.id ?? null;
+        const nombre = producto?.nombre_producto ?? producto?.nombreProducto ?? producto?.NombreProducto ?? producto?.nombre ?? producto?.Nombre ?? '';
+        const precio = producto?.precio ?? producto?.Precio ?? producto?.precioUnitario ?? producto?.PrecioUnitario ?? 0;
+        return {
+            id,
+            nombre,
+            precio: parseFloat(precio) || 0
+        };
+    }
+
+    function obtenerSimboloMoneda() {
+        return document.getElementById('moneda').value === 'USD' ? '$' : 'S/';
+    }
+
+    function formatearMoneda(valor) {
+        return `${obtenerSimboloMoneda()}${valor.toFixed(2)}`;
+    }
+
+    function obtenerProductoPorId(id) {
+        return productos.find(p => String(p.id) === String(id));
+    }
+
+    function construirOpcionesProductos() {
+        return productos
+            .map(p => `<option value="${p.id}">${p.nombre} - ${formatearMoneda(p.precio)}</option>`)
+            .join('');
+    }
+
     function actualizarSelectsProductos() {
         document.querySelectorAll('.producto-select').forEach(select => {
             const currentValue = select.value;
-            const html = productos.map(p => 
-                `<option value="${p.id_producto}">${p.nombre_producto} - $${parseFloat(p.precio).toFixed(2)}</option>`
-            ).join('');
+            const html = construirOpcionesProductos();
             select.innerHTML = '<option value="">Seleccionar...</option>' + html;
             select.value = currentValue;
         });
@@ -625,13 +736,25 @@
         document.getElementById('btnAgregarProducto').addEventListener('click', agregarProducto);
 
         // Calcular totales
-        document.addEventListener('change', function (e) {
+        document.addEventListener('input', function (e) {
             if (e.target.classList.contains('cantidad') || 
-                e.target.classList.contains('descuento') ||
-                e.target.classList.contains('producto-select')) {
+                e.target.classList.contains('descuento')) {
                 calcularTotales();
             }
         });
+
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('producto-select')) {
+                calcularTotales();
+            }
+        });
+
+        document.getElementById('moneda').addEventListener('change', function () {
+            actualizarSelectsProductos();
+            calcularTotales();
+        });
+
+        document.getElementById('btnPreview').addEventListener('click', mostrarPreview);
 
         document.getElementById('facturaForm').addEventListener('submit', emitirFactura);
     }
@@ -653,22 +776,22 @@
         fila.className = 'product-row';
         fila.innerHTML = `
             <div class="col-producto">
-                <select class="form-control producto-select" name="DetalleFactura[${contador - 1}].ProductoId">
+                <select class="form-control producto-select" name="DetalleFactura[${contador - 1}].ProductoId" required>
                     <option value="">Seleccionar...</option>
-                    ${productos.map(p => `<option value="${p.id_producto}">${p.nombre_producto} - $${parseFloat(p.precio).toFixed(2)}</option>`).join('')}
+                    ${construirOpcionesProductos()}
                 </select>
             </div>
             <div class="col-cantidad">
-                <input type="number" class="form-control text-center cantidad" name="DetalleFactura[${contador - 1}].Cantidad" value="1" min="1">
+                <input type="number" class="form-control text-center cantidad" name="DetalleFactura[${contador - 1}].Cantidad" value="1" min="1" step="1" required>
             </div>
             <div class="col-precio">
                 <input type="number" class="form-control text-end precio-unit" name="DetalleFactura[${contador - 1}].PrecioUnitario" step="0.01" value="0.00" readonly>
             </div>
             <div class="col-desc">
-                <input type="number" class="form-control text-center descuento" name="DetalleFactura[${contador - 1}].Descuento" step="0.01" value="0">
+                <input type="number" class="form-control text-center descuento" name="DetalleFactura[${contador - 1}].Descuento" step="0.01" value="0" min="0">
             </div>
             <div class="col-subtotal">
-                <input type="text" class="form-control text-end subtotal bg-light" value="$0.00" readonly>
+                <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
             </div>
             <div class="col-action">
                 <button type="button" class="btn-icon-danger" onclick="eliminarProducto(${contador})">
@@ -690,6 +813,7 @@
 
     function calcularTotales() {
         let subtotal = 0;
+        const moneda = obtenerSimboloMoneda();
 
         document.querySelectorAll('.product-row').forEach((row) => {
             const selectProducto = row.querySelector('.producto-select');
@@ -699,21 +823,26 @@
             const subtotalInput = row.querySelector('.subtotal');
 
             if (selectProducto.value) {
-                const producto = productos.find(p => p.id_producto == selectProducto.value);
+                const producto = obtenerProductoPorId(selectProducto.value);
                 if (producto) {
                     const precio = parseFloat(producto.precio) || 0;
                     precioUnitInput.value = precio.toFixed(2);
 
-                    const lineaSubtotal = (precio * cantidad) - descuento;
-                    subtotalInput.value = `$${lineaSubtotal.toFixed(2)}`;
+                    const lineaSubtotal = Math.max(0, (precio * cantidad) - descuento);
+                    subtotalInput.value = `${moneda}${lineaSubtotal.toFixed(2)}`;
                     subtotal += lineaSubtotal;
+                } else {
+                    precioUnitInput.value = '0.00';
+                    subtotalInput.value = `${moneda}0.00`;
                 }
+            } else {
+                precioUnitInput.value = '0.00';
+                subtotalInput.value = `${moneda}0.00`;
             }
         });
 
         const iva = subtotal * 0.18;
         const total = subtotal + iva;
-        const moneda = document.getElementById('moneda').value === 'USD' ? '$' : 'S/';
 
         document.getElementById('subtotalValue').textContent = `${moneda}${subtotal.toFixed(2)}`;
         document.getElementById('ivaValue').textContent = `${moneda}${iva.toFixed(2)}`;
@@ -721,9 +850,69 @@
         document.getElementById('finalTotal').textContent = `${moneda}${total.toFixed(2)}`;
     }
 
+    function mostrarPreview() {
+        calcularTotales();
+        const modalElement = document.getElementById('facturaPreviewModal');
+        if (!modalElement) return;
+
+        document.getElementById('previewClienteNombre').textContent = document.getElementById('clienteSearch').value || '—';
+        document.getElementById('previewClienteDocumento').textContent = document.getElementById('nit').value || '—';
+        document.getElementById('previewClienteEmail').textContent = document.getElementById('email').value || '—';
+        document.getElementById('previewClienteDireccion').textContent = document.getElementById('direccion').value || '—';
+        document.getElementById('previewTipoDocumento').textContent = document.getElementById('tipoDocumento').selectedOptions[0]?.text || '—';
+        document.getElementById('previewSerie').textContent = `Serie: ${document.getElementById('serie').value || '—'}`;
+        document.getElementById('previewFechaEmision').textContent = `Emisión: ${document.getElementById('fechaEmision').value || '—'}`;
+        document.getElementById('previewFechaVencimiento').textContent = `Venc.: ${document.getElementById('fechaVencimiento').value || '—'}`;
+        document.getElementById('previewMoneda').textContent = `Moneda: ${document.getElementById('moneda').selectedOptions[0]?.text || '—'}`;
+        document.getElementById('previewDescripcion').textContent = document.getElementById('descripcion').value || '—';
+
+        const previewBody = document.getElementById('previewItems');
+        const filas = [];
+        document.querySelectorAll('.product-row').forEach((row) => {
+            const selectProducto = row.querySelector('.producto-select');
+            if (!selectProducto.value) {
+                return;
+            }
+            const producto = obtenerProductoPorId(selectProducto.value);
+            const nombre = producto?.nombre || selectProducto.selectedOptions[0]?.text || 'Producto';
+            const cantidad = parseFloat(row.querySelector('.cantidad').value) || 0;
+            const descuento = parseFloat(row.querySelector('.descuento').value) || 0;
+            const precio = parseFloat(row.querySelector('.precio-unit').value) || 0;
+            const subtotalLinea = Math.max(0, (precio * cantidad) - descuento);
+
+            filas.push(`
+                <tr>
+                    <td>${nombre}</td>
+                    <td class="text-center">${cantidad}</td>
+                    <td class="text-end">${formatearMoneda(precio)}</td>
+                    <td class="text-end">${formatearMoneda(descuento)}</td>
+                    <td class="text-end">${formatearMoneda(subtotalLinea)}</td>
+                </tr>
+            `);
+        });
+
+        if (filas.length === 0) {
+            previewBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Sin ítems</td></tr>';
+        } else {
+            previewBody.innerHTML = filas.join('');
+        }
+
+        document.getElementById('previewSubtotal').textContent = document.getElementById('subtotalValue').textContent || '—';
+        document.getElementById('previewIgv').textContent = document.getElementById('ivaValue').textContent || '—';
+        document.getElementById('previewTotal').textContent = document.getElementById('totalValue').textContent || '—';
+
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+
     function emitirFactura(e) {
         e.preventDefault();
-        
+
+        const form = document.getElementById('facturaForm');
+        if (!form.reportValidity()) {
+            return;
+        }
+
         const clienteId = document.getElementById('clienteId').value;
         if (!clienteId) {
             alert('Selecciona un cliente');
@@ -741,6 +930,6 @@
             return;
         }
 
-        document.getElementById('facturaForm').submit();
+        form.requestSubmit();
     }
 </script>
