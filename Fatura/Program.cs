@@ -1,9 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+using Fatura;
 using Fatura.Models;
-using Fatura.Repositories.Interfaces;
 using Fatura.Repositories.Implementations;
-using Fatura.Services.Interfaces;
+using Fatura.Repositories.Interfaces;
+using Fatura.Services;
 using Fatura.Services.Implementations;
+using Fatura.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +46,10 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IUnidadMedidaService, UnidadMedidaService>();
 builder.Services.AddScoped<IFacturaPdfService, FacturaPdfService>();
+builder.Services.AddScoped<IFacturaTicketService, FacturaTicketService>();
+builder.Services.AddScoped<IFacturaTicketService, FacturaTicketService>();
+
+
 
 var app = builder.Build();
 

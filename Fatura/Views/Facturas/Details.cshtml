@@ -22,6 +22,9 @@
             </div>
         </div>
         <div class="header-actions">
+            <a class="btn btn-secondary" style="margin-right: 8px;" href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })" target="_blank">
+                Ticket Térmico
+            </a>
             <a class="btn btn-primary" href="@Url.Action("Pdf", "Facturas", new { id = Model.IdFactura })">
                 Descargar PDF
             </a>
@@ -106,6 +109,16 @@
                 <div class="d-flex justify-content-between mb-3 text-muted">
                     <span>Total</span>
                     <span class="fw-bold text-dark">@($"{moneda}{Model.Total:F2}")</span>
+
+
+
+
+                    <a class="btn btn-outline-dark"
+                       href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })"
+                       target="_blank">
+                        <i class="fas fa-receipt"></i> Imprimir Ticket
+                    </a>
+
                 </div>
             </div>
         </div>

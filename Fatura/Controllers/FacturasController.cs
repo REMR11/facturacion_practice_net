@@ -19,6 +19,8 @@ namespace Fatura.Controllers
         private readonly IProductoService _productoService;
         private readonly IClienteService _clienteService;
         private readonly IFacturaPdfService _facturaPdfService;
+        private readonly IFacturaTicketService _facturaTicketService;
+
         private readonly xstoreContext _context;
 
         public FacturasController(
@@ -26,14 +28,19 @@ namespace Fatura.Controllers
             IProductoService productoService,
             IClienteService clienteService,
             IFacturaPdfService facturaPdfService,
+             IFacturaTicketService facturaTicketService,
             xstoreContext context)
         {
             _facturaService = facturaService;
             _productoService = productoService;
             _clienteService = clienteService;
             _facturaPdfService = facturaPdfService;
+            _facturaTicketService = facturaTicketService;
             _context = context;
         }
+
+
+
 
         /// <summary>
         /// Lista todas las facturas con opciones de búsqueda, filtros y paginación.
