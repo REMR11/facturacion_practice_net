@@ -48,7 +48,7 @@ namespace Fatura.Controllers
         // ===============================
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Inventario inventario)
+        public IActionResult Create(Inventario inventario)
         {
             if (!ModelState.IsValid)
                 return View(inventario);
@@ -87,7 +87,7 @@ namespace Fatura.Controllers
         // ===============================
         [HttpPost("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Inventario inventario)
+        public IActionResult Edit(Inventario inventario)
         {
             if (!ModelState.IsValid)
                 return View(inventario);

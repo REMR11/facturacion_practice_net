@@ -80,7 +80,7 @@ namespace Fatura.Controllers
         // ===============================
         [HttpPost("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Cliente cliente)
+        public IActionResult Edit(Cliente cliente)
         {
             if (!ModelState.IsValid)
                 return View(cliente);

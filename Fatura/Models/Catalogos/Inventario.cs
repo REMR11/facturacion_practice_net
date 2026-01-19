@@ -7,12 +7,12 @@ namespace Fatura.Models.Inventario
         public int IdInventario { get; set; }
 
         public int IdProducto { get; set; }
-        public Producto Producto { get; set; }
+        public Producto? Producto { get; set; }
 
 
-        public Producto Nombre { get; set; }
+        public Producto? Nombre { get; set; }
 
-        public Categoria   Categoria {get; set;}
+        public Categoria? Categoria { get; set; }
 
       
 

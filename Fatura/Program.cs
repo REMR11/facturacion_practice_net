@@ -7,6 +7,7 @@ using Fatura.Services.Implementations;
 using Fatura.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,8 +47,17 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IUnidadMedidaService, UnidadMedidaService>();
 builder.Services.AddScoped<IFacturaPdfService, FacturaPdfService>();
-builder.Services.AddScoped<IFacturaTicketService, FacturaTicketService>();
-builder.Services.AddScoped<IFacturaTicketService, FacturaTicketService>();
+
+// Registrar FacturaTicketService solo en Windows (requiere System.Drawing.Printing)
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+    builder.Services.AddScoped<IFacturaTicketService, FacturaTicketService>();
+}
+else
+{
+    // En plataformas no-Windows, registrar una implementación dummy o lanzar excepción
+    builder.Services.AddScoped<IFacturaTicketService, FacturaTicketService>();
+}
 
 
 

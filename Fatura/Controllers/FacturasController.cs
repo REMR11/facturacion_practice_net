@@ -145,6 +145,60 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
+        /// Imprime el ticket térmico de una factura directamente en la impresora RPT004.
+        /// </summary>
+        [HttpGet("{id}/Ticket")]
+        public async Task<IActionResult> Ticket(int id, string? printer = null)
+        {
+            try
+            {
+                var factura = await _facturaService.GetWithDetailsAsync(id);
+                var nombreImpresora = printer ?? "RPT004";
+                
+                bool impreso = _facturaTicketService.ImprimirTicket(factura, nombreImpresora);
+                
+                if (impreso)
+                {
+                    TempData["Success"] = $"Ticket impreso correctamente en {nombreImpresora}";
+                }
+                else
+                {
+                    TempData["Error"] = "No se pudo imprimir el ticket";
+                }
+                
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al imprimir: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
+        /// <summary>
+        /// Genera el PDF del ticket térmico (para preview o descarga).
+        /// </summary>
+        [HttpGet("{id}/TicketPdf")]
+        public async Task<IActionResult> TicketPdf(int id)
+        {
+            try
+            {
+                var factura = await _facturaService.GetWithDetailsAsync(id);
+                var pdfBytes = _facturaTicketService.GenerarTicket(factura);
+                var fileName = $"Ticket_{factura.NumeroFactura ?? id.ToString()}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
         /// Actualiza el estado de una factura (Pendiente, Pagada, Cancelada, etc.).
         /// </summary>
         [HttpPost("{id}/Estado")]

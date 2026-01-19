@@ -9,6 +9,22 @@
 }
 
 <div class="factura-page">
+    @* Mensajes de éxito/error *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="factura-header-area">
         <div class="header-left">
             <a href="@Url.Action("Index", "Facturas")" class="btn-back">
@@ -22,8 +38,8 @@
             </div>
         </div>
         <div class="header-actions">
-            <a class="btn btn-secondary" style="margin-right: 8px;" href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })" target="_blank">
-                Ticket Térmico
+            <a class="btn btn-secondary" style="margin-right: 8px;" href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })">
+                <i class="fas fa-print"></i> Imprimir Ticket
             </a>
             <a class="btn btn-primary" href="@Url.Action("Pdf", "Facturas", new { id = Model.IdFactura })">
                 Descargar PDF
@@ -112,11 +128,9 @@
 
 
 
-
                     <a class="btn btn-outline-dark"
-                       href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })"
-                       target="_blank">
-                        <i class="fas fa-receipt"></i> Imprimir Ticket
+                       href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })">
+                        <i class="fas fa-print"></i> Imprimir Ticket
                     </a>
 
                 </div>

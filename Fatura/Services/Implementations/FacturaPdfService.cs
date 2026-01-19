@@ -23,8 +23,8 @@ namespace Fatura.Services.Implementations
 
                     page.Header().Row(row =>
                     {
-                        row.RelativeColumn().Text("Factura").FontSize(20).Bold();
-                        row.ConstantColumn(200).AlignRight().Text(text =>
+                        row.RelativeItem().Text("Factura").FontSize(20).Bold();
+                        row.ConstantItem(200).AlignRight().Text(text =>
                         {
                             text.Span("Número: ").SemiBold();
                             text.Span(factura.NumeroFactura ?? "—");
@@ -37,7 +37,7 @@ namespace Fatura.Services.Implementations
 
                         column.Item().Row(row =>
                         {
-                            row.RelativeColumn().Column(col =>
+                            row.RelativeItem().Column(col =>
                             {
                                 col.Item().Text("Cliente").Bold();
                                 col.Item().Text(factura.ClienteNombre ?? "—");
@@ -45,7 +45,7 @@ namespace Fatura.Services.Implementations
                                 col.Item().Text(factura.ClienteDireccion ?? "—");
                             });
 
-                            row.RelativeColumn().Column(col =>
+                            row.RelativeItem().Column(col =>
                             {
                                 col.Item().Text("Documento").Bold();
                                 col.Item().Text($"Tipo: {factura.TipoDocumento}");
