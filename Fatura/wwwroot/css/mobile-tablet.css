@@ -33,6 +33,7 @@ img {
 @media (max-width: 991px) {
     .navbar {
         padding: 0.5rem 1rem;
+        position: relative;
     }
     
     .navbar-brand {
@@ -40,17 +41,109 @@ img {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 70%;
+        max-width: calc(100% - 60px);
+    }
+    
+    .navbar-brand span:last-child {
+        display: none; /* Ocultar texto en móviles pequeños */
     }
     
     .navbar-toggler {
         border: 1px solid rgba(255, 255, 255, 0.3);
-        padding: 0.375rem 0.75rem;
+        padding: 0.5rem 0.75rem;
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .navbar-toggler:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
     }
     
     .navbar-toggler-icon {
-        width: 1.2em;
-        height: 1.2em;
+        width: 1.5em;
+        height: 1.5em;
+    }
+    
+    /* Menú colapsado mejorado */
+    .navbar-collapse {
+        background-color: #212529;
+        margin-top: 0.5rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .navbar-nav {
+        width: 100%;
+    }
+    
+    .navbar-nav .nav-item {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+    
+    .mobile-nav-link {
+        width: 100%;
+        padding: 0.875rem 1rem !important;
+        border-radius: 0.375rem;
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 48px;
+        transition: background-color 0.2s ease;
+    }
+    
+    .mobile-nav-link:hover,
+    .mobile-nav-link:active,
+    .mobile-nav-link:focus {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        color: #fff !important;
+    }
+    
+    .mobile-nav-link i {
+        width: 24px;
+        text-align: center;
+    }
+    
+    /* Buscador en móvil */
+    .mobile-search-item {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mobile-search-form {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .mobile-search-input {
+        width: 100% !important;
+        font-size: 16px !important; /* Previene zoom en iOS */
+    }
+    
+    .mobile-search-btn {
+        width: 100%;
+        min-height: 44px;
+    }
+    
+    /* Carrito en móvil */
+    .mobile-cart-item {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+    
+    .mobile-cart-item .mobile-nav-link {
+        justify-content: center;
     }
 }
 
@@ -148,6 +241,19 @@ img {
         transform: scale(0.95);
         transition: transform 0.1s;
     }
+    
+    /* Asegurar que los enlaces sean clickeables */
+    a {
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+        touch-action: manipulation;
+    }
+    
+    /* Mejorar la respuesta táctil */
+    .nav-link, .btn {
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+        touch-action: manipulation;
+        user-select: none;
+    }
 }
 
 /* PREVENIR ZOOM NO DESEADO EN INPUTS */
@@ -159,6 +265,14 @@ img {
     select,
     textarea {
         font-size: 16px !important; /* Previene zoom automático en iOS */
+    }
+    
+    /* Asegurar que los inputs sean fáciles de usar */
+    input, select, textarea {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: 0.375rem;
     }
 }
 
@@ -213,5 +327,65 @@ img {
     
     .producto-card {
         max-width: 100%;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* MEJORAS ADICIONALES PARA MÓVILES - MENÚ */
+@media (max-width: 991px) {
+    /* Asegurar que el menú sea accesible */
+    .navbar-collapse.show {
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    /* Mejorar el scroll del menú */
+    .navbar-collapse {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    }
+    
+    .navbar-collapse::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .navbar-collapse::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .navbar-collapse::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+    }
+    
+    /* Animación suave al abrir/cerrar */
+    .navbar-collapse {
+        transition: all 0.3s ease-in-out;
+    }
+    
+    /* Iconos más visibles en móvil */
+    .mobile-nav-link i {
+        font-size: 1.1rem;
+        width: 28px;
+    }
+    
+    /* Separador visual entre elementos */
+    .navbar-nav .nav-item:not(:last-child) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* MEJORAS PARA TABLETS - MENÚ */
+@media (min-width: 768px) and (max-width: 991px) {
+    .navbar-nav .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.95rem;
+    }
+    
+    .navbar-brand span:last-child {
+        font-size: 0.9rem;
     }
 }

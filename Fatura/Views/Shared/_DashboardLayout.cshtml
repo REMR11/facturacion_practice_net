@@ -54,36 +54,51 @@
             <a class="navbar-brand fw-bold d-flex align-items-center" asp-controller="Home" asp-action="Index">
                 <img src="~/LOGO.png" alt="Motos Rodriguez" class="navbar-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                 <span style="display: none;">🏍️ Motos Rodriguez</span>
-                <span>Motos Rodriguez</span>
+                <span class="d-none d-md-inline">Motos Rodriguez</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu">
+            <button class="navbar-toggler" type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#mainMenu"
+                    aria-controls="mainMenu"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-end" id="mainMenu">
                 <ul class="navbar-nav align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+                        <a class="nav-link mobile-nav-link" asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-home me-2"></i>Inicio
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Productos" asp-action="Index">Productos</a>
+                        <a class="nav-link mobile-nav-link" asp-controller="Productos" asp-action="Index">
+                            <i class="fas fa-box me-2"></i>Productos
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Factura</a>
+                        <a class="nav-link mobile-nav-link" asp-controller="Dashboard" asp-action="Index">
+                            <i class="fas fa-file-invoice me-2"></i>Factura
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Inventario" asp-action="Index">Inventario</a>
+                        <a class="nav-link mobile-nav-link" asp-controller="Inventario" asp-action="Index">
+                            <i class="fas fa-warehouse me-2"></i>Inventario
+                        </a>
                     </li>
-                    <li class="nav-item ms-3">
-                        <form class="d-flex align-items-center" method="get" asp-controller="Customer" asp-action="Index">
-                            <input class="form-control form-control-sm" type="search" name="search" placeholder="Buscar">
-                            <button class="btn btn-outline-light btn-sm ms-1" type="submit">
+                    <li class="nav-item ms-3 mobile-search-item">
+                        <form class="d-flex align-items-center mobile-search-form" method="get" asp-controller="Customer" asp-action="Index">
+                            <input class="form-control form-control-sm mobile-search-input" type="search" name="search" placeholder="Buscar cliente...">
+                            <button class="btn btn-outline-light btn-sm ms-1 mobile-search-btn" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
                     </li>
-                    <li class="nav-item ms-3">
-                        <a class="nav-link text-warning" asp-controller="Cart" asp-action="Index">
+                    <li class="nav-item ms-3 mobile-cart-item">
+                        <a class="nav-link text-warning position-relative mobile-nav-link" asp-controller="Cart" asp-action="Index">
                             <i class="fas fa-shopping-cart fa-lg"></i>
+                            <span id="cartBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none; font-size: 0.7rem; padding: 0.25em 0.5em;">0</span>
+                            <span class="d-inline d-lg-none ms-2">Carrito</span>
                         </a>
                     </li>
                 </ul>
@@ -111,6 +126,31 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Cerrar menú móvil al hacer clic en un enlace
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.mobile-nav-link');
+            const navbarCollapse = document.getElementById('mainMenu');
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    // Cerrar el menú si está abierto en móvil
+                    if (window.innerWidth <= 991 && navbarCollapse && navbarCollapse.classList.contains('show')) {
+                        const bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+                            toggle: false
+                        });
+                        bsCollapse.hide();
+                        
+                        // Actualizar aria-expanded
+                        if (navbarToggler) {
+                            navbarToggler.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
