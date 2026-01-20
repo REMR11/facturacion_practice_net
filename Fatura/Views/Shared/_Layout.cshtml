@@ -325,7 +325,10 @@
             
             function openMenu() {
                 if (floatingMenuPanel) floatingMenuPanel.classList.add('show');
-                if (floatingMenuOverlay) floatingMenuOverlay.classList.add('show');
+                if (floatingMenuOverlay) {
+                    floatingMenuOverlay.classList.add('show');
+                    floatingMenuOverlay.style.display = 'block';
+                }
                 if (floatingMenuBtn) floatingMenuBtn.classList.add('active');
                 if (floatingMenuIcon) floatingMenuIcon.className = 'fas fa-times';
                 document.body.classList.add('menu-open');
@@ -341,7 +344,10 @@
             
             function closeMenu() {
                 if (floatingMenuPanel) floatingMenuPanel.classList.remove('show');
-                if (floatingMenuOverlay) floatingMenuOverlay.classList.remove('show');
+                if (floatingMenuOverlay) {
+                    floatingMenuOverlay.classList.remove('show');
+                    floatingMenuOverlay.style.display = 'none';
+                }
                 if (floatingMenuBtn) floatingMenuBtn.classList.remove('active');
                 if (floatingMenuIcon) floatingMenuIcon.className = 'fas fa-bars';
                 document.body.classList.remove('menu-open');

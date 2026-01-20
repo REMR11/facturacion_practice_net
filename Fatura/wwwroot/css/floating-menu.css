@@ -260,6 +260,7 @@
         z-index: 1040;
         opacity: 0;
         visibility: hidden;
+        display: none; /* Oculto por defecto */
         transition: all 0.3s ease;
         pointer-events: none; /* No bloquea clics cuando está oculto */
     }
@@ -267,6 +268,7 @@
     .floating-menu-overlay.show {
         opacity: 1;
         visibility: visible;
+        display: block; /* Visible cuando tiene la clase show */
         pointer-events: auto; /* Permite clics cuando está visible */
     }
     
