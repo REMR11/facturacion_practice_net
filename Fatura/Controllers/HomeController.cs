@@ -21,7 +21,8 @@ namespace Fatura.Controllers
         public async Task<IActionResult> Index()
         {
             var productos = await _productoService.GetAllAsync();
-            var productosActivos = productos.Where(p => p.Activo && p.Precio > 0).Take(12).ToList();
+            var productosActivos = productos.Where(p => p.Activo && p.Precio > 0).ToList();
+            
             return View(productosActivos);
         }
 

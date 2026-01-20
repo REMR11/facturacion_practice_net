@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
 
     <title>Motos & Repuestos</title>
 
@@ -18,6 +18,9 @@
     <!-- TU CSS -->
     <link href="~/css/site.css" rel="stylesheet" />
     <link href="~/css/fonts.css" rel="stylesheet" />
+    <link href="~/css/responsive.css" rel="stylesheet" />
+    <link href="~/css/productos-responsive.css" rel="stylesheet" />
+    <link href="~/css/mobile-tablet.css" rel="stylesheet" />
 
     <!-- 🔴 FIX ESPACIOS -->
     <style>
@@ -118,7 +121,7 @@
     </nav>
 
     <!-- ======= CONTENIDO ======= -->
-    <main class="container my-4 flex-fill">
+    <main class="container-fluid px-3 px-md-4 py-3 py-md-4 flex-fill">
         @RenderBody()
     </main>
 

@@ -1,0 +1,404 @@
+/* ============================================
+   RESPONSIVE STYLES - Móviles, Tablets y Smartwatches
+   ============================================ */
+
+/* CONTAINER RESPONSIVE */
+.container, .container-fluid {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (max-width: 575px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+/* MAIN CONTENT RESPONSIVE */
+main.container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    main.container {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
+/* Smartwatches y dispositivos muy pequeños (hasta 320px) */
+@media (max-width: 320px) {
+    .navbar-brand {
+        font-size: 0.8rem !important;
+    }
+    
+    .navbar-logo {
+        height: 30px !important;
+    }
+    
+    .navbar-nav .nav-link {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.25rem !important;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-title {
+        font-size: 0.9rem;
+    }
+    
+    .card-text {
+        font-size: 0.8rem;
+    }
+    
+    .btn {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    h2 {
+        font-size: 1.2rem !important;
+    }
+    
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .row {
+        margin-left: -0.25rem;
+        margin-right: -0.25rem;
+    }
+    
+    .row > * {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+}
+
+/* Móviles pequeños (321px - 480px) */
+@media (min-width: 321px) and (max-width: 480px) {
+    .navbar-brand {
+        font-size: 0.9rem !important;
+    }
+    
+    .navbar-brand span:last-child {
+        display: none; /* Ocultar texto del logo en móviles muy pequeños */
+    }
+    
+    .navbar-logo {
+        height: 35px !important;
+    }
+    
+    .navbar-nav .nav-link {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.5rem !important;
+    }
+    
+    .card-img-top {
+        height: 150px !important;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    .card-text {
+        font-size: 0.85rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    /* Menú hamburguesa mejorado */
+    .navbar-toggler {
+        padding: 0.25rem 0.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Móviles medianos y tablets pequeñas (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .navbar-logo {
+        height: 40px !important;
+    }
+    
+    .navbar-brand span:last-child {
+        font-size: 0.9rem;
+    }
+    
+    .card-img-top {
+        height: 180px !important;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem !important;
+    }
+    
+    /* Grid de productos: 2 columnas */
+    .productos-grid .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    .container {
+        max-width: 100%;
+    }
+}
+
+/* Tablets (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .navbar-logo {
+        height: 45px !important;
+    }
+    
+    .card-img-top {
+        height: 200px !important;
+    }
+    
+    /* Grid de productos: 3 columnas */
+    .productos-grid .col-md-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+    
+    .container {
+        max-width: 960px;
+    }
+}
+
+/* ============================================
+   MEJORAS ESPECÍFICAS PARA PRODUCTOS
+   ============================================ */
+
+/* Cards de productos responsive */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-footer {
+        padding: 0.75rem;
+    }
+    
+    .btn-add-cart {
+        width: 100%;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   NAVBAR RESPONSIVE
+   ============================================ */
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background-color: #343a40;
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        max-height: calc(100vh - 64px);
+        overflow-y: auto;
+    }
+    
+    .navbar-nav {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .navbar-nav .nav-item {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .navbar-nav .nav-link {
+        height: auto !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 0.25rem;
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Formulario de búsqueda en móvil */
+    .navbar-nav form {
+        width: 100%;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .navbar-nav .form-control {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .navbar-nav .btn {
+        width: 100%;
+    }
+    
+    /* Carrito en móvil */
+    .navbar-nav .nav-item:has(.fa-shopping-cart) {
+        margin-top: 0.5rem;
+    }
+}
+
+/* ============================================
+   FOOTER RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    footer .row {
+        flex-direction: column;
+    }
+    
+    footer .col-md-4 {
+        margin-bottom: 1.5rem;
+        text-align: center !important;
+    }
+    
+    footer .bg-warning {
+        padding: 1.5rem 1rem !important;
+    }
+    
+    footer .bg-dark {
+        padding: 1rem !important;
+    }
+    
+    footer .bg-secondary {
+        padding: 1rem !important;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   NOTIFICACIONES RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+    .alert.position-fixed {
+        top: 10px !important;
+        right: 10px !important;
+        left: 10px !important;
+        min-width: auto !important;
+        max-width: calc(100% - 20px);
+    }
+}
+
+/* ============================================
+   CARRITO RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .cart-item-row {
+        flex-direction: column;
+    }
+    
+    .cart-item-image {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .cart-summary {
+        margin-top: 1.5rem;
+    }
+}
+
+/* ============================================
+   UTILIDADES RESPONSIVE
+   ============================================ */
+
+/* Ocultar en móviles */
+@media (max-width: 768px) {
+    .d-mobile-none {
+        display: none !important;
+    }
+}
+
+/* Mostrar solo en móviles */
+@media (min-width: 769px) {
+    .d-mobile-only {
+        display: none !important;
+    }
+}
+
+/* Texto más pequeño en móviles */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+    
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    h4 { font-size: 1.1rem; }
+    h5 { font-size: 1rem; }
+    h6 { font-size: 0.9rem; }
+}
+
+/* ============================================
+   MEJORAS DE TOUCH PARA MÓVILES
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Áreas táctiles más grandes */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .nav-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Mejor espaciado para toques */
+    .card {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Sin hover en móviles */
+    *:hover {
+        transition: none;
+    }
+}
+
+/* ============================================
+   ORIENTACIÓN LANDSCAPE
+   ============================================ */
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .navbar {
+        min-height: 56px;
+    }
+    
+    .navbar-logo {
+        height: 40px !important;
+    }
+    
+    .card-img-top {
+        height: 120px !important;
+    }
+}
