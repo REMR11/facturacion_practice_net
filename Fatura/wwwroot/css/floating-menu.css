@@ -131,24 +131,36 @@
     /* Contenido del menú */
     .floating-menu-content {
         padding: 0.5rem;
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    /* Asegurar que todos los elementos del menú sean visibles */
+    .floating-menu-content a {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
     .floating-menu-item {
-        display: flex;
+        display: flex !important;
         align-items: center;
         padding: 0.875rem 1rem;
         margin-bottom: 0.25rem;
         border-radius: 10px;
         text-decoration: none;
-        color: #333;
+        color: #333 !important;
         transition: all 0.2s ease;
         min-height: 48px;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
     .floating-menu-item:hover,
     .floating-menu-item:active {
         background-color: #f8f9fa;
         transform: translateX(4px);
+        color: #333 !important;
     }
     
     .floating-menu-item i {
@@ -157,11 +169,16 @@
         font-size: 1.1rem;
         color: #667eea;
         margin-right: 0.75rem;
+        visibility: visible !important;
+        display: inline-block !important;
     }
     
     .floating-menu-item span {
         flex: 1;
         font-weight: 500;
+        color: #333 !important;
+        visibility: visible !important;
+        display: inline-block !important;
     }
     
     /* Buscador en panel flotante */

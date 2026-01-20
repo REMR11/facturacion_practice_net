@@ -241,15 +241,16 @@
                     <div class="precio-text producto-detail-trigger">@($"{item.Precio ?? 0:C}")</div>
                     <div class="row-actions">
                         <button type="button"
-                                class="btn btn-light btn-sm"
+                                class="btn btn-light btn-sm btn-edit-producto"
                                 data-bs-toggle="modal"
-                                data-bs-target="#productoEditModal-@item.IdProducto">
-                            Editar
+                                data-bs-target="#productoEditModal-@item.IdProducto"
+                                aria-label="Editar producto @item.NombreProducto">
+                            <i class="fas fa-edit"></i> Editar
                         </button>
                         <form action="@Url.Action("Delete", "Productos", new { id = item.IdProducto })" method="post" style="display: inline;" 
                               class="delete-product-form" data-producto-nombre="@item.NombreProducto">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-danger btn-sm">
+                            <button type="submit" class="btn btn-danger btn-sm btn-delete-producto" aria-label="Borrar producto @item.NombreProducto">
                                 <i class="fas fa-trash"></i> Borrar
                             </button>
                         </form>
@@ -446,13 +447,55 @@
     }
     <script>
         // Manejar confirmación de eliminación de productos
-        document.querySelectorAll('.delete-product-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const productoNombre = this.getAttribute('data-producto-nombre');
-                if (!confirm('¿Está seguro que desea eliminar el producto "' + productoNombre + '"? Esta acción no se puede deshacer.')) {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.delete-product-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const productoNombre = this.getAttribute('data-producto-nombre');
+                    const confirmMessage = '¿Está seguro que desea eliminar el producto "' + productoNombre + '"? Esta acción no se puede deshacer.';
+                    
+                    if (confirm(confirmMessage)) {
+                        // Crear un formulario temporal para enviar
+                        const formData = new FormData(this);
+                        const action = this.getAttribute('action');
+                        const method = this.getAttribute('method') || 'post';
+                        
+                        // Enviar el formulario
+                        fetch(action, {
+                            method: method,
+                            body: formData,
+                            headers: {
+                                'RequestVerificationToken': formData.get('__RequestVerificationToken')
+                            }
+                        }).then(() => {
+                            window.location.reload();
+                        }).catch(error => {
+                            console.error('Error al eliminar producto:', error);
+                            alert('Error al eliminar el producto. Por favor, intente nuevamente.');
+                        });
+                    }
+                    
                     return false;
-                }
+                });
+            });
+            
+            // Asegurar que los botones de editar funcionen en móviles
+            document.querySelectorAll('.btn-edit-producto').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const targetModal = this.getAttribute('data-bs-target');
+                    if (targetModal) {
+                        const modalElement = document.querySelector(targetModal);
+                        if (modalElement) {
+                            const modal = new bootstrap.Modal(modalElement);
+                            modal.show();
+                        }
+                    }
+                });
             });
         });
     </script>
