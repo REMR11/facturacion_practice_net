@@ -1,6 +1,7 @@
-﻿using Fatura.Models.Facturacion;
+using Fatura.Models.Facturacion;
 using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Fatura.Exceptions;
 
 namespace Fatura.Controllers
 {
@@ -80,13 +81,30 @@ namespace Fatura.Controllers
         // ===============================
         [HttpPost("Edit")]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Cliente cliente)
+        public async Task<IActionResult> Edit(Cliente cliente)
         {
             if (!ModelState.IsValid)
                 return View(cliente);
 
-            /*await _clienteService.UpdateAsync(cliente);*/
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _clienteService.UpdateAsync(cliente.Id, cliente);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(cliente);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error al actualizar el cliente: {ex.Message}");
+                return View(cliente);
+            }
         }
 
         // ===============================

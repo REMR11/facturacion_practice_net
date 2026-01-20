@@ -348,7 +348,7 @@ namespace Fatura.Controllers
                 };
 
                 var subTotal = detalles.Sum(d => d.Total);
-                var iva = subTotal * 0.18m;
+                var iva = subTotal * 0.13m;
                 factura.SubTotal = subTotal;
                 factura.Iva = iva;
                 factura.Isr = 0;

@@ -29,7 +29,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 Previsualizar
             </button>
-            <button type="submit" class="btn btn-primary">
+            <button type="button" class="btn btn-primary" id="btnEmitirFactura">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 Emitir Factura
             </button>
@@ -47,29 +47,35 @@
                     <h3 class="card-title mb-4">Datos del Cliente</h3>
                     
                     <div class="mb-4">
-                        <label class="form-label">Cliente</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">Cliente</label>
+                            <a href="@Url.Action("Create", "Cliente")" target="_blank" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-user-plus"></i> Nuevo Cliente
+                            </a>
+                        </div>
                         <div class="search-wrapper">
                             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            <input type="text" id="clienteSearch" class="form-control search-input" placeholder="Buscar cliente por nombre o RUC..." autocomplete="off" required>
+                            <input type="text" id="clienteSearch" class="form-control search-input" placeholder="Buscar cliente por nombre o RUC..." autocomplete="off">
                             <div id="clienteList" class="autocomplete-list"></div>
                         </div>
                         <input type="hidden" id="clienteId" name="ClienteId" />
+                        <small class="text-muted">Escribe para buscar o completa los datos manualmente</small>
                     </div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">RUC / DNI</label>
-                            <input type="text" id="nit" class="form-control bg-light" readonly placeholder="20123456789">
+                            <input type="text" id="nit" name="ClienteNitDui" class="form-control" placeholder="20123456789">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
-                            <input type="email" id="email" class="form-control bg-light" readonly placeholder="cliente@empresa.com">
+                            <input type="email" id="email" name="ClienteEmail" class="form-control" placeholder="cliente@empresa.com">
                         </div>
                     </div>
 
                     <div>
                         <label class="form-label">Dirección fiscal</label>
-                        <input type="text" id="direccion" class="form-control bg-light" readonly placeholder="Av. Principal 123, Lima">
+                        <input type="text" id="direccion" name="ClienteDireccion" class="form-control" placeholder="Av. Principal 123, Lima">
                     </div>
                 </div>
 
@@ -109,7 +115,7 @@
                                     <input type="number" class="form-control text-center descuento" name="Items[0].Descuento" step="0.01" value="0" min="0">
                                 </div>
                                 <div class="col-subtotal">
-                                    <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
+                                    <input type="text" class="form-control text-end subtotal bg-light" value="$0.00" readonly>
                                 </div>
                                 <div class="col-action">
                                     <button type="button" class="btn-icon-danger" onclick="eliminarProducto(1)">
@@ -168,7 +174,7 @@
                         <label class="form-label">Moneda</label>
                         <select id="moneda" name="MonedaSimbolo" class="form-select custom-select" required>
                             <option value="S/">Soles (PEN)</option>
-                            <option value="USD">Dólares (USD)</option>
+                            <option value="USD" selected>Dólares (USD)</option>
                         </select>
                     </div>
 
@@ -183,7 +189,7 @@
                             <span id="subtotalValue">$0.00</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2 text-muted">
-                            <span>IGV (18%)</span>
+                            <span>IGV (13%)</span>
                             <span id="ivaValue">$0.00</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3 text-muted">
@@ -261,7 +267,7 @@
                     <div class="d-flex justify-content-end mt-4">
                         <div class="text-end">
                             <div class="text-muted">Subtotal: <span id="previewSubtotal">—</span></div>
-                            <div class="text-muted">IGV (18%): <span id="previewIgv">—</span></div>
+                            <div class="text-muted">IGV (13%): <span id="previewIgv">—</span></div>
                             <div class="fw-bold">Total: <span id="previewTotal">—</span></div>
                         </div>
                     </div>
@@ -640,14 +646,41 @@
         await cargarProductos();
         inicializarEventos();
         cargarBorradorLocal();
+        calcularTotales(); // Calcular totales iniciales con dólares por defecto
+        
+        // Recargar clientes cuando se vuelve a la página después de crear uno nuevo
+        window.addEventListener('focus', async function() {
+            if (document.getElementById('clienteSearch') && !document.getElementById('clienteId').value) {
+                await cargarClientes();
+            }
+        });
     });
+
+    function normalizarCliente(cliente) {
+        const id = cliente?.id ?? cliente?.Id ?? null;
+        const nombre = cliente?.nombre ?? cliente?.Nombre ?? '';
+        const nitDui = cliente?.nitDui ?? cliente?.NitDui ?? cliente?.nit_dui ?? '';
+        const email = cliente?.email ?? cliente?.Email ?? '';
+        const direccion = cliente?.direccion ?? cliente?.Direccion ?? '';
+        return {
+            id,
+            nombre,
+            nitDui,
+            email,
+            direccion
+        };
+    }
 
     async function cargarClientes() {
         try {
             const response = await fetch('/api/clientes');
-            clientes = await response.json();
+            const data = await response.json();
+            clientes = (Array.isArray(data) ? data : [])
+                .map(normalizarCliente)
+                .filter(c => c.id !== null && c.nombre);
         } catch (error) {
             console.error('Error cargando clientes:', error);
+            clientes = [];
         }
     }
 
@@ -716,14 +749,14 @@
 
             const filtered = clientes.filter(c =>
                 c.nombre.toLowerCase().includes(value) ||
-                c.nit_dui.includes(value)
+                (c.nitDui && c.nitDui.toLowerCase().includes(value))
             );
 
             if (filtered.length > 0) {
                 lista.innerHTML = filtered.map(c =>
-                    `<div class="autocomplete-item" onclick="seleccionarCliente('${c.id}', '${c.nombre}', '${c.nit_dui}', '${c.email}', '${c.direccion}')">
+                    `<div class="autocomplete-item" onclick="seleccionarCliente('${c.id}', '${(c.nombre || '').replace(/'/g, "\\'")}', '${(c.nitDui || '').replace(/'/g, "\\'")}', '${(c.email || '').replace(/'/g, "\\'")}', '${(c.direccion || '').replace(/'/g, "\\'")}')">
                         <strong>${c.nombre}</strong><br>
-                        <small class="text-muted">${c.nit_dui}</small>
+                        <small class="text-muted">${c.nitDui || 'Sin NIT/DUI'}</small>
                     </div>`
                 ).join('');
                 lista.classList.add('show');
@@ -763,6 +796,15 @@
 
         document.getElementById('btnPreview').addEventListener('click', mostrarPreview);
 
+        // Agregar listener al botón Emitir Factura
+        const btnEmitir = document.getElementById('btnEmitirFactura');
+        if (btnEmitir) {
+            btnEmitir.addEventListener('click', function(e) {
+                e.preventDefault();
+                emitirFactura(e);
+            });
+        }
+
         document.getElementById('facturaForm').addEventListener('submit', emitirFactura);
 
         const btnGuardar = document.getElementById('btnGuardar');
@@ -775,11 +817,11 @@
     }
 
     function seleccionarCliente(id, nombre, nit, email, direccion) {
-        document.getElementById('clienteId').value = id;
-        document.getElementById('clienteSearch').value = nombre;
-        document.getElementById('nit').value = nit;
-        document.getElementById('email').value = email;
-        document.getElementById('direccion').value = direccion;
+        document.getElementById('clienteId').value = id || '';
+        document.getElementById('clienteSearch').value = nombre || '';
+        document.getElementById('nit').value = nit || '';
+        document.getElementById('email').value = email || '';
+        document.getElementById('direccion').value = direccion || '';
         document.getElementById('clienteList').classList.remove('show');
     }
 
@@ -806,7 +848,7 @@
                 <input type="number" class="form-control text-center descuento" name="Items[${contador - 1}].Descuento" step="0.01" value="0" min="0">
             </div>
             <div class="col-subtotal">
-                <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
+                <input type="text" class="form-control text-end subtotal bg-light" value="$0.00" readonly>
             </div>
             <div class="col-action">
                 <button type="button" class="btn-icon-danger" onclick="eliminarProducto(${contador})">
@@ -856,7 +898,7 @@
             }
         });
 
-        const iva = subtotal * 0.18;
+        const iva = subtotal * 0.13;
         const total = subtotal + iva;
 
         document.getElementById('subtotalValue').textContent = `${moneda}${subtotal.toFixed(2)}`;
@@ -921,23 +963,36 @@
     }
 
     function emitirFactura(e) {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
 
         const form = document.getElementById('facturaForm');
+        if (!form) {
+            console.error('Formulario no encontrado');
+            return;
+        }
+
         if (!form.reportValidity()) {
             return;
         }
 
-        const clienteId = document.getElementById('clienteId').value;
-        if (!clienteId) {
-            alert('Selecciona un cliente');
+        // Validar que al menos tenga nombre de cliente o datos básicos
+        const clienteNombre = document.getElementById('clienteSearch')?.value || '';
+        const clienteNit = document.getElementById('nit')?.value || '';
+        
+        if (!clienteNombre && !clienteNit) {
+            alert('Debe ingresar al menos el nombre del cliente o su NIT/DUI');
             return;
         }
 
         const items = document.querySelectorAll('.product-row');
         let hasProduct = false;
         items.forEach(item => {
-             if(item.querySelector('.producto-select').value) hasProduct = true;
+            const select = item.querySelector('.producto-select');
+            if (select && select.value) {
+                hasProduct = true;
+            }
         });
 
         if (!hasProduct) {
@@ -983,7 +1038,7 @@
             document.getElementById('serie').value = payload.serie || 'F001';
             document.getElementById('fechaEmision').value = payload.fechaEmision || '';
             document.getElementById('fechaVencimiento').value = payload.fechaVencimiento || '';
-            document.getElementById('moneda').value = payload.moneda || 'S/';
+            document.getElementById('moneda').value = payload.moneda || 'USD';
             document.getElementById('descripcion').value = payload.descripcion || '';
 
             const detalle = Array.isArray(payload.detalle) ? payload.detalle : [];
@@ -1013,7 +1068,7 @@
                             <input type="number" class="form-control text-center descuento" name="Items[${index}].Descuento" step="0.01" value="${item.descuento ?? 0}" min="0">
                         </div>
                         <div class="col-subtotal">
-                            <input type="text" class="form-control text-end subtotal bg-light" value="S/0.00" readonly>
+                            <input type="text" class="form-control text-end subtotal bg-light" value="$0.00" readonly>
                         </div>
                         <div class="col-action">
                             <button type="button" class="btn-icon-danger" onclick="eliminarProducto(${rowIndex})">

@@ -72,7 +72,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--white);
+  color: #C0C0C0;
   text-decoration: none;
   font-size: 1.25rem;
   font-weight: 600;
@@ -81,7 +81,8 @@
 .sidebar-logo-icon {
   width: 32px;
   height: 32px;
-  background-color: var(--primary-color);
+  background-color: #000000;
+  color: #C0C0C0;
   border-radius: 8px;
   display: flex;
   align-items: center;

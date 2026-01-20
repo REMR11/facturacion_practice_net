@@ -319,22 +319,23 @@ namespace Fatura.Controllers
             try
             {
                 await _productoService.DeleteAsync(id);
+                TempData["Success"] = "Producto eliminado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El producto no fue encontrado.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.BusinessRuleException ex)
             {
-                ModelState.AddModelError("", ex.Message);
-                var producto = await _productoService.GetByIdAsync(id);
-                return View(producto);
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Error al eliminar el producto: {ex.Message}");
-                return View();
+                TempData["Error"] = $"Error al eliminar el producto: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
     }

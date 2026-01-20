@@ -1,17 +1,114 @@
+using System;
+using System.Linq;
+using System.Text.Json;
+using Fatura.Models;
 using Fatura.Models.Facturacion;
 using Fatura.Services.Interfaces;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fatura.Services.Implementations
 {
     public class FacturaPdfService : IFacturaPdfService
     {
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IQrService _qrService;
+        private readonly xstoreContext _context;
+
+        public FacturaPdfService(IWebHostEnvironment webHostEnvironment, IQrService qrService, xstoreContext context)
+        {
+            _webHostEnvironment = webHostEnvironment;
+            _qrService = qrService;
+            _context = context;
+        }
+
+        private bool EsCreditoFiscal(Factura factura)
+        {
+            return factura.TipoDocumento == "03" || 
+                   factura.TipoDocumento.Contains("Crédito Fiscal", StringComparison.OrdinalIgnoreCase) ||
+                   factura.TipoDocumento.Contains("Credito Fiscal", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string ObtenerTituloDocumento(Factura factura)
+        {
+            return EsCreditoFiscal(factura) ? "Comprobante de Crédito Fiscal" : "Factura";
+        }
+        private string ObtenerSimboloMoneda(string monedaSimbolo)
+        {
+            if (string.IsNullOrWhiteSpace(monedaSimbolo))
+                return "S/";
+            
+            // Si viene "USD" convertir a "$"
+            if (monedaSimbolo.Equals("USD", StringComparison.OrdinalIgnoreCase))
+                return "$";
+            
+            return monedaSimbolo;
+        }
+
+        private (string Nit, string Direccion) ObtenerDatosEmpresa()
+        {
+            try
+            {
+                var empresa = _context.Set<Models.Catalogos.Empresa>().FirstOrDefault();
+                if (empresa != null)
+                {
+                    return (empresa.Nit ?? "02614612-5", empresa.Direccion ?? "3 CALLE PONIENTE, #3-7B, MUNICIPIO DE SANTA TECLA, DEPARTAMENTO DE LA LIBERTAD");
+                }
+            }
+            catch
+            {
+                // Si falla, usar valores por defecto
+            }
+            return ("02614612-5", "3 CALLE PONIENTE, #3-7B, MUNICIPIO DE SANTA TECLA, DEPARTAMENTO DE LA LIBERTAD");
+        }
+
+        private string? ObtenerRutaLogo()
+        {
+            try
+            {
+                // Intentar cargar el logo más reciente primero
+                var logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "pr rodriguez v3_Mesa de trabajo 1.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    return logoPath;
+                }
+
+                // Intentar cargar LOGO.png
+                logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    return logoPath;
+                }
+
+                // Intentar cargar desde wwwroot/images/logo.png
+                logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "images", "logo.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    return logoPath;
+                }
+
+                // Intentar cargar desde wwwroot/logo.png
+                logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "logo.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    return logoPath;
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public byte[] GenerarPdf(Factura factura)
         {
             var detalles = factura.DetalleFacturas?.ToList() ?? new List<DetalleFactura>();
-            var moneda = string.IsNullOrWhiteSpace(factura.MonedaSimbolo) ? "S/" : factura.MonedaSimbolo;
+            var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo);
 
             var document = Document.Create(container =>
             {
@@ -21,14 +118,47 @@ namespace Fatura.Services.Implementations
                     page.Size(PageSizes.A4);
                     page.DefaultTextStyle(x => x.FontSize(11));
 
-                    page.Header().Row(row =>
+                    page.Header().Column(col =>
                     {
-                        row.RelativeItem().Text("Factura").FontSize(20).Bold();
-                        row.ConstantItem(200).AlignRight().Text(text =>
+                        // Logo y título
+                        col.Item().Row(row =>
                         {
-                            text.Span("Número: ").SemiBold();
-                            text.Span(factura.NumeroFactura ?? "—");
+                            var logoPath = ObtenerRutaLogo();
+                            if (!string.IsNullOrEmpty(logoPath) && System.IO.File.Exists(logoPath))
+                            {
+                                try
+                                {
+                                    row.ConstantItem(80).Height(60).Image(logoPath).FitArea();
+                                }
+                                catch
+                                {
+                                    // Si falla, continuar sin logo
+                                }
+                            }
+                            row.RelativeItem().Column(headerCol =>
+                            {
+                                headerCol.Item().Text(ObtenerTituloDocumento(factura)).FontSize(20).Bold();
+                                headerCol.Item().Text(text =>
+                                {
+                                    text.Span("Número: ").SemiBold();
+                                    text.Span(factura.NumeroFactura ?? "—");
+                                });
+                                
+                                // Agregar NIT y dirección de la empresa
+                                var (nit, direccion) = ObtenerDatosEmpresa();
+                                headerCol.Item().PaddingTop(5).Text(text =>
+                                {
+                                    text.Span("NIT: ").SemiBold();
+                                    text.Span(nit);
+                                });
+                                headerCol.Item().Text(text =>
+                                {
+                                    text.Span("Dirección: ").SemiBold();
+                                    text.Span(direccion);
+                                });
+                            });
                         });
+                        col.Item().PaddingBottom(10);
                     });
 
                     page.Content().Column(column =>
@@ -50,8 +180,11 @@ namespace Fatura.Services.Implementations
                                 col.Item().Text("Documento").Bold();
                                 col.Item().Text($"Tipo: {factura.TipoDocumento}");
                                 col.Item().Text($"Serie: {factura.SerieFactura ?? "—"}");
-                                col.Item().Text($"Emisión: {factura.FechaCreacion:yyyy-MM-dd}");
-                                col.Item().Text($"Venc.: {factura.FechaVencimiento:yyyy-MM-dd}");
+                                col.Item().Text($"Emisión: {factura.FechaCreacion:dd/MM/yyyy}");
+                                if (factura.FechaVencimiento.HasValue)
+                                {
+                                    col.Item().Text($"Vencimiento: {factura.FechaVencimiento.Value:dd/MM/yyyy}");
+                                }
                             });
                         });
 
@@ -93,9 +226,33 @@ namespace Fatura.Services.Implementations
                         column.Item().AlignRight().Column(col =>
                         {
                             col.Item().Text($"Subtotal: {moneda}{factura.SubTotal:F2}");
-                            col.Item().Text($"IGV (18%): {moneda}{factura.Iva:F2}");
+                            col.Item().Text($"IGV (13%): {moneda}{factura.Iva:F2}");
                             col.Item().Text($"Total: {moneda}{factura.Total:F2}").Bold();
                         });
+
+                        // Agregar QR si es crédito fiscal
+                        if (EsCreditoFiscal(factura))
+                        {
+                            column.Item().PaddingTop(20).Column(qrCol =>
+                            {
+                                qrCol.Item().AlignCenter().Text("Código QR Crédito Fiscal").Bold().FontSize(10);
+                                try
+                                {
+                                    var qrData = GenerarDatosQr(factura);
+                                    var qrBytes = _qrService.GenerarQr(qrData, 150);
+                                    qrCol.Item()
+                                       .PaddingTop(5)
+                                       .AlignCenter()
+                                       .Height(150)
+                                       .Image(qrBytes)
+                                       .FitArea();
+                                }
+                                catch
+                                {
+                                    qrCol.Item().AlignCenter().Text("Error al generar QR").FontSize(8).FontColor(Colors.Red.Medium);
+                                }
+                            });
+                        }
                     });
 
                     page.Footer().AlignCenter().Text("Documento generado por el sistema").FontSize(9).FontColor(Colors.Grey.Darken2);
@@ -103,6 +260,23 @@ namespace Fatura.Services.Implementations
             });
 
             return document.GeneratePdf();
+        }
+
+        private string GenerarDatosQr(Factura factura)
+        {
+            var datos = new
+            {
+                tipo = "CreditoFiscal",
+                numero = factura.NumeroFactura,
+                serie = factura.SerieFactura ?? "",
+                nit = factura.ClienteNitDui,
+                nombre = factura.ClienteNombre,
+                fecha = factura.FechaCreacion.ToString("yyyy-MM-ddTHH:mm:ss"),
+                total = factura.Total.ToString("F2"),
+                moneda = factura.MonedaSimbolo ?? "USD"
+            };
+
+            return JsonSerializer.Serialize(datos);
         }
 
         private static IContainer CellHeader(IContainer container)

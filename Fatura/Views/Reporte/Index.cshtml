@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Reportes";
+    Layout = "_DashboardLayout";
+}
+
+<div class="dashboard-page">
+    <div class="page-header">
+        <h1 class="page-title">Reportes</h1>
+        <p class="page-subtitle">Genera y exporta reportes de tu negocio</p>
+    </div>
+
+    <div class="widgets-grid">
+        <!-- Reporte de Productos -->
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">Reporte de Productos</h3>
+                <div class="widget-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+            </div>
+            <div class="widget-content">
+                <p class="text-muted mb-3">Exporta un reporte de productos vendidos en un rango de fechas.</p>
+                <form asp-action="ExportarProductos" asp-controller="Reporte" method="post" id="formProductos">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="fechaInicioProductos" class="form-label">Fecha Inicio</label>
+                        <input type="date" class="form-control" id="fechaInicioProductos" name="fechainicio" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="fechaFinProductos" class="form-label">Fecha Fin</label>
+                        <input type="date" class="form-control" id="fechaFinProductos" name="fechafin" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-download"></i> Exportar Excel
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reporte de Facturas -->
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">Reporte de Facturas</h3>
+                <div class="widget-icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+            </div>
+            <div class="widget-content">
+                <p class="text-muted mb-3">Visualiza y analiza tus facturas por período.</p>
+                <div class="mb-3">
+                    <label for="fechaInicioFacturas" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fechaInicioFacturas" />
+                </div>
+                <div class="mb-3">
+                    <label for="fechaFinFacturas" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fechaFinFacturas" />
+                </div>
+                <a href="@Url.Action("Index", "Facturas")" class="btn btn-primary w-100">
+                    <i class="fas fa-eye"></i> Ver Facturas
+                </a>
+            </div>
+        </div>
+
+        <!-- Reporte de Ventas -->
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">Reporte de Ventas</h3>
+                <div class="widget-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+            <div class="widget-content">
+                <p class="text-muted mb-3">Analiza el rendimiento de tus ventas.</p>
+                <div class="mb-3">
+                    <label for="fechaInicioVentas" class="form-label">Fecha Inicio</label>
+                    <input type="date" class="form-control" id="fechaInicioVentas" />
+                </div>
+                <div class="mb-3">
+                    <label for="fechaFinVentas" class="form-label">Fecha Fin</label>
+                    <input type="date" class="form-control" id="fechaFinVentas" />
+                </div>
+                <button type="button" class="btn btn-primary w-100" onclick="generarReporteVentas()">
+                    <i class="fas fa-chart-bar"></i> Generar Reporte
+                </button>
+            </div>
+        </div>
+
+        <!-- Accesos Rápidos -->
+        <div class="widget">
+            <div class="widget-header">
+                <h3 class="widget-title">Accesos Rápidos</h3>
+                <div class="widget-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+            <div class="widget-content">
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Index", "Facturas")" class="btn btn-outline-primary">
+                        <i class="fas fa-file-invoice"></i> Ver Todas las Facturas
+                    </a>
+                    <a href="@Url.Action("Index", "Productos")" class="btn btn-outline-primary">
+                        <i class="fas fa-cube"></i> Ver Productos
+                    </a>
+                    <a href="@Url.Action("Index", "Clientes")" class="btn btn-outline-primary">
+                        <i class="fas fa-users"></i> Ver Clientes
+                    </a>
+                    <a href="@Url.Action("Index", "Dashboard")" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .widget {
+        min-height: 300px;
+    }
+    
+    .widget-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 0.625rem 0.75rem;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+</style>
+
+<script>
+    function generarReporteVentas() {
+        const fechaInicio = document.getElementById('fechaInicioVentas').value;
+        const fechaFin = document.getElementById('fechaFinVentas').value;
+        
+        if (!fechaInicio || !fechaFin) {
+            alert('Por favor, seleccione ambas fechas');
+            return;
+        }
+        
+        // Redirigir a facturas con filtros
+        window.location.href = '@Url.Action("Index", "Facturas")' + 
+            '?fechaInicio=' + fechaInicio + 
+            '&fechaFin=' + fechaFin;
+    }
+    
+    // Establecer fechas por defecto (último mes)
+    document.addEventListener('DOMContentLoaded', function() {
+        const hoy = new Date();
+        const haceUnMes = new Date();
+        haceUnMes.setMonth(haceUnMes.getMonth() - 1);
+        
+        const formatoFecha = (fecha) => {
+            return fecha.toISOString().split('T')[0];
+        };
+        
+        // Establecer fechas por defecto en todos los formularios
+        document.querySelectorAll('input[type="date"]').forEach(input => {
+            if (input.id.includes('Inicio')) {
+                input.value = formatoFecha(haceUnMes);
+            } else if (input.id.includes('Fin')) {
+                input.value = formatoFecha(hoy);
+            }
+        });
+    });
+</script>

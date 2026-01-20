@@ -1,5 +1,6 @@
-﻿using Fatura.Models;
+using Fatura.Models;
 using Fatura.Models.ViewModels;
+using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
@@ -9,15 +10,19 @@ namespace Fatura.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController>? _logger;
+        private readonly IProductoService _productoService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IProductoService productoService)
         {
             _logger = logger;
+            _productoService = productoService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var productos = await _productoService.GetAllAsync();
+            var productosActivos = productos.Where(p => p.Activo && p.Precio > 0).Take(12).ToList();
+            return View(productosActivos);
         }
 
         public IActionResult Privacy()

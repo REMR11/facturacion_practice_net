@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -37,6 +37,19 @@
             align-items: center;
             height: 64px;
         }
+
+        .navbar-brand {
+            color: #C0C0C0 !important;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .navbar-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
     </style>
 </head>
 
@@ -49,7 +62,9 @@
 
             <a class="navbar-brand fw-bold d-flex align-items-center"
                asp-controller="Home" asp-action="Index">
-                🏍️ Motos Rodriguez
+                <img src="~/LOGO.png" alt="Motos Rodriguez" class="navbar-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <span style="display: none;">🏍️ Motos Rodriguez</span>
+                <span>Motos Rodriguez</span>
             </a>
 
             <button class="navbar-toggler" type="button"
@@ -91,8 +106,9 @@
 
                     <!-- CARRITO -->
                     <li class="nav-item ms-3">
-                        <a class="nav-link text-warning" asp-controller="Cart" asp-action="Index">
+                        <a class="nav-link text-warning position-relative" asp-controller="Cart" asp-action="Index">
                             <i class="fas fa-shopping-cart fa-lg"></i>
+                            <span id="cartBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none; font-size: 0.7rem; padding: 0.25em 0.5em;">0</span>
                         </a>
                     </li>
 
@@ -113,13 +129,13 @@
             <div class="container">
                 <div class="row text-center gy-2">
                     <div class="col-md-4">
-                        <i class="fas fa-map-marker-alt"></i> Lourdes Colón
+                        <i class="fas fa-map-marker-alt"></i> 3º CALLE PONIENTE , #3-7B, MUNICIPIO DE SANTA TECLA DEPARTAMENTO DE LA LIBERTAD 
                     </div>
                     <div class="col-md-4">
-                        <i class="fab fa-whatsapp"></i> +503 5226-3652
+                        <i class="fab fa-whatsapp"></i> +503 7595-7484
                     </div>
                     <div class="col-md-4">
-                        <i class="fas fa-envelope"></i> tallerrodriguez0@gmail.com
+                        <i class="fas fa-envelope"></i> Jr9000390@gmail.com
                     </div>
                 </div>
             </div>
@@ -141,6 +157,43 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js"></script>
+
+    <script>
+        // Actualizar contador del carrito al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartBadge();
+        });
+
+        function updateCartBadge() {
+            fetch('@Url.Action("GetCartCount", "Cart")')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('cartBadge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => console.error('Error al obtener contador del carrito:', error));
+        }
+
+        // Función global para actualizar el badge desde otras páginas
+        window.updateCartCount = function(count) {
+            const badge = document.getElementById('cartBadge');
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        };
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

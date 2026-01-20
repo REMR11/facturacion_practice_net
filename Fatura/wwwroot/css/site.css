@@ -284,6 +284,7 @@ ul.contact {
 
 #logo {
     padding: 8em 0em 4em 0em;
+    background-color: #000000;
 }
 
     #logo h1 {
@@ -295,17 +296,17 @@ ul.contact {
 
     #logo a {
         text-decoration: none;
-        color: #FFF;
+        color: #C0C0C0;
     }
 
     #logo span {
         text-transform: uppercase;
         font-size: 2.90em;
-        color: rgba(255,255,255,1);
+        color: #C0C0C0;
     }
 
         #logo span a {
-            color: rgba(255,255,255,0.8);
+            color: #C0C0C0;
         }
 
 
@@ -679,7 +680,7 @@ ul.tools {
     padding: 20px;
 }
 
-    /* GalerÌa de ¡lbumes */
+    /* Galer√≠a de √Ålbumes */
     #album-gallery .gallery {
         display: grid !important; /* Asegura el uso del grid */
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -688,7 +689,7 @@ ul.tools {
         box-sizing: border-box;
     }
 
-/* Estilo de los ¡lbumes */
+/* Estilo de los √Ålbumes */
 .album-item {
     background-color: #fff;
     padding: 20px;
@@ -704,7 +705,7 @@ ul.tools {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
-    /* Imagen del ¡lbum */
+    /* Imagen del √Ålbum */
     .album-item img {
         width: 100%;
         height: auto;
@@ -712,7 +713,7 @@ ul.tools {
         margin-bottom: 15px;
     }
 
-/* TÌtulos y Descripciones */
+/* T√≠tulos y Descripciones */
 .album-title {
     font-size: 1.4rem;
     font-weight: bold;
@@ -768,7 +769,7 @@ ul.tools {
 
 @media (max-width: 480px) {
     #album-gallery .gallery {
-        grid-template-columns: 1fr; /* Una columna en pantallas pequeÒas */
+        grid-template-columns: 1fr; /* Una columna en pantallas peque√±as */
     }
 }
 
@@ -791,8 +792,8 @@ ul.tools {
 
 .custom-image {
     width: 100%; /* Asegura que la imagen ocupe el ancho de la tarjeta */
-    height: auto; /* MantÈn la proporciÛn de la imagen */
-    max-height: 225px; /* Ajusta la altura m·xima para mantener la uniformidad */
+    height: auto; /* Mant√©n la proporci√≥n de la imagen */
+    max-height: 225px; /* Ajusta la altura m√°xima para mantener la uniformidad */
     object-fit: cover; /* Hace que la imagen encaje bien en el espacio */
     border-radius: 0.25rem; /* Da bordes redondeados consistentes */
 }

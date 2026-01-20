@@ -13,6 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -47,6 +54,7 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IUnidadMedidaService, UnidadMedidaService>();
 builder.Services.AddScoped<IFacturaPdfService, FacturaPdfService>();
+builder.Services.AddScoped<IQrService, QrService>();
 
 // Registrar FacturaTicketService solo en Windows (requiere System.Drawing.Printing)
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -76,6 +84,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthorization();
 
 app.MapControllerRoute(

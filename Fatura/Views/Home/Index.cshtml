@@ -1,77 +1,162 @@
-﻿<!-- ======= CONTENIDO ======= -->
+@using Fatura.Models.Catalogos
+@model IEnumerable<Producto>
+
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<!-- ======= CONTENIDO ======= -->
 
 <section class="my-5">
     <h2 class="text-center fw-bold mb-4">🛒 Productos para Motos</h2>
 
     <div class="row g-4">
-
-        <!-- PRODUCTO 1 -->
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm">
-                <img src="~/css/Image/Casco.png" class="card-img-top p-3" alt="Casco">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Casco Integral</h5>
-                    <p class="card-text text-muted">Alta seguridad y comodidad</p>
-                    <p class="fw-bold text-success">$65.00</p>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var producto in Model)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm">
+                        @{
+                            var imagenUrl = GetProductImage(producto.NombreProducto);
+                        }
+                        <img src="@imagenUrl" class="card-img-top p-3" alt="@producto.NombreProducto" style="height: 200px; object-fit: contain;">
+                        <div class="card-body text-center d-flex flex-column">
+                            <h5 class="card-title">@producto.NombreProducto</h5>
+                            <p class="card-text text-muted flex-grow-1">@(producto.Descripcion ?? "Producto de calidad")</p>
+                            <p class="fw-bold text-success fs-5">$@(producto.Precio?.ToString("F2") ?? "0.00")</p>
+                        </div>
+                        <div class="card-footer bg-white text-center">
+                            <button class="btn btn-success btn-sm w-100 btn-add-cart" 
+                                    data-producto-id="@producto.IdProducto"
+                                    data-producto-nombre="@producto.NombreProducto"
+                                    data-producto-precio="@(producto.Precio ?? 0)">
+                                <i class="fas fa-cart-plus"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-footer bg-white text-center">
-                    <button class="btn btn-sm btn-success">
-                        <i class="fas fa-cart-plus"></i> Agregar
-                    </button>
-                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center">
+                <p class="text-muted">No hay productos disponibles en este momento.</p>
             </div>
-        </div>
-
-        <!-- PRODUCTO 2 -->
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm">
-                <img src="https://www.valvolineglobal.com/49f94e/globalassets/vcom/product%20detail%20pages/motorengine%20oil/full-synthetic/ex_euro_full_syn_xl-iii_5w30_beauty_5qt.png?format=webp&quality=80" class="card-img-top p-3" alt="Aceite">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Aceite para Motor</h5>
-                    <p class="card-text text-muted">Rendimiento y protección</p>
-                    <p class="fw-bold text-success">$12.00</p>
-                </div>
-                <div class="card-footer bg-white text-center">
-                    <button class="btn btn-sm btn-success">
-                        <i class="fas fa-cart-plus"></i> Agregar
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PRODUCTO 3 -->
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm">
-                <img src="https://ferreteriavidri.com/images/items/large/145246.jpg" class="card-img-top p-3" alt="Guantes">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Guantes de Protección</h5>
-                    <p class="card-text text-muted">Seguridad y agarre</p>
-                    <p class="fw-bold text-success">$18.00</p>
-                </div>
-                <div class="card-footer bg-white text-center">
-                    <button class="btn btn-sm btn-success">
-                        <i class="fas fa-cart-plus"></i> Agregar
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PRODUCTO 4 -->
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm">
-                <img src="https://i0.wp.com/www.redd.es/wp-content/uploads/2020/01/bujia_NGK.jpg?resize=1080%2C719" class="card-img-top p-3" alt="Bujía">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Bujía NGK</h5>
-                    <p class="card-text text-muted">Arranque eficiente</p>
-                    <p class="fw-bold text-success">$6.50</p>
-                </div>
-                <div class="card-footer bg-white text-center">
-                    <button class="btn btn-sm btn-success">
-                        <i class="fas fa-cart-plus"></i> Agregar
-                    </button>
-                </div>
-            </div>
-        </div>
-
+        }
     </div>
 </section>
+
+@functions {
+    private string GetProductImage(string nombreProducto)
+    {
+        var nombreLower = nombreProducto.ToLower();
+        if (nombreLower.Contains("casco"))
+            return "~/css/Image/Casco.png";
+        if (nombreLower.Contains("aceite"))
+            return "~/css/Image/Aceite.png";
+        if (nombreLower.Contains("guante"))
+            return "~/css/Image/Guantes.png";
+        if (nombreLower.Contains("bujía") || nombreLower.Contains("bujia"))
+            return "~/css/Image/Bujia.png";
+        return "~/css/Image/Casco.png"; // Imagen por defecto
+    }
+}
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        function getToken() {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]');
+            return token ? token.value : '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-add-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productoId = this.getAttribute('data-producto-id');
+                    const productoNombre = this.getAttribute('data-producto-nombre');
+                    
+                    // Mostrar feedback visual
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agregando...';
+                    this.disabled = true;
+                    
+                    fetch('@Url.Action("AddToCart", "Cart")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': getToken()
+                        },
+                        body: JSON.stringify({
+                            productoId: parseInt(productoId),
+                            cantidad: 1
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Mostrar notificación
+                            showNotification('Producto agregado al carrito', 'success');
+                            // Actualizar contador del carrito si existe
+                            updateCartCount(data.cartCount);
+                        } else {
+                            showNotification(data.message || 'Error al agregar producto', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Error al agregar producto', 'error');
+                    })
+                    .finally(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    });
+                });
+            });
+        });
+
+        function showNotification(message, type) {
+            // Crear notificación
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    <span>${message}</span>
+                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto-remover después de 3 segundos
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function updateCartCount(count) {
+            // Usar la función global si existe
+            if (typeof window.updateCartCount === 'function') {
+                window.updateCartCount(count);
+            } else {
+                // Fallback: buscar y actualizar contador del carrito en el navbar
+                const cartIcon = document.querySelector('.fa-shopping-cart');
+                if (cartIcon && count > 0) {
+                    let badge = cartIcon.parentElement.querySelector('#cartBadge');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.id = 'cartBadge';
+                        badge.className = 'badge bg-danger position-absolute top-0 start-100 translate-middle';
+                        badge.style.cssText = 'font-size: 0.7rem; padding: 0.25em 0.5em;';
+                        cartIcon.parentElement.style.position = 'relative';
+                        cartIcon.parentElement.appendChild(badge);
+                    }
+                    badge.textContent = count;
+                    badge.style.display = 'inline-block';
+                }
+            }
+        }
+    </script>
+}

@@ -1,0 +1,154 @@
+@using Fatura.Controllers
+@model CartViewModel
+@{
+    var cart = Model ?? new CartViewModel { Items = new List<CartItem>() };
+}
+
+@{
+    ViewData["Title"] = "Carrito de Compras";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <h2 class="mb-4">🛒 Carrito de Compras</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (cart.Items != null && cart.Items.Any())
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Productos en el carrito</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var item in cart.Items)
+                        {
+                            <div class="row align-items-center mb-3 pb-3 border-bottom">
+                                <div class="col-md-2">
+                                    <img src="@Url.Content(item.Imagen)" alt="@item.Nombre" class="img-fluid rounded" style="max-height: 80px; object-fit: contain;">
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="mb-0">@item.Nombre</h6>
+                                    <small class="text-muted">Precio unitario: $@item.Precio.ToString("F2")</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label small">Cantidad</label>
+                                    <form method="post" asp-action="UpdateQuantity" style="display: inline;">
+                                        <input type="hidden" name="productoId" value="@item.ProductoId" />
+                                        <input type="number" name="cantidad" value="@item.Cantidad" min="1" 
+                                               class="form-control form-control-sm" 
+                                               onchange="this.form.submit()" />
+                                    </form>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <strong>$@item.SubTotal.ToString("F2")</strong>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <form method="post" asp-action="RemoveItem" style="display: inline;">
+                                        <input type="hidden" name="productoId" value="@item.ProductoId" />
+                                        <button type="submit" class="btn btn-danger btn-sm" 
+                                                onclick="return confirm('¿Eliminar este producto del carrito?');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Resumen del Pedido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>$@cart.SubTotal.ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>IVA (13%):</span>
+                            <span>$@cart.Iva.ToString("F2")</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong class="text-success fs-5">$@cart.Total.ToString("F2")</strong>
+                        </div>
+
+                        <form method="post" asp-action="Checkout" id="checkoutForm">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+                                <label class="form-label">Nombre del Cliente</label>
+                                <input type="text" name="nombreCliente" class="form-control" 
+                                       placeholder="Nombre completo" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">NIT/DUI</label>
+                                <input type="text" name="nitCliente" class="form-control" 
+                                       placeholder="00000000-0" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Método de Pago <span class="text-danger">*</span></label>
+                                <select name="metodoPago" class="form-select" required>
+                                    <option value="">Seleccione método de pago</option>
+                                    <option value="Efectivo">💵 Efectivo</option>
+                                    <option value="Tarjeta">💳 Tarjeta</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 btn-lg">
+                                <i class="fas fa-credit-card"></i> Proceder al Pago
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
+            <h4 class="text-muted">Tu carrito está vacío</h4>
+            <p class="text-muted">Agrega productos desde nuestra tienda</p>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Volver a Productos
+            </a>
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-header {
+        border-bottom: 2px solid #f0f0f0;
+        padding: 1rem;
+    }
+    
+    .img-fluid {
+        width: 100%;
+    }
+</style>

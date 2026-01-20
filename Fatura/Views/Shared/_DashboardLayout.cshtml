@@ -5,11 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Factura Rodriguez</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        .navbar {
+            padding-top: 0;
+            padding-bottom: 0;
+            min-height: 64px;
+        }
+        .navbar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            height: 64px;
+        }
+        .navbar-brand {
+            color: #C0C0C0 !important;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .navbar-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+        .dashboard-container {
+            padding-top: 64px;
+        }
+        .dashboard-sidebar {
+            top: 64px;
+            height: calc(100vh - 64px);
+        }
+        .dashboard-main {
+            margin-top: 0;
+        }
+    </style>
 </head>
 <body>
+    <!-- Navbar del sitio web -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style="z-index: 1030;">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                <img src="~/LOGO.png" alt="Motos Rodriguez" class="navbar-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <span style="display: none;">🏍️ Motos Rodriguez</span>
+                <span>Motos Rodriguez</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="mainMenu">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Productos" asp-action="Index">Productos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Factura</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Inventario" asp-action="Index">Inventario</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <form class="d-flex align-items-center" method="get" asp-controller="Customer" asp-action="Index">
+                            <input class="form-control form-control-sm" type="search" name="search" placeholder="Buscar">
+                            <button class="btn btn-outline-light btn-sm ms-1" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="nav-link text-warning" asp-controller="Cart" asp-action="Index">
+                            <i class="fas fa-shopping-cart fa-lg"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="dashboard-container">
         @* Sidebar Navigation *@
         @await Html.PartialAsync("_Sidebar")
@@ -26,6 +105,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
