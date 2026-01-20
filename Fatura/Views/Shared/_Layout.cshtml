@@ -125,7 +125,7 @@
     </nav>
 
     <!-- Menú flotante para móviles y tablets -->
-    <div class="floating-menu-overlay" id="floatingMenuOverlay"></div>
+    <div class="floating-menu-overlay d-lg-none" id="floatingMenuOverlay"></div>
     
     <button class="floating-menu-btn d-lg-none" id="floatingMenuBtn" aria-label="Abrir menú">
         <i class="fas fa-bars" id="floatingMenuIcon"></i>
@@ -220,6 +220,18 @@
     <script>
         // Actualizar contador del carrito al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
+            // Asegurar que el overlay esté oculto al cargar
+            const overlay = document.getElementById('floatingMenuOverlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+                overlay.style.display = 'none';
+            }
+            
+            // Asegurar que el contenido sea visible
+            document.body.style.display = 'block';
+            document.body.style.visibility = 'visible';
+            document.body.style.opacity = '1';
+            
             updateCartBadge();
             initMobileMenu();
         });

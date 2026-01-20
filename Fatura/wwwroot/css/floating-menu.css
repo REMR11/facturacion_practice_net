@@ -5,6 +5,19 @@
 /* Menú flotante en esquina */
 @media (max-width: 991px) {
     
+    /* Asegurar que el contenido sea visible por defecto */
+    body {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    main, main.container-fluid, main.main-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
     /* Ocultar completamente el menú de Bootstrap en móviles */
     .navbar-toggler {
         display: none !important;
@@ -236,7 +249,7 @@
         font-weight: 700;
     }
     
-    /* Overlay oscuro cuando el menú está abierto */
+    /* Overlay oscuro cuando el menú está abierto - SOLO VISIBLE CUANDO SE ABRE */
     .floating-menu-overlay {
         position: fixed;
         top: 0;
@@ -248,11 +261,13 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
+        pointer-events: none; /* No bloquea clics cuando está oculto */
     }
     
     .floating-menu-overlay.show {
         opacity: 1;
         visibility: visible;
+        pointer-events: auto; /* Permite clics cuando está visible */
     }
     
     /* Asegurar que los productos siempre sean visibles y no se oculten */
@@ -370,22 +385,46 @@
         padding-top: 0.5rem !important;
         margin-top: 0 !important;
         padding-right: 0.5rem !important;
+        position: relative !important;
+        z-index: 1 !important; /* Asegurar que esté por encima del overlay cuando está oculto */
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
     .productos-section {
         padding-top: 0.25rem !important;
         margin-top: 0 !important;
         padding-right: 0 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
     .productos-title {
         margin-top: 0.5rem !important;
         margin-bottom: 1rem !important;
+        display: block !important;
+        visibility: visible !important;
     }
     
     /* Asegurar que los productos no se oculten */
     .row.g-4 {
         margin-right: 0 !important;
+        display: flex !important;
+        visibility: visible !important;
+    }
+    
+    /* Asegurar que el body y html sean visibles */
+    body {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    html {
+        display: block !important;
+        visibility: visible !important;
     }
 }
 
