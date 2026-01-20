@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/mobile-tablet.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/floating-menu.css" asp-append-version="true" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         .navbar {
@@ -64,47 +65,98 @@
                     aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse justify-content-end" id="mainMenu">
+            <div class="collapse navbar-collapse justify-content-end d-lg-flex" id="mainMenu">
                 <ul class="navbar-nav align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link mobile-nav-link" asp-controller="Home" asp-action="Index">
-                            <i class="fas fa-home me-2"></i>Inicio
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-home me-2 d-lg-none"></i>Inicio
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link mobile-nav-link" asp-controller="Productos" asp-action="Index">
-                            <i class="fas fa-box me-2"></i>Productos
+                        <a class="nav-link" asp-controller="Productos" asp-action="Index">
+                            <i class="fas fa-box me-2 d-lg-none"></i>Productos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link mobile-nav-link" asp-controller="Dashboard" asp-action="Index">
-                            <i class="fas fa-file-invoice me-2"></i>Factura
+                        <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                            <i class="fas fa-file-invoice me-2 d-lg-none"></i>Factura
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link mobile-nav-link" asp-controller="Inventario" asp-action="Index">
-                            <i class="fas fa-warehouse me-2"></i>Inventario
+                        <a class="nav-link" asp-controller="Inventario" asp-action="Index">
+                            <i class="fas fa-warehouse me-2 d-lg-none"></i>Inventario
                         </a>
                     </li>
-                    <li class="nav-item ms-3 mobile-search-item">
-                        <form class="d-flex align-items-center mobile-search-form" method="get" asp-controller="Customer" asp-action="Index">
-                            <input class="form-control form-control-sm mobile-search-input" type="search" name="search" placeholder="Buscar cliente...">
-                            <button class="btn btn-outline-light btn-sm ms-1 mobile-search-btn" type="submit">
+                    <li class="nav-item ms-3">
+                        <form class="d-flex align-items-center" method="get" asp-controller="Customer" asp-action="Index">
+                            <input class="form-control form-control-sm" type="search" name="search" placeholder="Buscar cliente...">
+                            <button class="btn btn-outline-light btn-sm ms-1" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
                     </li>
-                    <li class="nav-item ms-3 mobile-cart-item">
-                        <a class="nav-link text-warning position-relative mobile-nav-link" asp-controller="Cart" asp-action="Index">
+                    <li class="nav-item ms-3">
+                        <a class="nav-link text-warning position-relative" asp-controller="Cart" asp-action="Index">
                             <i class="fas fa-shopping-cart fa-lg"></i>
                             <span id="cartBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none; font-size: 0.7rem; padding: 0.25em 0.5em;">0</span>
-                            <span class="d-inline d-lg-none ms-2">Carrito</span>
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Menú flotante para móviles y tablets -->
+    <div class="floating-menu-overlay d-lg-none" id="floatingMenuOverlay"></div>
+    
+    <button class="floating-menu-btn d-lg-none" id="floatingMenuBtn" aria-label="Abrir menú">
+        <i class="fas fa-bars" id="floatingMenuIcon"></i>
+    </button>
+    
+    <div class="floating-menu-panel d-lg-none" id="floatingMenuPanel">
+        <div class="floating-menu-header">
+            <h5><i class="fas fa-bars me-2"></i>Menú</h5>
+            <button class="floating-menu-close" id="floatingMenuClose" aria-label="Cerrar menú">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="floating-menu-content">
+            <a href="@Url.Action("Index", "Home")" class="floating-menu-item">
+                <i class="fas fa-home"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="@Url.Action("Index", "Productos")" class="floating-menu-item">
+                <i class="fas fa-box"></i>
+                <span>Productos</span>
+            </a>
+            <a href="@Url.Action("Index", "Dashboard")" class="floating-menu-item">
+                <i class="fas fa-file-invoice"></i>
+                <span>Factura</span>
+            </a>
+            <a href="@Url.Action("Index", "Inventario")" class="floating-menu-item">
+                <i class="fas fa-warehouse"></i>
+                <span>Inventario</span>
+            </a>
+        </div>
+        
+        <div class="floating-search">
+            <form method="get" asp-controller="Customer" asp-action="Index">
+                <input type="search" name="search" class="floating-search-input" placeholder="Buscar cliente..." />
+                <button type="submit" class="floating-search-btn">
+                    <i class="fas fa-search me-2"></i>Buscar
+                </button>
+            </form>
+        </div>
+        
+        <div class="floating-cart">
+            <a href="@Url.Action("Index", "Cart")" class="floating-cart-link">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Carrito de Compras</span>
+                <span class="floating-cart-badge" id="floatingCartBadge" style="display: none;">0</span>
+            </a>
+        </div>
+    </div>
 
     <div class="dashboard-container">
         @* Sidebar Navigation *@
@@ -127,28 +179,74 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
-        // Cerrar menú móvil al hacer clic en un enlace
+        // Controlar menú flotante
         document.addEventListener('DOMContentLoaded', function() {
-            const navLinks = document.querySelectorAll('.mobile-nav-link');
-            const navbarCollapse = document.getElementById('mainMenu');
-            const navbarToggler = document.querySelector('.navbar-toggler');
+            const floatingMenuBtn = document.getElementById('floatingMenuBtn');
+            const floatingMenuPanel = document.getElementById('floatingMenuPanel');
+            const floatingMenuOverlay = document.getElementById('floatingMenuOverlay');
+            const floatingMenuClose = document.getElementById('floatingMenuClose');
+            const floatingMenuIcon = document.getElementById('floatingMenuIcon');
+            const floatingMenuItems = document.querySelectorAll('.floating-menu-item, .floating-cart-link');
             
-            navLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    // Cerrar el menú si está abierto en móvil
-                    if (window.innerWidth <= 991 && navbarCollapse && navbarCollapse.classList.contains('show')) {
-                        const bsCollapse = new bootstrap.Collapse(navbarCollapse, {
-                            toggle: false
-                        });
-                        bsCollapse.hide();
-                        
-                        // Actualizar aria-expanded
-                        if (navbarToggler) {
-                            navbarToggler.setAttribute('aria-expanded', 'false');
-                        }
+            function openMenu() {
+                if (floatingMenuPanel) floatingMenuPanel.classList.add('show');
+                if (floatingMenuOverlay) floatingMenuOverlay.classList.add('show');
+                if (floatingMenuBtn) floatingMenuBtn.classList.add('active');
+                if (floatingMenuIcon) floatingMenuIcon.className = 'fas fa-times';
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeMenu() {
+                if (floatingMenuPanel) floatingMenuPanel.classList.remove('show');
+                if (floatingMenuOverlay) floatingMenuOverlay.classList.remove('show');
+                if (floatingMenuBtn) floatingMenuBtn.classList.remove('active');
+                if (floatingMenuIcon) floatingMenuIcon.className = 'fas fa-bars';
+                document.body.style.overflow = '';
+            }
+            
+            // Abrir menú
+            if (floatingMenuBtn) {
+                floatingMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (floatingMenuPanel && floatingMenuPanel.classList.contains('show')) {
+                        closeMenu();
+                    } else {
+                        openMenu();
                     }
                 });
+            }
+            
+            // Cerrar menú
+            if (floatingMenuClose) {
+                floatingMenuClose.addEventListener('click', closeMenu);
+            }
+            
+            // Cerrar al hacer clic en overlay
+            if (floatingMenuOverlay) {
+                floatingMenuOverlay.addEventListener('click', closeMenu);
+            }
+            
+            // Cerrar al hacer clic en un enlace
+            floatingMenuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    setTimeout(closeMenu, 300);
+                });
             });
+            
+            // Actualizar badge del carrito flotante
+            const cartBadge = document.getElementById('cartBadge');
+            const floatingCartBadge = document.getElementById('floatingCartBadge');
+            if (cartBadge && floatingCartBadge) {
+                const observer = new MutationObserver(function() {
+                    if (cartBadge.style.display !== 'none' && cartBadge.textContent) {
+                        floatingCartBadge.textContent = cartBadge.textContent;
+                        floatingCartBadge.style.display = 'flex';
+                    } else {
+                        floatingCartBadge.style.display = 'none';
+                    }
+                });
+                observer.observe(cartBadge, { attributes: true, childList: true, attributeFilter: ['style'] });
+            }
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

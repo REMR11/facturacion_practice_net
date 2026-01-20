@@ -1,0 +1,361 @@
+/* ============================================
+   MENÚ FLOTANTE PARA MÓVILES Y TABLETS
+   ============================================ */
+
+/* Menú flotante en esquina */
+@media (max-width: 991px) {
+    
+    /* Botón flotante del menú */
+    .floating-menu-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .floating-menu-btn:hover,
+    .floating-menu-btn:active {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+    
+    .floating-menu-btn.active {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        transform: rotate(45deg);
+    }
+    
+    /* Panel flotante del menú */
+    .floating-menu-panel {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 280px;
+        max-width: calc(100vw - 40px);
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        z-index: 1045;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(20px) scale(0.95);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .floating-menu-panel.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+    
+    /* Header del panel */
+    .floating-menu-header {
+        padding: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px 16px 0 0;
+    }
+    
+    .floating-menu-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .floating-menu-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .floating-menu-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Contenido del menú */
+    .floating-menu-content {
+        padding: 0.5rem;
+    }
+    
+    .floating-menu-item {
+        display: flex;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        margin-bottom: 0.25rem;
+        border-radius: 10px;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.2s ease;
+        min-height: 48px;
+    }
+    
+    .floating-menu-item:hover,
+    .floating-menu-item:active {
+        background-color: #f8f9fa;
+        transform: translateX(4px);
+    }
+    
+    .floating-menu-item i {
+        width: 28px;
+        text-align: center;
+        font-size: 1.1rem;
+        color: #667eea;
+        margin-right: 0.75rem;
+    }
+    
+    .floating-menu-item span {
+        flex: 1;
+        font-weight: 500;
+    }
+    
+    /* Buscador en panel flotante */
+    .floating-search {
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .floating-search-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px; /* Previene zoom en iOS */
+        transition: border-color 0.2s;
+    }
+    
+    .floating-search-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+    
+    .floating-search-btn {
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .floating-search-btn:active {
+        transform: scale(0.98);
+    }
+    
+    /* Carrito en panel flotante */
+    .floating-cart {
+        padding: 1rem;
+        border-top: 2px solid #f0f0f0;
+        background: #f8f9fa;
+        border-radius: 0 0 16px 16px;
+    }
+    
+    .floating-cart-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        position: relative;
+        min-height: 48px;
+    }
+    
+    .floating-cart-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .floating-cart-link i {
+        font-size: 1.3rem;
+        margin-right: 0.5rem;
+    }
+    
+    .floating-cart-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff4444;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+    
+    /* Overlay oscuro cuando el menú está abierto */
+    .floating-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .floating-menu-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Asegurar que los productos siempre sean visibles */
+    .productos-section {
+        padding-top: 0.5rem !important;
+        margin-top: 0 !important;
+    }
+    
+    .productos-grid {
+        margin-top: 0 !important;
+    }
+    
+    /* Asegurar que el main no tenga padding superior excesivo */
+    main.main-content {
+        padding-top: 0.5rem !important;
+        margin-top: 0 !important;
+    }
+}
+
+/* Tablets - Menú más grande */
+@media (min-width: 768px) and (max-width: 991px) {
+    .floating-menu-panel {
+        width: 340px;
+        bottom: 100px;
+        right: 30px;
+    }
+    
+    .floating-menu-btn {
+        width: 64px;
+        height: 64px;
+        bottom: 30px;
+        right: 30px;
+        font-size: 1.6rem;
+    }
+    
+    .floating-menu-item {
+        padding: 1rem 1.25rem;
+        font-size: 1.05rem;
+    }
+    
+    .floating-menu-item i {
+        font-size: 1.2rem;
+        width: 32px;
+    }
+}
+
+/* Navbar simplificado en móviles - solo logo */
+@media (max-width: 991px) {
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        background-color: rgba(33, 37, 41, 0.98);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 0.5rem 1rem;
+        min-height: 56px;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .navbar-collapse {
+        display: none !important;
+    }
+    
+    .navbar-toggler {
+        display: none !important;
+    }
+    
+    .navbar-brand {
+        margin: 0 auto;
+        max-width: 200px;
+    }
+    
+    .navbar-logo {
+        height: 40px !important;
+    }
+    
+    /* Ajustar padding del body para que no quede oculto */
+    body {
+        padding-top: 56px !important;
+    }
+    
+    /* Asegurar que el contenido principal sea visible */
+    main.container-fluid,
+    main.main-content {
+        padding-top: 0.5rem !important;
+        margin-top: 0 !important;
+    }
+    
+    .productos-section {
+        padding-top: 0.25rem !important;
+        margin-top: 0 !important;
+    }
+    
+    .productos-title {
+        margin-top: 0.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* Scrollbar personalizado para el panel */
+.floating-menu-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.floating-menu-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.floating-menu-panel::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.floating-menu-panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
