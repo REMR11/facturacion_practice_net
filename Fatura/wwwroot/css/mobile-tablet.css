@@ -67,16 +67,18 @@ img {
         height: 1.5em;
     }
     
-    /* Menú colapsado mejorado */
+    /* Menú colapsado - COMPLETAMENTE OCULTO */
     .navbar-collapse {
-        background-color: #212529;
-        margin-top: 0.5rem;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        max-height: calc(100vh - 80px);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        max-height: 0 !important;
+    }
+    
+    .navbar-collapse.show {
+        display: none !important;
+        visibility: hidden !important;
     }
     
     .navbar-nav {

@@ -70,17 +70,18 @@
                 <span class="d-none d-lg-inline">Motos Rodriguez</span>
             </a>
 
-            <!-- Menú completo para desktop -->
+            <!-- Menú completo para desktop - OCULTO EN MÓVILES -->
             <button class="navbar-toggler d-lg-none" type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#mainMenu"
                     aria-controls="mainMenu"
                     aria-expanded="false"
-                    aria-label="Toggle navigation">
+                    aria-label="Toggle navigation"
+                    style="display: none !important;">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse justify-content-end d-lg-flex" id="mainMenu">
+            <div class="collapse navbar-collapse justify-content-end d-lg-flex d-none" id="mainMenu">
                 <ul class="navbar-nav align-items-center">
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Home" asp-action="Index">
@@ -275,8 +276,34 @@
             }
         };
 
-        // Controlar menú flotante
+        // Controlar menú flotante y prevenir menú Bootstrap
         function initMobileMenu() {
+            // Prevenir que el menú de Bootstrap se abra en móviles
+            if (window.innerWidth <= 991) {
+                const navbarToggler = document.querySelector('.navbar-toggler');
+                const navbarCollapse = document.getElementById('mainMenu');
+                
+                if (navbarToggler) {
+                    navbarToggler.style.display = 'none';
+                    navbarToggler.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    });
+                }
+                
+                if (navbarCollapse) {
+                    navbarCollapse.classList.remove('show');
+                    navbarCollapse.style.display = 'none';
+                }
+                
+                // Prevenir eventos de Bootstrap Collapse
+                const collapseInstances = bootstrap.Collapse.getInstance(navbarCollapse);
+                if (collapseInstances) {
+                    collapseInstances.dispose();
+                }
+            }
+            
             const floatingMenuBtn = document.getElementById('floatingMenuBtn');
             const floatingMenuPanel = document.getElementById('floatingMenuPanel');
             const floatingMenuOverlay = document.getElementById('floatingMenuOverlay');
@@ -285,26 +312,36 @@
             const floatingMenuItems = document.querySelectorAll('.floating-menu-item, .floating-cart-link');
             
             function openMenu() {
-                floatingMenuPanel.classList.add('show');
-                floatingMenuOverlay.classList.add('show');
-                floatingMenuBtn.classList.add('active');
-                floatingMenuIcon.className = 'fas fa-times';
+                if (floatingMenuPanel) floatingMenuPanel.classList.add('show');
+                if (floatingMenuOverlay) floatingMenuOverlay.classList.add('show');
+                if (floatingMenuBtn) floatingMenuBtn.classList.add('active');
+                if (floatingMenuIcon) floatingMenuIcon.className = 'fas fa-times';
+                document.body.classList.add('menu-open');
                 document.body.style.overflow = 'hidden';
+                
+                // Asegurar que el menú de Bootstrap esté cerrado
+                const navbarCollapse = document.getElementById('mainMenu');
+                if (navbarCollapse) {
+                    navbarCollapse.classList.remove('show');
+                    navbarCollapse.style.display = 'none';
+                }
             }
             
             function closeMenu() {
-                floatingMenuPanel.classList.remove('show');
-                floatingMenuOverlay.classList.remove('show');
-                floatingMenuBtn.classList.remove('active');
-                floatingMenuIcon.className = 'fas fa-bars';
+                if (floatingMenuPanel) floatingMenuPanel.classList.remove('show');
+                if (floatingMenuOverlay) floatingMenuOverlay.classList.remove('show');
+                if (floatingMenuBtn) floatingMenuBtn.classList.remove('active');
+                if (floatingMenuIcon) floatingMenuIcon.className = 'fas fa-bars';
+                document.body.classList.remove('menu-open');
                 document.body.style.overflow = '';
             }
             
             // Abrir menú
             if (floatingMenuBtn) {
                 floatingMenuBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    if (floatingMenuPanel.classList.contains('show')) {
+                    if (floatingMenuPanel && floatingMenuPanel.classList.contains('show')) {
                         closeMenu();
                     } else {
                         openMenu();
@@ -314,18 +351,24 @@
             
             // Cerrar menú
             if (floatingMenuClose) {
-                floatingMenuClose.addEventListener('click', closeMenu);
+                floatingMenuClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeMenu();
+                });
             }
             
             // Cerrar al hacer clic en overlay
             if (floatingMenuOverlay) {
-                floatingMenuOverlay.addEventListener('click', closeMenu);
+                floatingMenuOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeMenu();
+                });
             }
             
             // Cerrar al hacer clic en un enlace
             floatingMenuItems.forEach(item => {
                 item.addEventListener('click', function() {
-                    setTimeout(closeMenu, 300); // Pequeño delay para mejor UX
+                    setTimeout(closeMenu, 300);
                 });
             });
             

@@ -5,13 +5,26 @@
 /* Menú flotante en esquina */
 @media (max-width: 991px) {
     
+    /* Ocultar completamente el menú de Bootstrap en móviles */
+    .navbar-toggler {
+        display: none !important;
+    }
+    
+    .navbar-collapse {
+        display: none !important;
+    }
+    
+    .navbar-collapse.show {
+        display: none !important;
+    }
+    
     /* Botón flotante del menú */
     .floating-menu-btn {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
+        top: 70px;
+        right: 15px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
@@ -21,7 +34,7 @@
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         cursor: pointer;
         transition: all 0.3s ease;
         -webkit-tap-highlight-color: transparent;
@@ -38,30 +51,32 @@
         transform: rotate(45deg);
     }
     
-    /* Panel flotante del menú */
+    /* Panel flotante del menú - POSICIONADO AL LADO DERECHO */
     .floating-menu-panel {
         position: fixed;
-        bottom: 90px;
-        right: 20px;
-        width: 280px;
-        max-width: calc(100vw - 40px);
+        top: 70px;
+        right: 15px;
+        width: 260px;
+        max-width: calc(100vw - 30px);
         background: white;
         border-radius: 16px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         z-index: 1045;
         opacity: 0;
         visibility: hidden;
-        transform: translateY(20px) scale(0.95);
+        transform: translateX(20px) scale(0.95);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        max-height: calc(100vh - 120px);
+        max-height: calc(100vh - 90px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        /* Asegurar que no empuje el contenido */
+        position: fixed !important;
     }
     
     .floating-menu-panel.show {
         opacity: 1;
         visibility: visible;
-        transform: translateY(0) scale(1);
+        transform: translateX(0) scale(1);
     }
     
     /* Header del panel */
@@ -240,37 +255,53 @@
         visibility: visible;
     }
     
-    /* Asegurar que los productos siempre sean visibles */
+    /* Asegurar que los productos siempre sean visibles y no se oculten */
     .productos-section {
         padding-top: 0.5rem !important;
         margin-top: 0 !important;
+        padding-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
     
     .productos-grid {
         margin-top: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
     }
     
     /* Asegurar que el main no tenga padding superior excesivo */
     main.main-content {
         padding-top: 0.5rem !important;
         margin-top: 0 !important;
+        padding-right: 0.5rem !important;
+    }
+    
+    /* Asegurar que el contenido no se desplace cuando el menú está abierto */
+    body.menu-open {
+        overflow: hidden;
+    }
+    
+    body.menu-open main.main-content {
+        margin-right: 0 !important;
+        padding-right: 0.5rem !important;
     }
 }
 
 /* Tablets - Menú más grande */
 @media (min-width: 768px) and (max-width: 991px) {
     .floating-menu-panel {
-        width: 340px;
-        bottom: 100px;
-        right: 30px;
+        width: 300px;
+        top: 80px;
+        right: 20px;
     }
     
     .floating-menu-btn {
-        width: 64px;
-        height: 64px;
-        bottom: 30px;
-        right: 30px;
-        font-size: 1.6rem;
+        width: 60px;
+        height: 60px;
+        top: 80px;
+        right: 20px;
+        font-size: 1.5rem;
     }
     
     .floating-menu-item {
@@ -301,12 +332,22 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
+    /* FORZAR OCULTAR MENÚ BOOTSTRAP */
     .navbar-collapse {
         display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    .navbar-collapse.show {
+        display: none !important;
+        visibility: hidden !important;
     }
     
     .navbar-toggler {
         display: none !important;
+        visibility: hidden !important;
     }
     
     .navbar-brand {
@@ -323,21 +364,28 @@
         padding-top: 56px !important;
     }
     
-    /* Asegurar que el contenido principal sea visible */
+    /* Asegurar que el contenido principal sea visible y no se oculte */
     main.container-fluid,
     main.main-content {
         padding-top: 0.5rem !important;
         margin-top: 0 !important;
+        padding-right: 0.5rem !important;
     }
     
     .productos-section {
         padding-top: 0.25rem !important;
         margin-top: 0 !important;
+        padding-right: 0 !important;
     }
     
     .productos-title {
         margin-top: 0.5rem !important;
         margin-bottom: 1rem !important;
+    }
+    
+    /* Asegurar que los productos no se oculten */
+    .row.g-4 {
+        margin-right: 0 !important;
     }
 }
 
