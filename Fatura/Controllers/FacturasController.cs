@@ -368,6 +368,8 @@ namespace Fatura.Controllers
                         return View(model);
                     }
 
+                    // No establecer IdFactura aquí - Entity Framework lo asignará automáticamente
+                    // cuando la factura se guarde
                     detalles.Add(new DetalleFactura
                     {
                         IdProducto = producto.IdProducto,
@@ -376,6 +378,7 @@ namespace Fatura.Controllers
                         Cantidad = item.Cantidad,
                         PrecioUnitario = precioUnitario,
                         Descuento = item.Descuento >= 0 ? item.Descuento : 0
+                        // IdFactura se establecerá automáticamente por Entity Framework
                     });
                 }
 
@@ -462,13 +465,32 @@ namespace Fatura.Controllers
             catch (DbUpdateException dbEx)
             {
                 // Capturar la excepción interna para obtener más detalles
-                var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
-                var errorMessage = $"Error al guardar en la base de datos: {innerException}";
-                
-                // Si hay más información en la excepción interna, incluirla
+                var errorMessage = dbEx.Message;
                 if (dbEx.InnerException != null)
                 {
-                    errorMessage += $" Detalles: {dbEx.InnerException.Message}";
+                    errorMessage += $" | Detalles: {dbEx.InnerException.Message}";
+                    
+                    // Si hay más excepciones internas, incluirlas también
+                    if (dbEx.InnerException.InnerException != null)
+                    {
+                        errorMessage += $" | Más detalles: {dbEx.InnerException.InnerException.Message}";
+                    }
+                }
+                
+                // Verificar si es un error de clave duplicada
+                if (errorMessage.Contains("duplicate key") || errorMessage.Contains("UNIQUE constraint") || errorMessage.Contains("uk_factura_numero_factura"))
+                {
+                    errorMessage = "El número de factura ya existe. Por favor, intente nuevamente.";
+                }
+                // Verificar si es un error de clave foránea
+                else if (errorMessage.Contains("foreign key") || errorMessage.Contains("FK_") || errorMessage.Contains("fk_"))
+                {
+                    errorMessage = "Error de referencia: Verifique que el cliente y usuario existan y estén activos.";
+                }
+                // Verificar si es un error de campo requerido
+                else if (errorMessage.Contains("NOT NULL") || errorMessage.Contains("required") || errorMessage.Contains("cannot be null"))
+                {
+                    errorMessage = "Faltan campos requeridos. Por favor, verifique todos los datos de la factura.";
                 }
                 
                 ModelState.AddModelError("", errorMessage);
@@ -483,7 +505,11 @@ namespace Fatura.Controllers
                 var errorMessage = ex.Message;
                 if (ex.InnerException != null)
                 {
-                    errorMessage += $" Detalles: {ex.InnerException.Message}";
+                    errorMessage += $" | Detalles: {ex.InnerException.Message}";
+                    if (ex.InnerException.InnerException != null)
+                    {
+                        errorMessage += $" | Más detalles: {ex.InnerException.InnerException.Message}";
+                    }
                 }
                 
                 ModelState.AddModelError("", $"Error al crear la factura: {errorMessage}");

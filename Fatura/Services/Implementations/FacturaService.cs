@@ -69,10 +69,31 @@ namespace Fatura.Services.Implementations
                 factura.NumeroFactura = await GenerarNumeroFacturaAsync();
             }
 
+            // Verificar que el número de factura sea único
+            var facturaExistente = await _unitOfWork.Facturas.FindAsync(f => f.NumeroFactura == factura.NumeroFactura);
+            if (facturaExistente.Any())
+            {
+                // Si existe, generar uno nuevo
+                factura.NumeroFactura = await GenerarNumeroFacturaAsync();
+                // Verificar nuevamente (por si acaso)
+                facturaExistente = await _unitOfWork.Facturas.FindAsync(f => f.NumeroFactura == factura.NumeroFactura);
+                if (facturaExistente.Any())
+                {
+                    throw new BusinessRuleException("NumeroFacturaDuplicado", 
+                        "No se pudo generar un número de factura único. Por favor, intente nuevamente.");
+                }
+            }
+
             // Establecer fecha de creación si no está establecida
             if (factura.FechaCreacion == default)
             {
                 factura.FechaCreacion = DateTime.UtcNow;
+            }
+
+            // Asegurar que los detalles no tengan IdFactura establecido (EF lo asignará)
+            foreach (var detalle in factura.DetalleFacturas)
+            {
+                detalle.IdFactura = 0; // EF lo establecerá automáticamente
             }
 
             try
@@ -83,9 +104,38 @@ namespace Fatura.Services.Implementations
             catch (DbUpdateException dbEx)
             {
                 // Capturar la excepción interna para obtener más detalles
-                var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
+                var errorMessage = dbEx.Message;
+                if (dbEx.InnerException != null)
+                {
+                    errorMessage += $" | Inner: {dbEx.InnerException.Message}";
+                    
+                    // Si hay más excepciones internas, incluirlas también
+                    var inner = dbEx.InnerException.InnerException;
+                    if (inner != null)
+                    {
+                        errorMessage += $" | Inner2: {inner.Message}";
+                    }
+                }
+                
+                // Verificar si es un error de clave duplicada
+                if (errorMessage.Contains("duplicate key") || errorMessage.Contains("UNIQUE constraint"))
+                {
+                    throw new BusinessRuleException("ErrorGuardado", 
+                        $"El número de factura '{factura.NumeroFactura}' ya existe. Por favor, intente nuevamente.");
+                }
+                
                 throw new BusinessRuleException("ErrorGuardado", 
-                    $"Error al guardar la factura en la base de datos: {innerException}");
+                    $"Error al guardar la factura en la base de datos: {errorMessage}");
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $" | Detalles: {ex.InnerException.Message}";
+                }
+                throw new BusinessRuleException("ErrorGuardado", 
+                    $"Error inesperado al guardar la factura: {errorMessage}");
             }
 
             return factura;
@@ -258,7 +308,27 @@ namespace Fatura.Services.Implementations
             var year = DateTime.UtcNow.Year;
             var count = await _unitOfWork.Facturas.CountAsync();
             var numero = (count + 1).ToString("D4");
-            return $"FAC-{year}-{numero}";
+            var numeroFactura = $"FAC-{year}-{numero}";
+            
+            // Verificar que no exista (por si hay problemas de concurrencia)
+            var existe = await _unitOfWork.Facturas.FindAsync(f => f.NumeroFactura == numeroFactura);
+            int intentos = 0;
+            while (existe.Any() && intentos < 100)
+            {
+                count++;
+                numero = count.ToString("D4");
+                numeroFactura = $"FAC-{year}-{numero}";
+                existe = await _unitOfWork.Facturas.FindAsync(f => f.NumeroFactura == numeroFactura);
+                intentos++;
+            }
+            
+            if (intentos >= 100)
+            {
+                // Si después de 100 intentos no encontramos uno único, usar timestamp
+                numeroFactura = $"FAC-{year}-{DateTime.UtcNow:HHmmss}";
+            }
+            
+            return numeroFactura;
         }
 
         public async Task<IEnumerable<Factura>> SearchAsync(string searchTerm)
