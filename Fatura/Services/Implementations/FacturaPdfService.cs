@@ -107,10 +107,17 @@ namespace Fatura.Services.Implementations
 
         public byte[] GenerarPdf(Factura factura)
         {
-            var detalles = factura.DetalleFacturas?.ToList() ?? new List<DetalleFactura>();
-            var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo);
+            try
+            {
+                if (factura == null)
+                {
+                    throw new ArgumentNullException(nameof(factura), "La factura no puede ser nula.");
+                }
 
-            var document = Document.Create(container =>
+                var detalles = factura.DetalleFacturas?.ToList() ?? new List<DetalleFactura>();
+                var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo ?? "S/");
+
+                var document = Document.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -259,7 +266,14 @@ namespace Fatura.Services.Implementations
                 });
             });
 
-            return document.GeneratePdf();
+                return document.GeneratePdf();
+            }
+            catch (Exception ex)
+            {
+                // Log del error (puedes usar un logger aquí)
+                System.Diagnostics.Debug.WriteLine($"Error al generar PDF: {ex.Message}");
+                throw new Exception($"Error al generar el PDF de la factura: {ex.Message}", ex);
+            }
         }
 
         private string GenerarDatosQr(Factura factura)

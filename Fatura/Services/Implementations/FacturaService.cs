@@ -3,6 +3,7 @@ using Fatura.Models.Enums;
 using Fatura.Models.Facturacion;
 using Fatura.Repositories.Interfaces;
 using Fatura.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fatura.Services.Implementations
 {
@@ -41,6 +42,27 @@ namespace Fatura.Services.Implementations
                 }
             }
 
+            // Validar campos requeridos
+            if (string.IsNullOrWhiteSpace(factura.ClienteNitDui))
+            {
+                throw new BusinessRuleException("ClienteNitDuiRequerido", "El NIT/DUI del cliente es requerido.");
+            }
+
+            if (string.IsNullOrWhiteSpace(factura.ClienteNombre))
+            {
+                throw new BusinessRuleException("ClienteNombreRequerido", "El nombre del cliente es requerido.");
+            }
+
+            if (string.IsNullOrWhiteSpace(factura.TipoDocumento))
+            {
+                factura.TipoDocumento = "Factura Electrónica";
+            }
+
+            if (string.IsNullOrWhiteSpace(factura.MonedaSimbolo))
+            {
+                factura.MonedaSimbolo = "$";
+            }
+
             // Generar número de factura si no existe
             if (string.IsNullOrWhiteSpace(factura.NumeroFactura))
             {
@@ -53,8 +75,18 @@ namespace Fatura.Services.Implementations
                 factura.FechaCreacion = DateTime.UtcNow;
             }
 
-            await _unitOfWork.Facturas.AddAsync(factura);
-            await _unitOfWork.SaveChangesAsync();
+            try
+            {
+                await _unitOfWork.Facturas.AddAsync(factura);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Capturar la excepción interna para obtener más detalles
+                var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
+                throw new BusinessRuleException("ErrorGuardado", 
+                    $"Error al guardar la factura en la base de datos: {innerException}");
+            }
 
             return factura;
         }

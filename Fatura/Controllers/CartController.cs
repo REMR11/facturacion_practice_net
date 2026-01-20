@@ -206,13 +206,37 @@ namespace Fatura.Controllers
                     DetalleFacturas = detalles
                 };
 
+                // Validar que hay productos en el carrito
+                if (detalles.Count == 0)
+                {
+                    TempData["Error"] = "El carrito está vacío. Agrega productos antes de realizar el pago.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Validar datos del cliente
+                if (string.IsNullOrWhiteSpace(nombreCliente) && string.IsNullOrWhiteSpace(nitCliente))
+                {
+                    TempData["Error"] = "Debe proporcionar al menos el nombre o NIT del cliente.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var facturaCreada = await _facturaService.CreateAsync(factura);
 
-                // Limpiar carrito
+                // Limpiar carrito solo si la factura se creó exitosamente
                 ClearCart();
 
                 TempData["Success"] = $"Factura #{facturaCreada.IdFactura} creada exitosamente. Método de pago: {metodoPago}";
                 return RedirectToAction("Details", "Facturas", new { id = facturaCreada.IdFactura });
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException ex)
+            {
+                TempData["Error"] = $"Error: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {

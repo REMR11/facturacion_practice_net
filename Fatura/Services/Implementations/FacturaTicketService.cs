@@ -255,10 +255,16 @@ namespace Fatura.Services
         {
             try
             {
+                if (factura == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error: La factura es nula.");
+                    return false;
+                }
+
                 EstablecerFacturaActual(factura);
                 lineasImprimir = new List<string>();
                 var detalles = factura.DetalleFacturas?.ToList() ?? new List<DetalleFactura>();
-                var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo);
+                var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo ?? "S/");
 
                 // Construir el contenido del ticket
                 // NOTA: El logo LOGO.png se dibuja PRIMERO en ImprimirPagina, antes de estas líneas de texto
@@ -362,7 +368,10 @@ namespace Fatura.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al imprimir ticket: {ex.Message}", ex);
+                System.Diagnostics.Debug.WriteLine($"Error al imprimir ticket: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+                // Retornar false en lugar de lanzar excepción para mejor manejo en el controlador
+                return false;
             }
         }
 

@@ -97,21 +97,32 @@ namespace Fatura.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
-                    await _clienteService.CreateAsync(cliente);
-                    return RedirectToAction(nameof(Index));
+                    return View(cliente);
                 }
-                return View(cliente);
+
+                // Validaciones adicionales
+                if (string.IsNullOrWhiteSpace(cliente.Nombre))
+                {
+                    ModelState.AddModelError("Nombre", "El nombre del cliente es requerido.");
+                    return View(cliente);
+                }
+
+                await _clienteService.CreateAsync(cliente);
+                TempData["Success"] = "Cliente creado exitosamente.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.BusinessRuleException ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                TempData["Error"] = ex.Message;
                 return View(cliente);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error al crear el cliente: {ex.Message}");
+                TempData["Error"] = $"Error al crear el cliente: {ex.Message}";
                 return View(cliente);
             }
         }

@@ -5,6 +5,7 @@ using Fatura.Models.ViewModels;
 using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Fatura.Controllers
 {
@@ -134,13 +135,31 @@ namespace Fatura.Controllers
             try
             {
                 var factura = await _facturaService.GetWithDetailsAsync(id);
+                if (factura == null)
+                {
+                    TempData["Error"] = "Factura no encontrada.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var pdfBytes = _facturaPdfService.GenerarPdf(factura);
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    TempData["Error"] = "Error al generar el PDF de la factura.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
                 var fileName = $"Factura_{factura.NumeroFactura ?? id.ToString()}.pdf";
                 return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "Factura no encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al generar el PDF: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
             }
         }
 
@@ -153,6 +172,12 @@ namespace Fatura.Controllers
             try
             {
                 var factura = await _facturaService.GetWithDetailsAsync(id);
+                if (factura == null)
+                {
+                    TempData["Error"] = "Factura no encontrada.";
+                    return RedirectToAction(nameof(Index));
+                }
+                
                 var nombreImpresora = printer ?? "RPT004";
                 
                 bool impreso = _facturaTicketService.ImprimirTicket(factura, nombreImpresora);
@@ -275,24 +300,38 @@ namespace Fatura.Controllers
                 {
                     ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                     ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    TempData["Error"] = "Por favor, corrija los errores en el formulario.";
+                    return View(model);
+                }
+
+                // Validar cliente
+                if (model.ClienteId <= 0)
+                {
+                    ModelState.AddModelError("ClienteId", "Debe seleccionar un cliente.");
+                    ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                    ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    TempData["Error"] = "Debe seleccionar un cliente.";
                     return View(model);
                 }
 
                 var cliente = await _clienteService.GetByIdAsync(model.ClienteId);
                 if (cliente == null)
                 {
-                    ModelState.AddModelError("", "Cliente no encontrado.");
+                    ModelState.AddModelError("ClienteId", "Cliente no encontrado.");
                     ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                     ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    TempData["Error"] = "Cliente no encontrado.";
                     return View(model);
                 }
 
-                var items = model.Items?.Where(i => i.IdProducto > 0).ToList() ?? new List<FacturaItemCreateViewModel>();
+                // Validar productos
+                var items = model.Items?.Where(i => i.IdProducto > 0 && i.Cantidad > 0).ToList() ?? new List<FacturaItemCreateViewModel>();
                 if (items.Count == 0)
                 {
-                    ModelState.AddModelError("", "Agrega al menos un producto válido.");
+                    ModelState.AddModelError("", "Debe agregar al menos un producto válido con cantidad mayor a cero.");
                     ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                     ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    TempData["Error"] = "Debe agregar al menos un producto válido con cantidad mayor a cero.";
                     return View(model);
                 }
 
@@ -302,9 +341,30 @@ namespace Fatura.Controllers
                     var producto = await _productoService.GetByIdAsync(item.IdProducto);
                     if (producto == null)
                     {
-                        ModelState.AddModelError("", $"Producto no encontrado: {item.IdProducto}");
+                        ModelState.AddModelError("", $"Producto con ID {item.IdProducto} no encontrado.");
                         ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                         ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                        TempData["Error"] = $"Producto con ID {item.IdProducto} no encontrado.";
+                        return View(model);
+                    }
+
+                    // Validar cantidad
+                    if (item.Cantidad <= 0)
+                    {
+                        ModelState.AddModelError("", $"La cantidad del producto {producto.NombreProducto} debe ser mayor a cero.");
+                        ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                        ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                        TempData["Error"] = $"La cantidad del producto {producto.NombreProducto} debe ser mayor a cero.";
+                        return View(model);
+                    }
+
+                    var precioUnitario = item.PrecioUnitario > 0 ? item.PrecioUnitario : (producto.Precio ?? 0);
+                    if (precioUnitario <= 0)
+                    {
+                        ModelState.AddModelError("", $"El precio del producto {producto.NombreProducto} debe ser mayor a cero.");
+                        ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                        ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                        TempData["Error"] = $"El precio del producto {producto.NombreProducto} debe ser mayor a cero.";
                         return View(model);
                     }
 
@@ -312,9 +372,10 @@ namespace Fatura.Controllers
                     {
                         IdProducto = producto.IdProducto,
                         NombreProducto = producto.NombreProducto,
+                        UnidadMedida = producto.UnidadMedida?.Abreviatura,
                         Cantidad = item.Cantidad,
-                        PrecioUnitario = producto.Precio ?? 0,
-                        Descuento = item.Descuento
+                        PrecioUnitario = precioUnitario,
+                        Descuento = item.Descuento >= 0 ? item.Descuento : 0
                     });
                 }
 
@@ -328,7 +389,38 @@ namespace Fatura.Controllers
                     ModelState.AddModelError("", "No hay usuarios activos para asignar a la factura.");
                     ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                     ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    TempData["Error"] = "No hay usuarios activos para asignar a la factura.";
                     return View(model);
+                }
+
+                // Validar campos requeridos del cliente
+                if (string.IsNullOrWhiteSpace(cliente.NitDui))
+                {
+                    ModelState.AddModelError("", "El cliente no tiene un NIT/DUI válido.");
+                    ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                    ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    TempData["Error"] = "El cliente no tiene un NIT/DUI válido.";
+                    return View(model);
+                }
+
+                if (string.IsNullOrWhiteSpace(cliente.Nombre))
+                {
+                    ModelState.AddModelError("", "El cliente no tiene un nombre válido.");
+                    ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                    ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                    TempData["Error"] = "El cliente no tiene un nombre válido.";
+                    return View(model);
+                }
+
+                // Validar campos requeridos de la factura
+                if (string.IsNullOrWhiteSpace(model.TipoDocumento))
+                {
+                    model.TipoDocumento = "Factura Electrónica";
+                }
+
+                if (string.IsNullOrWhiteSpace(model.MonedaSimbolo))
+                {
+                    model.MonedaSimbolo = "$";
                 }
 
                 var factura = new Factura
@@ -356,13 +448,48 @@ namespace Fatura.Controllers
                 factura.Total = subTotal + iva;
 
                 var creada = await _facturaService.CreateAsync(factura);
+                TempData["Success"] = $"Factura #{creada.IdFactura} creada exitosamente.";
                 return RedirectToAction(nameof(Details), new { id = creada.IdFactura, download = true });
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                TempData["Error"] = ex.Message;
+                return View(model);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Capturar la excepción interna para obtener más detalles
+                var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
+                var errorMessage = $"Error al guardar en la base de datos: {innerException}";
+                
+                // Si hay más información en la excepción interna, incluirla
+                if (dbEx.InnerException != null)
+                {
+                    errorMessage += $" Detalles: {dbEx.InnerException.Message}";
+                }
+                
+                ModelState.AddModelError("", errorMessage);
+                ViewBag.Productos = await _productoService.GetProductosActivosAsync();
+                ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                TempData["Error"] = errorMessage;
+                return View(model);
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Error al crear la factura: {ex.Message}");
+                // Capturar la excepción interna si existe
+                var errorMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $" Detalles: {ex.InnerException.Message}";
+                }
+                
+                ModelState.AddModelError("", $"Error al crear la factura: {errorMessage}");
                 ViewBag.Productos = await _productoService.GetProductosActivosAsync();
                 ViewBag.Clientes = await _clienteService.GetClientesActivosAsync();
+                TempData["Error"] = $"Error al crear la factura: {errorMessage}";
                 return View(model);
             }
         }
