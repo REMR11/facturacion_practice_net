@@ -189,22 +189,22 @@ namespace Fatura.Services
                             catch (Exception ex)
                             {
                                 System.Diagnostics.Debug.WriteLine($"Error al renderizar logo en PDF: {ex.Message}");
-                                // Si falla cargar imagen, mostrar solo texto
-                                col.Item()
-                                   .AlignCenter()
-                                   .Text("TALLER RODRIGUEZ")
-                                   .Bold()
-                                   .FontSize(12);
                             }
                         }
-                        else
-                        {
-                            col.Item()
-                               .AlignCenter()
-                               .Text("TALLER RODRIGUEZ")
-                               .Bold()
-                               .FontSize(12);
-                        }
+
+                        // Título de la empresa - siempre mostrar en mayúsculas y negrita
+                        col.Item()
+                           .AlignCenter()
+                           .PaddingTop(5)
+                           .Text("TALLER RODRIGUEZ")
+                           .Bold()
+                           .FontSize(14);
+
+                        col.Item()
+                           .AlignCenter()
+                           .Text("SERVICIOS AUTOMOTRIZ")
+                           .Bold()
+                           .FontSize(12);
 
                         col.Item()
                            .AlignCenter()
@@ -811,8 +811,8 @@ namespace Fatura.Services
                             graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                             graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
 
-                            // Fondo blanco para mejor contraste (adaptable según el logo)
-                            graphics.Clear(System.Drawing.Color.White);
+                            // Fondo oscuro (negro) para mejor contraste con el logo
+                            graphics.Clear(System.Drawing.Color.Black);
 
                             // Dibujar el logo con alta calidad preservando colores
                             var destRect = new System.Drawing.Rectangle(0, 0, newWidth, newHeight);
