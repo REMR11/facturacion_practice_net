@@ -165,6 +165,7 @@ namespace Fatura.Controllers
 
         /// <summary>
         /// Imprime el ticket térmico de una factura directamente en la impresora RPT004.
+        /// En Linux/Azure, redirige automáticamente a generar el PDF del ticket.
         /// </summary>
         [HttpGet("{id}/Ticket")]
         public async Task<IActionResult> Ticket(int id, string? printer = null)
@@ -184,6 +185,26 @@ namespace Fatura.Controllers
                 _facturaTicketService.ImprimirTicket(factura, nombreImpresora);
                 
                 TempData["Success"] = $"Ticket impreso correctamente en {nombreImpresora}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (PlatformNotSupportedException ex)
+            {
+                // En Linux/Azure, generar el PDF del ticket automáticamente
+                try
+                {
+                    var factura = await _facturaService.GetWithDetailsAsync(id);
+                    if (factura != null)
+                    {
+                        TempData["Info"] = "La impresión directa no está disponible en este servidor. Se generará el PDF del ticket para que pueda imprimirlo manualmente.";
+                        return RedirectToAction(nameof(TicketPdf), new { id });
+                    }
+                }
+                catch
+                {
+                    // Si falla generar PDF, mostrar el mensaje de error
+                }
+                
+                TempData["Error"] = ex.Message;
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
@@ -213,13 +234,31 @@ namespace Fatura.Controllers
             try
             {
                 var factura = await _facturaService.GetWithDetailsAsync(id);
+                if (factura == null)
+                {
+                    TempData["Error"] = "Factura no encontrada.";
+                    return RedirectToAction(nameof(Index));
+                }
+                
                 var pdfBytes = _facturaTicketService.GenerarTicket(factura);
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    TempData["Error"] = "Error al generar el PDF del ticket.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
                 var fileName = $"Ticket_{factura.NumeroFactura ?? id.ToString()}.pdf";
                 return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "Factura no encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al generar el PDF del ticket: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
             }
         }
 

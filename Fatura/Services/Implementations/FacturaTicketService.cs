@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Text.Json;
@@ -255,6 +256,14 @@ namespace Fatura.Services
         {
             try
             {
+                // Verificar si estamos en Windows antes de intentar imprimir
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    throw new PlatformNotSupportedException(
+                        "La impresión directa de tickets solo está disponible en Windows. " +
+                        "En Linux/Azure, por favor use la opción 'Descargar PDF del Ticket' para imprimir manualmente.");
+                }
+
                 if (factura == null)
                 {
                     throw new ArgumentNullException(nameof(factura), "La factura no puede ser nula.");
