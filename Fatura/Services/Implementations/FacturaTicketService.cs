@@ -117,15 +117,19 @@ namespace Fatura.Services
         {
             try
             {
-                // Cargar SOLO LOGO.png (logo principal)
-                var logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO.png");
+                // Priorizar LOGO2.png, luego LOGO.png
+                var logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO2.png");
                 if (!System.IO.File.Exists(logoPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"LOGO.png no encontrado en: {logoPath}");
-                    return null;
+                    logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO.png");
+                    if (!System.IO.File.Exists(logoPath))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"LOGO2.png y LOGO.png no encontrados en: {_webHostEnvironment.WebRootPath}");
+                        return null;
+                    }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Cargando LOGO.png desde: {logoPath}");
+                System.Diagnostics.Debug.WriteLine($"Cargando logo desde: {logoPath}");
                 var logoOriginal = System.Drawing.Image.FromFile(logoPath);
                 System.Diagnostics.Debug.WriteLine($"Logo original cargado: {logoOriginal.Width}x{logoOriginal.Height} píxeles");
 
@@ -145,7 +149,7 @@ namespace Fatura.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ERROR al cargar LOGO.png: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ERROR al cargar logo: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
                 return null;
             }

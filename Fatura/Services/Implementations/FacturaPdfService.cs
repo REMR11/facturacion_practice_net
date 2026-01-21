@@ -69,8 +69,15 @@ namespace Fatura.Services.Implementations
         {
             try
             {
-                // Intentar cargar el logo más reciente primero
-                var logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "pr rodriguez v3_Mesa de trabajo 1.png");
+                // Priorizar LOGO2.png
+                var logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO2.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    return logoPath;
+                }
+
+                // Intentar cargar el logo más reciente
+                logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "pr rodriguez v3_Mesa de trabajo 1.png");
                 if (System.IO.File.Exists(logoPath))
                 {
                     return logoPath;
@@ -135,7 +142,22 @@ namespace Fatura.Services.Implementations
                             {
                                 try
                                 {
-                                    row.ConstantItem(80).Height(60).Image(logoPath).FitArea();
+                                    // Verificar si es LOGO2 para aplicar fondo negro
+                                    var esLogo2 = logoPath.EndsWith("LOGO2.png", StringComparison.OrdinalIgnoreCase);
+                                    if (esLogo2)
+                                    {
+                                        // Logo2 con fondo negro y letras blancas
+                                        row.ConstantItem(80)
+                                           .Height(60)
+                                           .Background(Colors.Black)
+                                           .Padding(5)
+                                           .Image(logoPath)
+                                           .FitArea();
+                                    }
+                                    else
+                                    {
+                                        row.ConstantItem(80).Height(60).Image(logoPath).FitArea();
+                                    }
                                 }
                                 catch
                                 {
