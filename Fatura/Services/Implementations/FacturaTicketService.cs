@@ -77,6 +77,42 @@ namespace Fatura.Services
             return "02614612-5";
         }
 
+        private string ObtenerDireccionEmpresa()
+        {
+            try
+            {
+                var empresa = _context.Set<Models.Catalogos.Empresa>().FirstOrDefault();
+                if (empresa != null && !string.IsNullOrEmpty(empresa.Direccion))
+                {
+                    return empresa.Direccion;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al obtener dirección de empresa: {ex.Message}");
+            }
+            // Valor por defecto si no se puede obtener de la BD
+            return "3 CALLE PONIENTE, #3-7B, MUNICIPIO DE SANTA TECLA, DEPARTAMENTO DE LA LIBERTAD";
+        }
+
+        private string? ObtenerTelefonoEmpresa()
+        {
+            try
+            {
+                var empresa = _context.Set<Models.Catalogos.Empresa>().FirstOrDefault();
+                if (empresa != null && !string.IsNullOrEmpty(empresa.Telefono))
+                {
+                    return empresa.Telefono;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al obtener teléfono de empresa: {ex.Message}");
+            }
+            // Valor por defecto si no se puede obtener de la BD
+            return "+503 7595-7484";
+        }
+
         private System.Drawing.Image? ObtenerLogo()
         {
             try
@@ -173,7 +209,7 @@ namespace Fatura.Services
 
                         col.Item().LineHorizontal(1);
 
-                        // Agregar NIT de la empresa
+                        // Agregar información de la empresa
                         var nitEmpresa = ObtenerNitEmpresa();
                         if (!string.IsNullOrEmpty(nitEmpresa))
                         {
@@ -182,6 +218,26 @@ namespace Fatura.Services
                                .Text($"NIT: {nitEmpresa}")
                                .FontSize(8);
                         }
+
+                        var direccionEmpresa = ObtenerDireccionEmpresa();
+                        if (!string.IsNullOrEmpty(direccionEmpresa))
+                        {
+                            col.Item()
+                               .AlignCenter()
+                               .Text(direccionEmpresa)
+                               .FontSize(8);
+                        }
+
+                        var telefonoEmpresa = ObtenerTelefonoEmpresa();
+                        if (!string.IsNullOrEmpty(telefonoEmpresa))
+                        {
+                            col.Item()
+                               .AlignCenter()
+                               .Text($"Tel: {telefonoEmpresa}")
+                               .FontSize(8);
+                        }
+
+                        col.Item().LineHorizontal(1);
 
                         col.Item().Text($"Cliente: {factura.ClienteNombre}");
                         col.Item().Text($"Fecha Emisión: {factura.FechaCreacion:dd/MM/yyyy}");
