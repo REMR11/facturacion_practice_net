@@ -64,7 +64,8 @@ namespace Fatura.Controllers
                 var cliente = await _clienteService.GetByIdAsync(id);
                 if (cliente == null)
                 {
-                    return NotFound();
+                    TempData["Error"] = "El cliente no fue encontrado.";
+                    return RedirectToAction(nameof(Index));
                 }
 
                 // Obtener estadísticas del cliente
@@ -75,7 +76,8 @@ namespace Fatura.Controllers
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
             }
         }
 
@@ -138,13 +140,15 @@ namespace Fatura.Controllers
                 var cliente = await _clienteService.GetByIdAsync(id);
                 if (cliente == null)
                 {
-                    return NotFound();
+                    TempData["Error"] = "El cliente no fue encontrado.";
+                    return RedirectToAction(nameof(Index));
                 }
                 return View(cliente);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
             }
         }
 
@@ -160,22 +164,26 @@ namespace Fatura.Controllers
                 if (ModelState.IsValid)
                 {
                     await _clienteService.UpdateAsync(id, cliente);
+                    TempData["Success"] = "Cliente actualizado exitosamente.";
                     return RedirectToAction(nameof(Index));
                 }
                 return View(cliente);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.BusinessRuleException ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                TempData["Error"] = ex.Message;
                 return View(cliente);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error al actualizar el cliente: {ex.Message}");
+                TempData["Error"] = $"Error al actualizar el cliente: {ex.Message}";
                 return View(cliente);
             }
         }

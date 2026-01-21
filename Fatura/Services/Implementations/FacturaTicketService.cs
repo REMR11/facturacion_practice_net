@@ -257,8 +257,7 @@ namespace Fatura.Services
             {
                 if (factura == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("Error: La factura es nula.");
-                    return false;
+                    throw new ArgumentNullException(nameof(factura), "La factura no puede ser nula.");
                 }
 
                 EstablecerFacturaActual(factura);
@@ -336,43 +335,70 @@ namespace Fatura.Services
                     AgregarLinea("");
                 }
 
+                // Buscar y configurar la impresora
+                string impresoraFinal = EncontrarImpresora(nombreImpresora);
+                
                 // Imprimir usando PrintDocument
                 PrintDocument pd = new PrintDocument();
-                pd.PrinterSettings.PrinterName = nombreImpresora;
-
-                // Verificar si la impresora existe
+                pd.PrinterSettings.PrinterName = impresoraFinal;
+                pd.PrintPage += new PrintPageEventHandler(ImprimirPagina);
+                
+                // Verificar si la impresora es válida antes de imprimir
                 if (!pd.PrinterSettings.IsValid)
                 {
-                    // Intentar buscar la impresora por nombre parcial
-                    bool encontrada = false;
-                    foreach (string printer in PrinterSettings.InstalledPrinters)
-                    {
-                        if (printer.Contains("RPT") || printer.Contains("POS") || printer.Contains("Thermal"))
-                        {
-                            pd.PrinterSettings.PrinterName = printer;
-                            encontrada = true;
-                            break;
-                        }
-                    }
-
-                    if (!encontrada)
-                    {
-                        throw new Exception($"No se encontró la impresora '{nombreImpresora}'. Impresoras disponibles: {string.Join(", ", PrinterSettings.InstalledPrinters.Cast<string>())}");
-                    }
+                    throw new Exception($"La impresora '{impresoraFinal}' no es válida o no está disponible.");
                 }
 
-                pd.PrintPage += new PrintPageEventHandler(ImprimirPagina);
+                // Intentar imprimir
                 pd.Print();
 
                 return true;
             }
             catch (Exception ex)
             {
+                // Registrar el error completo
                 System.Diagnostics.Debug.WriteLine($"Error al imprimir ticket: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
-                // Retornar false en lugar de lanzar excepción para mejor manejo en el controlador
-                return false;
+                // Lanzar la excepción para que el controlador pueda manejarla y mostrar el mensaje al usuario
+                throw new Exception($"Error al imprimir el ticket: {ex.Message}", ex);
             }
+        }
+
+        private string EncontrarImpresora(string nombreImpresora)
+        {
+            // Primero intentar con el nombre exacto
+            PrintDocument pd = new PrintDocument();
+            pd.PrinterSettings.PrinterName = nombreImpresora;
+            
+            if (pd.PrinterSettings.IsValid)
+            {
+                return nombreImpresora;
+            }
+
+            // Buscar por nombre parcial (case insensitive)
+            var impresorasDisponibles = new List<string>();
+            foreach (string printer in PrinterSettings.InstalledPrinters)
+            {
+                impresorasDisponibles.Add(printer);
+                
+                // Buscar por coincidencias parciales
+                if (printer.Contains(nombreImpresora, StringComparison.OrdinalIgnoreCase) ||
+                    printer.Contains("RPT", StringComparison.OrdinalIgnoreCase) ||
+                    printer.Contains("POS", StringComparison.OrdinalIgnoreCase) ||
+                    printer.Contains("Thermal", StringComparison.OrdinalIgnoreCase) ||
+                    printer.Contains("Térmica", StringComparison.OrdinalIgnoreCase))
+                {
+                    pd.PrinterSettings.PrinterName = printer;
+                    if (pd.PrinterSettings.IsValid)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Impresora encontrada: {printer}");
+                        return printer;
+                    }
+                }
+            }
+
+            // Si no se encontró ninguna, lanzar excepción con todas las disponibles
+            throw new Exception($"No se encontró la impresora '{nombreImpresora}'. Impresoras disponibles: {string.Join(", ", impresorasDisponibles)}");
         }
 
         private void ImprimirPagina(object sender, PrintPageEventArgs e)

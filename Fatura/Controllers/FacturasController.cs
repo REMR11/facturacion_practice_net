@@ -180,26 +180,26 @@ namespace Fatura.Controllers
                 
                 var nombreImpresora = printer ?? "RPT004";
                 
-                bool impreso = _facturaTicketService.ImprimirTicket(factura, nombreImpresora);
+                // El método ahora lanza excepciones en lugar de retornar false
+                _facturaTicketService.ImprimirTicket(factura, nombreImpresora);
                 
-                if (impreso)
-                {
-                    TempData["Success"] = $"Ticket impreso correctamente en {nombreImpresora}";
-                }
-                else
-                {
-                    TempData["Error"] = "No se pudo imprimir el ticket";
-                }
-                
+                TempData["Success"] = $"Ticket impreso correctamente en {nombreImpresora}";
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "Factura no encontrada.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Error al imprimir: {ex.Message}";
+                // Mostrar el mensaje de error completo al usuario
+                var mensajeError = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    mensajeError += $" Detalles: {ex.InnerException.Message}";
+                }
+                TempData["Error"] = mensajeError;
                 return RedirectToAction(nameof(Details), new { id });
             }
         }
@@ -621,16 +621,23 @@ namespace Fatura.Controllers
             try
             {
                 await _facturaService.DeleteAsync(id);
+                TempData["Success"] = "Factura eliminada exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "La factura no fue encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Error al eliminar la factura: {ex.Message}");
-                return View();
+                TempData["Error"] = $"Error al eliminar la factura: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
     }

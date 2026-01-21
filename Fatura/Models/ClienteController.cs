@@ -31,12 +31,27 @@ namespace Fatura.Controllers
         [HttpGet("Details/{id}")]
         public async Task<IActionResult> Details(int id)
         {
-            var cliente = await _clienteService.GetByIdAsync(id);
+            try
+            {
+                var cliente = await _clienteService.GetByIdAsync(id);
 
-            if (cliente == null)
-                return NotFound();
+                if (cliente == null)
+                {
+                    TempData["Error"] = "El cliente no fue encontrado.";
+                    return RedirectToAction(nameof(Index));
+                }
 
-            return View(cliente);
+                // Obtener estadísticas del cliente
+                ViewBag.TotalFacturas = await _clienteService.GetTotalFacturasAsync(id);
+                ViewBag.TotalFacturado = await _clienteService.GetTotalFacturadoAsync(id);
+
+                return View(cliente);
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // ===============================
@@ -55,11 +70,27 @@ namespace Fatura.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Cliente cliente)
         {
-            if (!ModelState.IsValid)
-                return View(cliente);
+            try
+            {
+                if (!ModelState.IsValid)
+                    return View(cliente);
 
-            await _clienteService.CreateAsync(cliente);
-            return RedirectToAction(nameof(Index));
+                await _clienteService.CreateAsync(cliente);
+                TempData["Success"] = "Cliente creado exitosamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                TempData["Error"] = ex.Message;
+                return View(cliente);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error al crear el cliente: {ex.Message}");
+                TempData["Error"] = $"Error al crear el cliente: {ex.Message}";
+                return View(cliente);
+            }
         }
 
         // ===============================
@@ -83,26 +114,30 @@ namespace Fatura.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Cliente cliente)
         {
-            if (!ModelState.IsValid)
-                return View(cliente);
-
             try
             {
+                if (!ModelState.IsValid)
+                    return View(cliente);
+
                 await _clienteService.UpdateAsync(cliente.Id, cliente);
+                TempData["Success"] = "Cliente actualizado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.BusinessRuleException ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                TempData["Error"] = ex.Message;
                 return View(cliente);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"Error al actualizar el cliente: {ex.Message}");
+                TempData["Error"] = $"Error al actualizar el cliente: {ex.Message}";
                 return View(cliente);
             }
         }
@@ -114,8 +149,27 @@ namespace Fatura.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _clienteService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _clienteService.DeleteAsync(id);
+                TempData["Success"] = "Cliente eliminado exitosamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Fatura.Exceptions.BusinessRuleException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al eliminar el cliente: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
         }
     }
 }
