@@ -169,6 +169,9 @@ namespace Fatura.Services
                     // 80mm ≈ 226 puntos
                     page.Size(new PageSize(226, 800));
 
+                    // Fondo blanco para el PDF
+                    page.Background(Colors.White);
+
                     page.Margin(5);
                     page.DefaultTextStyle(x => x.FontSize(9));
 
@@ -763,14 +766,18 @@ namespace Fatura.Services
         {
             try
             {
-                // Cargar solo LOGO.png
-                var logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO.png");
-                if (System.IO.File.Exists(logoPath))
+                // Priorizar LOGO2.png, luego LOGO.png
+                var logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO2.png");
+                if (!System.IO.File.Exists(logoPath))
                 {
-                    return logoPath;
+                    logoPath = System.IO.Path.Combine(_webHostEnvironment.WebRootPath, "LOGO.png");
+                    if (!System.IO.File.Exists(logoPath))
+                    {
+                        return null;
+                    }
                 }
 
-                return null;
+                return logoPath;
             }
             catch
             {
@@ -816,10 +823,10 @@ namespace Fatura.Services
                             graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                             graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
 
-                            // Fondo oscuro (negro) para mejor contraste con el logo
-                            graphics.Clear(System.Drawing.Color.Black);
+                            // Fondo blanco para el PDF del ticket
+                            graphics.Clear(System.Drawing.Color.White);
 
-                            // Dibujar el logo con alta calidad preservando colores
+                            // Dibujar el logo con alta calidad preservando colores (logo con letras blancas)
                             var destRect = new System.Drawing.Rectangle(0, 0, newWidth, newHeight);
                             graphics.DrawImage(logoOriginal, destRect);
                         }
