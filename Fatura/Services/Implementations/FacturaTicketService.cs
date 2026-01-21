@@ -172,7 +172,7 @@ namespace Fatura.Services
                     {
                         col.Spacing(5);
 
-                        // Logo LOGO.png si existe - optimizado para mejor visualización
+                        // 1. Logo LOGO.png si existe - optimizado para mejor visualización con fondo oscuro
                         var logoBytes = ObtenerLogoOptimizadoParaPdf();
                         if (logoBytes != null && logoBytes.Length > 0)
                         {
@@ -192,7 +192,7 @@ namespace Fatura.Services
                             }
                         }
 
-                        // Título de la empresa - siempre mostrar en mayúsculas y negrita
+                        // 2. TALLER RODRIGUEZ - siempre mostrar en mayúsculas y negrita
                         col.Item()
                            .AlignCenter()
                            .PaddingTop(5)
@@ -200,6 +200,7 @@ namespace Fatura.Services
                            .Bold()
                            .FontSize(14);
 
+                        // 3. SERVICIOS AUTOMOTRIZ - siempre mostrar en mayúsculas y negrita
                         col.Item()
                            .AlignCenter()
                            .Text("SERVICIOS AUTOMOTRIZ")
