@@ -172,20 +172,23 @@ namespace Fatura.Services
                     {
                         col.Spacing(5);
 
-                        // Logo LOGO.png si existe (más grande)
-                        var logoPath = ObtenerRutaLogo();
-                        if (!string.IsNullOrEmpty(logoPath) && System.IO.File.Exists(logoPath))
+                        // Logo LOGO.png si existe - optimizado para mejor visualización
+                        var logoBytes = ObtenerLogoOptimizadoParaPdf();
+                        if (logoBytes != null && logoBytes.Length > 0)
                         {
                             try
                             {
                                 col.Item()
                                    .AlignCenter()
-                                   .Height(100) // Aumentado de 50 a 100 para mejor visibilidad
-                                   .Image(logoPath)
+                                   .PaddingVertical(5)
+                                   .Height(120) // Aumentado para mejor visibilidad
+                                   .Width(200) // Ancho fijo para mantener proporción
+                                   .Image(logoBytes)
                                    .FitArea();
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                System.Diagnostics.Debug.WriteLine($"Error al renderizar logo en PDF: {ex.Message}");
                                 // Si falla cargar imagen, mostrar solo texto
                                 col.Item()
                                    .AlignCenter()
@@ -766,6 +769,76 @@ namespace Fatura.Services
             }
             catch
             {
+                return null;
+            }
+        }
+
+        private byte[]? ObtenerLogoOptimizadoParaPdf()
+        {
+            try
+            {
+                var logoPath = ObtenerRutaLogo();
+                if (string.IsNullOrEmpty(logoPath) || !System.IO.File.Exists(logoPath))
+                {
+                    return null;
+                }
+
+                // Cargar la imagen original
+                using (var logoOriginal = System.Drawing.Image.FromFile(logoPath))
+                {
+                    // Calcular tamaño óptimo para el PDF (ancho máximo 200 puntos, manteniendo proporción)
+                    // Usar dimensiones más grandes para mejor calidad al escalar
+                    int maxWidth = 400; // Doble resolución para mejor calidad
+                    int maxHeight = 240;
+                    
+                    float ratio = Math.Min((float)maxWidth / logoOriginal.Width, (float)maxHeight / logoOriginal.Height);
+                    int newWidth = (int)(logoOriginal.Width * ratio);
+                    int newHeight = (int)(logoOriginal.Height * ratio);
+
+                    // Asegurar que el tamaño no sea demasiado pequeño
+                    if (newWidth < 100) newWidth = 100;
+                    if (newHeight < 60) newHeight = 60;
+
+                    // Crear un bitmap con alta resolución para mejor calidad
+                    using (var bitmap = new System.Drawing.Bitmap(newWidth, newHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+                    {
+                        using (var graphics = System.Drawing.Graphics.FromImage(bitmap))
+                        {
+                            // Configurar máxima calidad de renderizado para preservar colores y nitidez
+                            graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                            graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                            graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+
+                            // Fondo blanco para mejor contraste (adaptable según el logo)
+                            graphics.Clear(System.Drawing.Color.White);
+
+                            // Dibujar el logo con alta calidad preservando colores
+                            var destRect = new System.Drawing.Rectangle(0, 0, newWidth, newHeight);
+                            graphics.DrawImage(logoOriginal, destRect);
+                        }
+
+                        // Convertir a bytes en formato PNG para preservar calidad y colores
+                        using (var ms = new System.IO.MemoryStream())
+                        {
+                            // Guardar en PNG con alta calidad
+                            var encoder = System.Drawing.Imaging.ImageCodecInfo.GetEncoders()
+                                .First(c => c.FormatID == System.Drawing.Imaging.ImageFormat.Png.Guid);
+                            var encoderParams = new System.Drawing.Imaging.EncoderParameters(1);
+                            encoderParams.Param[0] = new System.Drawing.Imaging.EncoderParameter(
+                                System.Drawing.Imaging.Encoder.Quality, 100L);
+                            
+                            bitmap.Save(ms, encoder, encoderParams);
+                            return ms.ToArray();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al optimizar logo para PDF: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
                 return null;
             }
         }
