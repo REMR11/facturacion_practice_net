@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Fatura.Models.Facturacion.Cliente>
+@model IEnumerable<Fatura.Models.Facturacion.Cliente>
 
 @{
     ViewData["Title"] = "Listado de Clientes";
@@ -73,6 +73,15 @@
                                        class="btn btn-sm btn-info text-white">
                                         <i class="fas fa-eye"></i>
                                     </a>
+
+                                    <form asp-action="Delete" asp-route-id="@cliente.Id" method="post" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('¿Está seguro que desea eliminar al cliente @cliente.Nombre? Esta acción no se puede deshacer.');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         }
