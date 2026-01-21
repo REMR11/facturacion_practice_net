@@ -243,11 +243,15 @@ namespace Fatura.Controllers
                 var pdfBytes = _facturaTicketService.GenerarTicket(factura);
                 if (pdfBytes == null || pdfBytes.Length == 0)
                 {
-                    TempData["Error"] = "Error al generar el PDF del ticket.";
+                    TempData["Error"] = "Error al generar el PDF del ticket: el documento está vacío.";
                     return RedirectToAction(nameof(Details), new { id });
                 }
                 
                 var fileName = $"Ticket_{factura.NumeroFactura ?? id.ToString()}.pdf";
+                
+                // Configurar headers para mostrar el PDF en el navegador en lugar de descargarlo
+                Response.Headers.Add("Content-Disposition", $"inline; filename=\"{fileName}\"");
+                
                 return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
@@ -257,6 +261,14 @@ namespace Fatura.Controllers
             }
             catch (Exception ex)
             {
+                // Log del error completo para debugging
+                System.Diagnostics.Debug.WriteLine($"ERROR en TicketPdf: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"InnerException: {ex.InnerException.Message}");
+                }
+                
                 TempData["Error"] = $"Error al generar el PDF del ticket: {ex.Message}";
                 return RedirectToAction(nameof(Details), new { id });
             }

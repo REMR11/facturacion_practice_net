@@ -157,23 +157,30 @@ namespace Fatura.Services
 
         public byte[] GenerarTicket(Factura factura)
         {
-            var detalles = factura.DetalleFacturas?.ToList()
-                           ?? new List<DetalleFactura>();
-            
-            var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo);
-
-            var document = Document.Create(container =>
+            try
             {
-                container.Page(page =>
+                if (factura == null)
                 {
-                    // 80mm ≈ 226 puntos
-                    page.Size(new PageSize(226, 800));
+                    throw new ArgumentNullException(nameof(factura), "La factura no puede ser nula.");
+                }
 
-                    // Fondo blanco para el PDF
-                    page.Background(Colors.White);
+                var detalles = factura.DetalleFacturas?.ToList()
+                               ?? new List<DetalleFactura>();
+                
+                var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo);
 
-                    page.Margin(5);
-                    page.DefaultTextStyle(x => x.FontSize(9));
+                var document = Document.Create(container =>
+                {
+                    container.Page(page =>
+                    {
+                        // 80mm ≈ 226 puntos
+                        page.Size(new PageSize(226, 800));
+
+                        // Fondo blanco para el PDF
+                        page.Background(Colors.White);
+
+                        page.Margin(5);
+                        page.DefaultTextStyle(x => x.FontSize(9));
 
                     page.Content().Column(col =>
                     {
@@ -316,7 +323,27 @@ namespace Fatura.Services
                 });
             });
 
-            return document.GeneratePdf();
+                var pdfBytes = document.GeneratePdf();
+                
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("ERROR: El PDF generado está vacío o es nulo.");
+                    throw new Exception("Error al generar el PDF del ticket: el documento generado está vacío.");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"PDF del ticket generado exitosamente. Tamaño: {pdfBytes.Length} bytes.");
+                return pdfBytes;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR al generar PDF del ticket: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"InnerException: {ex.InnerException.Message}");
+                }
+                throw new Exception($"Error al generar el PDF del ticket: {ex.Message}", ex);
+            }
         }
 
         public bool ImprimirTicket(Factura factura, string nombreImpresora = "RPT004")
