@@ -186,17 +186,20 @@ namespace Fatura.Services
                     {
                         col.Spacing(5);
 
-                        // 1. Logo LOGO.png si existe - optimizado para mejor visualización con fondo oscuro
+                        // 1. Logo LOGO2.png si existe - optimizado con fondo oscuro para letras blancas
                         var logoBytes = ObtenerLogoOptimizadoParaPdf();
                         if (logoBytes != null && logoBytes.Length > 0)
                         {
                             try
                             {
+                                // Contenedor con fondo blanco del PDF, pero el logo tiene su propio fondo oscuro
                                 col.Item()
                                    .AlignCenter()
-                                   .PaddingVertical(5)
-                                   .Height(120) // Aumentado para mejor visibilidad
-                                   .Width(200) // Ancho fijo para mantener proporción
+                                   .PaddingVertical(10)
+                                   .PaddingHorizontal(10)
+                                   .Background(Colors.White) // Fondo blanco del contenedor
+                                   .Height(140) // Aumentado para mejor visibilidad
+                                   .Width(220) // Ancho fijo para mantener proporción
                                    .Image(logoBytes)
                                    .FitArea();
                             }
@@ -850,10 +853,11 @@ namespace Fatura.Services
                             graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                             graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
 
-                            // Fondo blanco para el PDF del ticket
-                            graphics.Clear(System.Drawing.Color.White);
+                            // Fondo oscuro (negro) para que las letras blancas del logo se vean perfectamente
+                            // El fondo del PDF sigue siendo blanco, solo el área del logo tiene fondo oscuro
+                            graphics.Clear(System.Drawing.Color.Black);
 
-                            // Dibujar el logo con alta calidad preservando colores (logo con letras blancas)
+                            // Dibujar el logo con alta calidad preservando colores (logo con letras blancas sobre fondo oscuro)
                             var destRect = new System.Drawing.Rectangle(0, 0, newWidth, newHeight);
                             graphics.DrawImage(logoOriginal, destRect);
                         }
