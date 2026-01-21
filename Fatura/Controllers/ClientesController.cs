@@ -182,6 +182,7 @@ namespace Fatura.Controllers
 
         /// <summary>
         /// Muestra la confirmación para eliminar un cliente.
+        /// Redirige al Index ya que la eliminación se hace directamente desde allí.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
@@ -191,13 +192,16 @@ namespace Fatura.Controllers
                 var cliente = await _clienteService.GetByIdAsync(id);
                 if (cliente == null)
                 {
-                    return NotFound();
+                    TempData["Error"] = "El cliente no fue encontrado.";
+                    return RedirectToAction(nameof(Index));
                 }
-                return View(cliente);
+                // Redirigir al Index ya que la eliminación se confirma con JavaScript
+                return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
             }
         }
 
@@ -211,22 +215,23 @@ namespace Fatura.Controllers
             try
             {
                 await _clienteService.DeleteAsync(id);
+                TempData["Success"] = "Cliente eliminado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El cliente no fue encontrado.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Fatura.Exceptions.BusinessRuleException ex)
             {
-                ModelState.AddModelError("", ex.Message);
-                var cliente = await _clienteService.GetByIdAsync(id);
-                return View(cliente);
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Error al eliminar el cliente: {ex.Message}");
-                return View();
+                TempData["Error"] = $"Error al eliminar el cliente: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
 
