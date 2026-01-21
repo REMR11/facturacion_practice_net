@@ -121,8 +121,12 @@ namespace Fatura.Services.Implementations
                     throw new ArgumentNullException(nameof(factura), "La factura no puede ser nula.");
                 }
 
+                System.Diagnostics.Debug.WriteLine($"Iniciando generación de PDF para factura ID: {factura.IdFactura}");
+
                 var detalles = factura.DetalleFacturas?.ToList() ?? new List<DetalleFactura>();
                 var moneda = ObtenerSimboloMoneda(factura.MonedaSimbolo ?? "S/");
+
+                System.Diagnostics.Debug.WriteLine($"Factura tiene {detalles.Count} detalles");
 
                 var document = Document.Create(container =>
             {
@@ -288,12 +292,27 @@ namespace Fatura.Services.Implementations
                 });
             });
 
-                return document.GeneratePdf();
+                System.Diagnostics.Debug.WriteLine("Generando PDF...");
+                var pdfBytes = document.GeneratePdf();
+                
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("ERROR: El PDF generado está vacío o es nulo.");
+                    throw new Exception("Error al generar el PDF de la factura: el documento generado está vacío.");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"PDF generado exitosamente. Tamaño: {pdfBytes.Length} bytes.");
+                return pdfBytes;
             }
             catch (Exception ex)
             {
-                // Log del error (puedes usar un logger aquí)
-                System.Diagnostics.Debug.WriteLine($"Error al generar PDF: {ex.Message}");
+                // Log del error completo
+                System.Diagnostics.Debug.WriteLine($"ERROR al generar PDF de factura: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"InnerException: {ex.InnerException.Message}");
+                }
                 throw new Exception($"Error al generar el PDF de la factura: {ex.Message}", ex);
             }
         }

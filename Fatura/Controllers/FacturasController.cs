@@ -141,14 +141,22 @@ namespace Fatura.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
+                System.Diagnostics.Debug.WriteLine($"Generando PDF para factura ID: {id}");
+
                 var pdfBytes = _facturaPdfService.GenerarPdf(factura);
                 if (pdfBytes == null || pdfBytes.Length == 0)
                 {
-                    TempData["Error"] = "Error al generar el PDF de la factura.";
+                    TempData["Error"] = "Error al generar el PDF de la factura: el documento está vacío.";
                     return RedirectToAction(nameof(Details), new { id });
                 }
 
                 var fileName = $"Factura_{factura.NumeroFactura ?? id.ToString()}.pdf";
+                
+                // Configurar headers para mostrar el PDF en el navegador
+                Response.Headers.Add("Content-Disposition", $"inline; filename=\"{fileName}\"");
+                
+                System.Diagnostics.Debug.WriteLine($"PDF generado exitosamente. Tamaño: {pdfBytes.Length} bytes. Archivo: {fileName}");
+                
                 return File(pdfBytes, "application/pdf", fileName);
             }
             catch (Fatura.Exceptions.EntityNotFoundException)
@@ -158,6 +166,14 @@ namespace Fatura.Controllers
             }
             catch (Exception ex)
             {
+                // Log del error completo para debugging
+                System.Diagnostics.Debug.WriteLine($"ERROR en Pdf action: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"InnerException: {ex.InnerException.Message}");
+                }
+                
                 TempData["Error"] = $"Error al generar el PDF: {ex.Message}";
                 return RedirectToAction(nameof(Details), new { id });
             }
