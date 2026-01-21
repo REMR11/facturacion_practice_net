@@ -822,15 +822,17 @@ namespace Fatura.Services
                 var logoPath = ObtenerRutaLogo();
                 if (string.IsNullOrEmpty(logoPath) || !System.IO.File.Exists(logoPath))
                 {
+                    System.Diagnostics.Debug.WriteLine($"Logo no encontrado en: {logoPath}");
                     return null;
                 }
+
+                System.Diagnostics.Debug.WriteLine($"Procesando logo desde: {logoPath}");
 
                 // Cargar la imagen original
                 using (var logoOriginal = System.Drawing.Image.FromFile(logoPath))
                 {
-                    // Calcular tamaño óptimo para el PDF (ancho máximo 200 puntos, manteniendo proporción)
-                    // Usar dimensiones más grandes para mejor calidad al escalar
-                    int maxWidth = 400; // Doble resolución para mejor calidad
+                    // Calcular tamaño óptimo para el PDF
+                    int maxWidth = 400;
                     int maxHeight = 240;
                     
                     float ratio = Math.Min((float)maxWidth / logoOriginal.Width, (float)maxHeight / logoOriginal.Height);
@@ -838,50 +840,56 @@ namespace Fatura.Services
                     int newHeight = (int)(logoOriginal.Height * ratio);
 
                     // Asegurar que el tamaño no sea demasiado pequeño
-                    if (newWidth < 100) newWidth = 100;
-                    if (newHeight < 60) newHeight = 60;
+                    if (newWidth < 150) newWidth = 150;
+                    if (newHeight < 90) newHeight = 90;
 
-                    // Crear un bitmap con alta resolución para mejor calidad
+                    // Crear un bitmap con fondo negro sólido
                     using (var bitmap = new System.Drawing.Bitmap(newWidth, newHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
                     {
                         using (var graphics = System.Drawing.Graphics.FromImage(bitmap))
                         {
-                            // Configurar máxima calidad de renderizado para preservar colores y nitidez
+                            // Configurar máxima calidad de renderizado
                             graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                             graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
                             graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+
+                            // PRIMERO: Rellenar completamente con fondo NEGRO sólido
+                            // Esto asegura que toda el área tenga fondo negro
+                            using (var blackBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black))
+                            {
+                                graphics.FillRectangle(blackBrush, 0, 0, newWidth, newHeight);
+                            }
+                            
+                            // SEGUNDO: Dibujar el logo sobre el fondo negro
+                            // El logo se dibujará respetando su transparencia si la tiene
                             graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-
-                            // Fondo oscuro (negro) para que las letras blancas del logo se vean perfectamente
-                            // El fondo del PDF sigue siendo blanco, solo el área del logo tiene fondo oscuro
-                            graphics.Clear(System.Drawing.Color.Black);
-
-                            // Dibujar el logo con alta calidad preservando colores (logo con letras blancas sobre fondo oscuro)
+                            
                             var destRect = new System.Drawing.Rectangle(0, 0, newWidth, newHeight);
                             graphics.DrawImage(logoOriginal, destRect);
+                            
+                            System.Diagnostics.Debug.WriteLine($"Logo procesado con fondo negro sólido. Tamaño: {newWidth}x{newHeight}");
                         }
 
-                        // Convertir a bytes en formato PNG para preservar calidad y colores
+                        // Convertir a bytes en formato PNG preservando la transparencia y colores
                         using (var ms = new System.IO.MemoryStream())
                         {
-                            // Guardar en PNG con alta calidad
-                            var encoder = System.Drawing.Imaging.ImageCodecInfo.GetEncoders()
-                                .First(c => c.FormatID == System.Drawing.Imaging.ImageFormat.Png.Guid);
-                            var encoderParams = new System.Drawing.Imaging.EncoderParameters(1);
-                            encoderParams.Param[0] = new System.Drawing.Imaging.EncoderParameter(
-                                System.Drawing.Imaging.Encoder.Quality, 100L);
-                            
-                            bitmap.Save(ms, encoder, encoderParams);
-                            return ms.ToArray();
+                            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                            var imageBytes = ms.ToArray();
+                            System.Diagnostics.Debug.WriteLine($"Logo convertido a PNG. Tamaño: {imageBytes.Length} bytes");
+                            return imageBytes;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error al optimizar logo para PDF: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ERROR al optimizar logo para PDF: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"InnerException: {ex.InnerException.Message}");
+                }
                 return null;
             }
         }
