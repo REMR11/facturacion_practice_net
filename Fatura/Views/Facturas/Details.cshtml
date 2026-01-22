@@ -164,20 +164,16 @@
                 <div class="d-flex justify-content-between mb-3 text-muted">
                     <span>Total</span>
                     <span class="fw-bold text-dark">@($"{moneda}{Model.Total:F2}")</span>
-
-
-
-                    <div class="d-grid gap-2">
-                        <a class="btn btn-outline-dark"
-                           href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })">
-                            <i class="fas fa-print"></i> Imprimir Ticket
-                        </a>
-                        <a class="btn btn-outline-info"
-                           href="@Url.Action("TicketPdf", "Facturas", new { id = Model.IdFactura })">
-                            <i class="fas fa-file-pdf"></i> PDF del Ticket
-                        </a>
-                    </div>
-
+                </div>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-outline-dark"
+                       href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })">
+                        <i class="fas fa-print"></i> Imprimir Ticket
+                    </a>
+                    <a class="btn btn-outline-info"
+                       href="@Url.Action("TicketPdf", "Facturas", new { id = Model.IdFactura })">
+                        <i class="fas fa-file-pdf"></i> PDF del Ticket
+                    </a>
                 </div>
             </div>
         </div>
