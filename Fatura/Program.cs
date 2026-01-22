@@ -55,6 +55,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IUnidadMedidaService, UnidadMedidaService>();
 builder.Services.AddScoped<IFacturaPdfService, FacturaPdfService>();
 builder.Services.AddScoped<IQrService, QrService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Registrar FacturaTicketService solo en Windows (requiere System.Drawing.Printing)
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

@@ -21,6 +21,7 @@ namespace Fatura.Controllers
         private readonly IClienteService _clienteService;
         private readonly IFacturaPdfService _facturaPdfService;
         private readonly IFacturaTicketService _facturaTicketService;
+        private readonly IEmailService _emailService;
 
         private readonly xstoreContext _context;
 
@@ -30,6 +31,7 @@ namespace Fatura.Controllers
             IClienteService clienteService,
             IFacturaPdfService facturaPdfService,
              IFacturaTicketService facturaTicketService,
+            IEmailService emailService,
             xstoreContext context)
         {
             _facturaService = facturaService;
@@ -37,6 +39,7 @@ namespace Fatura.Controllers
             _clienteService = clienteService;
             _facturaPdfService = facturaPdfService;
             _facturaTicketService = facturaTicketService;
+            _emailService = emailService;
             _context = context;
         }
 
@@ -127,7 +130,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Genera el PDF de una factura.
+        /// Genera el PDF de una factura y lo envía por correo al cliente si tiene email configurado.
         /// </summary>
         [HttpGet("{id}/Pdf")]
         public async Task<IActionResult> Pdf(int id)
@@ -151,6 +154,55 @@ namespace Fatura.Controllers
                 }
 
                 var fileName = $"Factura_{factura.NumeroFactura ?? id.ToString()}.pdf";
+                
+                // Intentar enviar el correo al cliente si tiene email
+                var emailCliente = factura.ClienteEmail;
+                if (string.IsNullOrWhiteSpace(emailCliente) && factura.Cliente != null)
+                {
+                    emailCliente = factura.Cliente.Email;
+                }
+
+                if (!string.IsNullOrWhiteSpace(emailCliente) && emailCliente.Contains("@"))
+                {
+                    try
+                    {
+                        var asunto = $"Factura {factura.NumeroFactura} - {factura.ClienteNombre}";
+                        var cuerpo = $@"
+                            <html>
+                            <body style='font-family: Arial, sans-serif;'>
+                                <h2 style='color: #333;'>Estimado/a {factura.ClienteNombre},</h2>
+                                <p>Adjuntamos la factura <strong>{factura.NumeroFactura}</strong> correspondiente a su compra.</p>
+                                <p><strong>Fecha de emisión:</strong> {factura.FechaCreacion:dd/MM/yyyy}</p>
+                                <p><strong>Total:</strong> {factura.MonedaSimbolo} {factura.Total:N2}</p>
+                                {(factura.FechaVencimiento.HasValue ? $"<p><strong>Fecha de vencimiento:</strong> {factura.FechaVencimiento.Value:dd/MM/yyyy}</p>" : "")}
+                                <p>Por favor, conserve este documento para sus registros.</p>
+                                <p>Saludos cordiales,<br/>Sistema de Facturación</p>
+                            </body>
+                            </html>";
+
+                        var correoEnviado = await _emailService.EnviarCorreoConAdjuntoAsync(
+                            emailCliente,
+                            asunto,
+                            cuerpo,
+                            pdfBytes,
+                            fileName
+                        );
+
+                        if (correoEnviado)
+                        {
+                            TempData["Success"] = $"PDF generado y enviado exitosamente a {emailCliente}";
+                        }
+                        else
+                        {
+                            TempData["Warning"] = $"PDF generado correctamente, pero no se pudo enviar el correo a {emailCliente}. Verifique la configuración de correo.";
+                        }
+                    }
+                    catch (Exception emailEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error al enviar correo: {emailEx.Message}");
+                        TempData["Warning"] = $"PDF generado correctamente, pero hubo un error al enviar el correo: {emailEx.Message}";
+                    }
+                }
                 
                 // Configurar headers para mostrar el PDF en el navegador
                 Response.Headers.Add("Content-Disposition", $"inline; filename=\"{fileName}\"");
@@ -493,12 +545,20 @@ namespace Fatura.Controllers
                     model.MonedaSimbolo = "$";
                 }
 
+                // Obtener el email del formulario (puede venir del campo ClienteEmail o del cliente)
+                var clienteEmail = Request.Form["ClienteEmail"].ToString().Trim();
+                if (string.IsNullOrWhiteSpace(clienteEmail))
+                {
+                    clienteEmail = cliente.Email;
+                }
+
                 var factura = new Factura
                 {
                     ClienteId = cliente.Id,
                     ClienteNitDui = cliente.NitDui,
                     ClienteNombre = cliente.Nombre,
                     ClienteDireccion = cliente.Direccion,
+                    ClienteEmail = clienteEmail,
                     TipoDocumento = model.TipoDocumento,
                     SerieFactura = model.SerieFactura,
                     FechaCreacion = model.FechaEmision ?? DateTime.UtcNow,

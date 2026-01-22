@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Fatura.Models.Core;
 using Fatura.Models.Enums;
@@ -99,6 +99,13 @@ namespace Fatura.Models.Facturacion
         /// </summary>
         [StringLength(500)]
         public string? ClienteDireccion { get; set; }
+        
+        /// <summary>
+        /// Correo electrónico del cliente al momento de la facturación (opcional).
+        /// Se almacena aquí para mantener integridad histórica y permitir el envío de facturas.
+        /// </summary>
+        [StringLength(100)]
+        public string? ClienteEmail { get; set; }
         
         /// <summary>
         /// Subtotal de la factura antes de impuestos.
