@@ -194,13 +194,13 @@ namespace Fatura.Controllers
                         }
                         else
                         {
-                            TempData["Warning"] = $"PDF generado correctamente, pero no se pudo enviar el correo a {emailCliente}. Verifique la configuración de correo.";
+                            TempData["Warning"] = $"PDF generado correctamente, pero no se pudo enviar el correo a {emailCliente}. Verifique la configuración (Gmail: use contraseña de aplicación en https://myaccount.google.com/apppasswords).";
                         }
                     }
                     catch (Exception emailEx)
                     {
                         System.Diagnostics.Debug.WriteLine($"Error al enviar correo: {emailEx.Message}");
-                        TempData["Warning"] = $"PDF generado correctamente, pero hubo un error al enviar el correo: {emailEx.Message}";
+                        TempData["Warning"] = $"PDF generado correctamente, pero error al enviar el correo: {emailEx.Message} Si usas Gmail, necesitas contraseña de aplicación: https://myaccount.google.com/apppasswords";
                     }
                 }
                 
@@ -285,7 +285,7 @@ namespace Fatura.Controllers
                 if (correoEnviado)
                     TempData["Success"] = $"PDF enviado correctamente a {emailCliente}.";
                 else
-                    TempData["Warning"] = $"No se pudo enviar el correo a {emailCliente}. Verifique la configuración SMTP en appsettings.";
+                    TempData["Warning"] = $"No se pudo enviar el correo a {emailCliente}. Verifique Email en appsettings o User Secrets. Gmail: use contraseña de aplicación (https://myaccount.google.com/apppasswords).";
 
                 return RedirectToAction(nameof(Details), new { id });
             }
