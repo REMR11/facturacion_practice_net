@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Fatura.Models.Core;
 using Fatura.Models.Identity;
 using Fatura.Models.Catalogos;
@@ -183,6 +183,10 @@ namespace Fatura.Models
                 entity.Property(e => e.ClienteDireccion)
                     .HasColumnName("cliente_direccion")
                     .HasMaxLength(500);
+
+                entity.Property(e => e.ClienteEmail)
+                    .HasColumnName("cliente_email")
+                    .HasMaxLength(100);
 
                 entity.Property(e => e.SubTotal)
                     .HasColumnName("sub_total")
