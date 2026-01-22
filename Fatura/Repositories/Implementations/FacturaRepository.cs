@@ -20,6 +20,7 @@ namespace Fatura.Repositories.Implementations
         {
             return await _dbSet
                 .Include(f => f.DetalleFacturas)
+                .Include(f => f.Cliente)
                 .FirstOrDefaultAsync(f => f.IdFactura == id);
         }
 

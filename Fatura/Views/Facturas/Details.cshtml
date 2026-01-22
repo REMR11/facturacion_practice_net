@@ -6,6 +6,7 @@
     ViewData["Title"] = "Detalle de Factura";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     var moneda = string.IsNullOrWhiteSpace(Model.MonedaSimbolo) ? "S/" : Model.MonedaSimbolo;
+    var emailEnvio = Model.ClienteEmail ?? Model.Cliente?.Email;
 }
 
 <div class="factura-page">
@@ -31,6 +32,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="factura-header-area">
         <div class="header-left">
@@ -51,8 +59,14 @@
             <a class="btn btn-info text-white" style="margin-right: 8px;" href="@Url.Action("TicketPdf", "Facturas", new { id = Model.IdFactura })">
                 <i class="fas fa-file-pdf"></i> PDF del Ticket
             </a>
+            @if (!string.IsNullOrWhiteSpace(emailEnvio) && emailEnvio.Contains("@"))
+            {
+                <a class="btn btn-outline-success" style="margin-right: 8px;" href="@Url.Action("EnviarPdf", "Facturas", new { id = Model.IdFactura })">
+                    <i class="fas fa-paper-plane"></i> Enviar PDF por correo
+                </a>
+            }
             <a class="btn btn-primary" href="@Url.Action("Pdf", "Facturas", new { id = Model.IdFactura })">
-                Descargar PDF
+                <i class="fas fa-download"></i> Descargar PDF
             </a>
         </div>
     </div>
@@ -64,6 +78,21 @@
                 <div class="text-muted">@Model.ClienteNombre</div>
                 <div class="text-muted">@Model.ClienteNitDui</div>
                 <div class="text-muted">@Model.ClienteDireccion</div>
+                @if (!string.IsNullOrWhiteSpace(emailEnvio) && emailEnvio.Contains("@"))
+                {
+                    <div class="text-muted mt-2">
+                        <i class="fas fa-envelope text-primary"></i> <a href="mailto:@emailEnvio">@emailEnvio</a>
+                    </div>
+                    <div class="alert alert-info alert-sm mt-2 mb-0 py-2 small">
+                        <i class="fas fa-info-circle"></i> Al descargar el PDF se enviará también una copia a <strong>@emailEnvio</strong>.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning alert-sm mt-2 mb-0 py-2 small">
+                        <i class="fas fa-exclamation-triangle"></i> No hay correo configurado. Agregue un email al crear la factura para poder enviar el PDF automáticamente.
+                    </div>
+                }
             </div>
 
             <div class="card p-4">

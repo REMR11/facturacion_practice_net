@@ -232,6 +232,77 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
+        /// Genera el PDF de la factura y lo envía por correo al email configurado (sin descargar).
+        /// Redirige a Details con mensaje de éxito o error.
+        /// </summary>
+        [HttpGet("{id}/EnviarPdf")]
+        public async Task<IActionResult> EnviarPdf(int id)
+        {
+            try
+            {
+                var factura = await _facturaService.GetWithDetailsAsync(id);
+                if (factura == null)
+                {
+                    TempData["Error"] = "Factura no encontrada.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var emailCliente = factura.ClienteEmail;
+                if (string.IsNullOrWhiteSpace(emailCliente) && factura.Cliente != null)
+                    emailCliente = factura.Cliente.Email;
+
+                if (string.IsNullOrWhiteSpace(emailCliente) || !emailCliente.Contains("@"))
+                {
+                    TempData["Error"] = "No hay correo configurado para esta factura. Agregue un email al cliente o en los datos de la factura.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                var pdfBytes = _facturaPdfService.GenerarPdf(factura);
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                {
+                    TempData["Error"] = "Error al generar el PDF de la factura.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                var fileName = $"Factura_{factura.NumeroFactura ?? id.ToString()}.pdf";
+                var asunto = $"Factura {factura.NumeroFactura} - {factura.ClienteNombre}";
+                var cuerpo = $@"
+                    <html>
+                    <body style='font-family: Arial, sans-serif;'>
+                        <h2 style='color: #333;'>Estimado/a {factura.ClienteNombre},</h2>
+                        <p>Adjuntamos la factura <strong>{factura.NumeroFactura}</strong> correspondiente a su compra.</p>
+                        <p><strong>Fecha de emisión:</strong> {factura.FechaCreacion:dd/MM/yyyy}</p>
+                        <p><strong>Total:</strong> {factura.MonedaSimbolo} {factura.Total:N2}</p>
+                        {(factura.FechaVencimiento.HasValue ? $"<p><strong>Fecha de vencimiento:</strong> {factura.FechaVencimiento.Value:dd/MM/yyyy}</p>" : "")}
+                        <p>Por favor, conserve este documento para sus registros.</p>
+                        <p>Saludos cordiales,<br/>Sistema de Facturación</p>
+                    </body>
+                    </html>";
+
+                var correoEnviado = await _emailService.EnviarCorreoConAdjuntoAsync(
+                    emailCliente, asunto, cuerpo, pdfBytes, fileName);
+
+                if (correoEnviado)
+                    TempData["Success"] = $"PDF enviado correctamente a {emailCliente}.";
+                else
+                    TempData["Warning"] = $"No se pudo enviar el correo a {emailCliente}. Verifique la configuración SMTP en appsettings.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Fatura.Exceptions.EntityNotFoundException)
+            {
+                TempData["Error"] = "Factura no encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error EnviarPdf: {ex.Message}");
+                TempData["Error"] = $"Error al enviar el PDF por correo: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
+        /// <summary>
         /// Imprime el ticket térmico de una factura directamente en la impresora RPT004.
         /// En Linux/Azure, redirige automáticamente a generar el PDF del ticket.
         /// </summary>
