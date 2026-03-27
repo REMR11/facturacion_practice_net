@@ -1,5 +1,8 @@
 using Fatura;
+using Fatura.Infrastructure;
 using Fatura.Models;
+using Fatura.Models.Catalogos;
+using Fatura.Models.Enums;
 using Fatura.Repositories.Implementations;
 using Fatura.Repositories.Interfaces;
 using Fatura.Services;
@@ -12,7 +15,14 @@ using System.Runtime.InteropServices;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<EsAdminViewFilter>();
+})
+    .AddRazorOptions(options =>
+    {
+        options.ViewLocationExpanders.Add(new ClienteViewLocationExpander());
+    });
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -91,5 +101,45 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Seed de productos de inicio (Motos Rodriguez) si no hay ninguno
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<xstoreContext>();
+    try
+    {
+        var tieneProductos = await db.Productos.AnyAsync();
+        if (!tieneProductos)
+        {
+            var primeraUnidad = await db.UnidadMedidas.FirstOrDefaultAsync();
+            if (primeraUnidad == null)
+            {
+                db.UnidadMedidas.Add(new UnidadMedida
+                {
+                    Nombre = "Unidad",
+                    Abreviatura = "U",
+                    Activo = true
+                });
+                await db.SaveChangesAsync();
+                primeraUnidad = await db.UnidadMedidas.FirstAsync();
+            }
+            int? idUnidad = primeraUnidad?.IdUnidadMedida;
+
+            var productosInicio = new[]
+            {
+                new Producto { NombreProducto = "KIT DE CILINDRO GLXXER150", Precio = 10.00m, Codigo = "KIT-GLXXER150", IdUnidadMedida = idUnidad, Tipo = TipoProducto.Producto, Activo = true },
+                new Producto { NombreProducto = "KIT DE CILINDRO FZ20", Precio = 5.00m, Codigo = "KIT-FZ20", IdUnidadMedida = idUnidad, Tipo = TipoProducto.Producto, Activo = true },
+                new Producto { NombreProducto = "KIT DE CILINDRO FZ16", Precio = 5.00m, Codigo = "KIT-FZ16", IdUnidadMedida = idUnidad, Tipo = TipoProducto.Producto, Activo = true },
+                new Producto { NombreProducto = "PRENSA DE CLUTCH", Precio = 39.00m, Codigo = "PRENSA-CLUTCH", IdUnidadMedida = idUnidad, Tipo = TipoProducto.Producto, Activo = true }
+            };
+            await db.Productos.AddRangeAsync(productosInicio);
+            await db.SaveChangesAsync();
+        }
+    }
+    catch (Exception)
+    {
+        // Si falla (ej. BD no disponible), no bloquear el arranque
+    }
+}
 
 app.Run();

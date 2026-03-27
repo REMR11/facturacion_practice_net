@@ -90,8 +90,12 @@ namespace Fatura.Models
                     .HasColumnName("unidad_medida")
                     .HasMaxLength(20);
 
+                // Compatibilidad: si la columna en BD sigue siendo int, el convertidor evita InvalidCastException.
+                // Tras ejecutar la migración DetalleFacturaCantidadDecimal, quitar HasConversion y usar .HasColumnType("numeric(18,2)").
                 entity.Property(e => e.Cantidad)
                     .HasColumnName("cantidad")
+                    .HasColumnType("int")
+                    .HasConversion(v => (int)Math.Round(v), v => (decimal)v)
                     .IsRequired();
 
                 entity.Property(e => e.PrecioUnitario)

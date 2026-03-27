@@ -279,16 +279,11 @@ namespace Fatura.Services.Implementations
                 // Por ahora, asumimos que los impuestos se calculan después
             }
 
-            // Calcular impuestos (IVA, ISR, etc.)
-            // Por simplicidad, asumimos un IVA del 13%
-            decimal iva = subTotal * 0.13m;
-            impuesto = iva;
-
             factura.SubTotal = subTotal;
-            factura.Iva = iva;
-            factura.Isr = 0; // Se puede calcular según reglas de negocio
+            factura.Iva = 0;
+            factura.Isr = 0;
             factura.OtrosImpuestos = 0;
-            factura.Total = subTotal + impuesto;
+            factura.Total = subTotal;
 
             await _unitOfWork.Facturas.UpdateAsync(factura);
         }

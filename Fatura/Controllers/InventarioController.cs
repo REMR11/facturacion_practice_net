@@ -1,10 +1,12 @@
-﻿using Fatura.Models.Inventario;
+using Fatura.Infrastructure;
+using Fatura.Models.Inventario;
 using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fatura.Controllers
 {
     [Route("Inventario")]
+    [SoloAdmin]
     public class InventarioController : Controller
     {
         private readonly IProductoService _productoService;

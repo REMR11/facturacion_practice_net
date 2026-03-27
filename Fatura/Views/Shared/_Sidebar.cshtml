@@ -42,6 +42,17 @@
             </li>
 
             <li class="sidebar-nav-item">
+                <a href="@Url.Action("Index", "Inventario")" class="sidebar-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Inventario" ? "active" : "")">
+                    <span class="sidebar-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </span>
+                    Inventario
+                </a>
+            </li>
+
+            <li class="sidebar-nav-item">
                 <a href="@Url.Action("Index", "Clientes")" class="sidebar-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Clientes" ? "active" : "")">
                     <span class="sidebar-nav-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,6 +121,12 @@
                 </a>
             </li>
             *@
+            <li class="sidebar-nav-item mt-auto pt-3 border-top">
+                <a href="@Url.Action("Salir", "AccesoAdmin")" class="sidebar-nav-link text-muted small">
+                    <span class="sidebar-nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    Cerrar sesión admin
+                </a>
+            </li>
         </ul>
     </nav>
 </aside>

@@ -30,8 +30,8 @@ namespace Fatura.Models.ViewModels
         [Required]
         public int IdProducto { get; set; }
 
-        [Range(1, int.MaxValue)]
-        public int Cantidad { get; set; } = 1;
+        [Range(0.01, 999999.99, ErrorMessage = "La cantidad debe ser mayor a cero.")]
+        public decimal Cantidad { get; set; } = 1;
 
         [Range(0, 99999999.99)]
         public decimal Descuento { get; set; } = 0;

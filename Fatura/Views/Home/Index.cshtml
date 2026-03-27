@@ -5,33 +5,33 @@
     ViewData["Title"] = "Inicio";
 }
 
-<!-- ======= CONTENIDO ======= -->
+<section class="productos-section home-productos">
+    <div class="productos-section-header">
+        <h2 class="productos-title"><i class="fas fa-shopping-cart me-2"></i>Productos para Motos</h2>
+        <p class="productos-subtitle">Repuestos y accesorios de calidad para tu moto</p>
+    </div>
 
-<section class="productos-section">
-    <h2 class="text-center fw-bold mb-4 productos-title">🛒 Productos para Motos</h2>
-
-    <div class="row g-4 productos-grid">
+    <div class="row g-4 productos-grid productos-grid-inicio">
         @if (Model != null && Model.Any())
         {
-            @foreach (var producto in Model)
+            foreach (var producto in Model)
             {
-                <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2">
-                    <div class="card h-100 shadow-sm producto-card">
-                        @{
-                            var imagenUrl = GetProductImage(producto.NombreProducto);
-                        }
-                        <img src="@imagenUrl" class="card-img-top p-3 producto-image" alt="@producto.NombreProducto">
+                <div class="col-6 col-md-6 col-lg-3">
+                    <div class="card h-100 producto-card">
+                        <div class="producto-card-img-placeholder">
+                            <span class="producto-card-img-text">@producto.NombreProducto</span>
+                        </div>
                         <div class="card-body text-center d-flex flex-column producto-body">
                             <h5 class="card-title producto-name">@producto.NombreProducto</h5>
-                            <p class="card-text text-muted flex-grow-1 producto-desc">@(producto.Descripcion ?? "Producto de calidad")</p>
-                            <p class="fw-bold text-success fs-5 producto-price">$@(producto.Precio?.ToString("F2") ?? "0.00")</p>
+                            <span class="producto-badge-nuevo">Producto Nuevo</span>
+                            <p class="fw-bold producto-price">$@(producto.Precio?.ToString("N2") ?? "0.00")</p>
                         </div>
-                        <div class="card-footer bg-white text-center producto-footer">
-                            <button class="btn btn-success btn-sm w-100 btn-add-cart" 
+                        <div class="card-footer producto-footer">
+                            <button type="button" class="btn btn-add-cart w-100"
                                     data-producto-id="@producto.IdProducto"
                                     data-producto-nombre="@producto.NombreProducto"
                                     data-producto-precio="@(producto.Precio ?? 0)">
-                                <i class="fas fa-cart-plus"></i> <span class="d-none d-sm-inline">Agregar</span>
+                                <i class="fas fa-cart-plus"></i> Agregar
                             </button>
                         </div>
                     </div>
@@ -47,38 +47,6 @@
     </div>
 </section>
 
-@functions {
-    private string GetProductImage(string nombreProducto)
-    {
-        var nombreLower = nombreProducto.ToLower();
-        if (nombreLower.Contains("casco"))
-            return "~/css/Image/Casco.png";
-        if (nombreLower.Contains("aceite"))
-            return "~/css/Image/Aceite.png";
-        if (nombreLower.Contains("guante"))
-            return "~/css/Image/Guantes.png";
-        if (nombreLower.Contains("bujía") || nombreLower.Contains("bujia"))
-            return "~/css/Image/Bujia.png";
-        if (nombreLower.Contains("bobina"))
-            return "~/css/Image/Casco.png"; // Imagen por defecto para bobinas
-        if (nombreLower.Contains("interruptor"))
-            return "~/css/Image/Casco.png";
-        if (nombreLower.Contains("cable"))
-            return "~/css/Image/Casco.png";
-        if (nombreLower.Contains("regulador"))
-            return "~/css/Image/Casco.png";
-        if (nombreLower.Contains("filtro"))
-            return "~/css/Image/Aceite.png";
-        if (nombreLower.Contains("embolo") || nombreLower.Contains("émbolo"))
-            return "~/css/Image/Casco.png";
-        if (nombreLower.Contains("bateria") || nombreLower.Contains("batería"))
-            return "~/css/Image/Casco.png";
-        if (nombreLower.Contains("pastilla") || nombreLower.Contains("freno"))
-            return "~/css/Image/Guantes.png";
-        return "~/css/Image/Casco.png"; // Imagen por defecto
-    }
-}
-
 @section Scripts {
     @Html.AntiForgeryToken()
     <script>
@@ -93,7 +61,6 @@
                     const productoId = this.getAttribute('data-producto-id');
                     const productoNombre = this.getAttribute('data-producto-nombre');
                     
-                    // Mostrar feedback visual
                     const originalText = this.innerHTML;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agregando...';
                     this.disabled = true;
@@ -101,28 +68,29 @@
                     fetch('@Url.Action("AddToCart", "Cart")', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': getToken()
+                            'Content-Type': 'application/json'
                         },
+                        credentials: 'same-origin',
                         body: JSON.stringify({
-                            productoId: parseInt(productoId),
+                            productoId: parseInt(productoId, 10) || 0,
                             cantidad: 1
                         })
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Mostrar notificación
+                    .then(function(response) {
+                        var ct = response.headers.get('content-type');
+                        if (ct && ct.indexOf('application/json') !== -1)
+                            return response.json();
+                        return { success: false, cartCount: 0 };
+                    })
+                    .then(function(data) {
+                        if (data && data.success) {
                             showNotification('Producto agregado al carrito', 'success');
-                            // Actualizar contador del carrito si existe
-                            updateCartCount(data.cartCount);
-                        } else {
-                            showNotification(data.message || 'Error al agregar producto', 'error');
+                            if (typeof data.cartCount === 'number')
+                                updateCartCount(data.cartCount);
                         }
                     })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showNotification('Error al agregar producto', 'error');
+                    .catch(function() {
+                        // No mostrar error al usuario
                     })
                     .finally(() => {
                         this.innerHTML = originalText;
@@ -133,7 +101,6 @@
         });
 
         function showNotification(message, type) {
-            // Crear notificación
             const notification = document.createElement('div');
             notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
             const isMobile = window.innerWidth <= 480;
@@ -148,8 +115,6 @@
                 </div>
             `;
             document.body.appendChild(notification);
-            
-            // Auto-remover después de 3 segundos
             setTimeout(() => {
                 if (notification.parentElement) {
                     notification.remove();
@@ -158,11 +123,9 @@
         }
 
         function updateCartCount(count) {
-            // Usar la función global si existe
             if (typeof window.updateCartCount === 'function') {
                 window.updateCartCount(count);
             } else {
-                // Fallback: buscar y actualizar contador del carrito en el navbar
                 const cartIcon = document.querySelector('.fa-shopping-cart');
                 if (cartIcon && count > 0) {
                     let badge = cartIcon.parentElement.querySelector('#cartBadge');

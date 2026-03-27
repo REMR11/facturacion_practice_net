@@ -1,3 +1,4 @@
+using Fatura.Infrastructure;
 using Fatura.Models.Catalogos;
 using Fatura.Models.Enums;
 using Fatura.Models.ViewModels;
@@ -7,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Fatura.Controllers
 {
     /// <summary>
-    /// Controlador para gestionar productos y servicios.
-    /// Proporciona funcionalidad para listar, buscar, filtrar, crear, editar y eliminar productos.
+    /// Controlador para gestionar productos y servicios. Solo el administrador puede ver y gestionar productos.
     /// </summary>
     [Route("Productos")]
+    [SoloAdmin]
     public class ProductosController : Controller
     {
         private readonly IProductoService _productoService;
@@ -93,7 +94,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Obtiene los detalles de un producto.
+        /// Obtiene los detalles de un producto. Público para que los clientes vean el catálogo.
         /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> Details(int id)
@@ -114,7 +115,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Muestra el formulario para crear un nuevo producto.
+        /// Muestra el formulario para crear un nuevo producto. Solo administrador.
         /// </summary>
         [HttpGet("Create")]
         public async Task<IActionResult> Create()
@@ -127,7 +128,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Crea un nuevo producto.
+        /// Crea un nuevo producto. Solo administrador.
         /// </summary>
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
@@ -220,7 +221,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Muestra el formulario para editar un producto.
+        /// Muestra el formulario para editar un producto. Solo administrador.
         /// </summary>
         [HttpGet("Edit/{id}")]
         public async Task<IActionResult> Edit(int id)
@@ -244,7 +245,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Actualiza un producto existente.
+        /// Actualiza un producto existente. Solo administrador.
         /// </summary>
         [HttpPost("Edit/{id}")]
         [ValidateAntiForgeryToken]
@@ -367,7 +368,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Muestra la confirmación para eliminar un producto.
+        /// Muestra la confirmación para eliminar un producto. Solo administrador.
         /// </summary>
         [HttpGet("Delete/{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -388,7 +389,7 @@ namespace Fatura.Controllers
         }
 
         /// <summary>
-        /// Elimina un producto.
+        /// Elimina un producto. Solo administrador.
         /// </summary>
         [HttpPost("Delete/{id}")]
         [ValidateAntiForgeryToken]

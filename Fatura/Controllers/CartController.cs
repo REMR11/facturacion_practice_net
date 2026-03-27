@@ -3,6 +3,7 @@ using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Fatura.Controllers
 {
@@ -12,22 +13,29 @@ namespace Fatura.Controllers
         private readonly IFacturaService _facturaService;
         private readonly IClienteService _clienteService;
         private readonly xstoreContext _context;
+        private readonly IConfiguration _config;
 
         public CartController(
             IProductoService productoService,
             IFacturaService facturaService,
             IClienteService clienteService,
-            xstoreContext context)
+            xstoreContext context,
+            IConfiguration config)
         {
             _productoService = productoService;
             _facturaService = facturaService;
             _clienteService = clienteService;
             _context = context;
+            _config = config;
         }
 
         public IActionResult Index()
         {
             var cart = GetCart();
+            ViewBag.CuentaBancaria = _config["Pagos:CuentaBancaria"] ?? "";
+            ViewBag.NombreTitular = _config["Pagos:NombreTitular"] ?? "Motos Rodriguez";
+            ViewBag.Banco = _config["Pagos:Banco"] ?? "";
+            ViewBag.NotaTarjeta = _config["Pagos:NotaTarjeta"] ?? "El pago con tarjeta se acredita a la cuenta del negocio.";
             return View(cart);
         }
 
@@ -40,46 +48,58 @@ namespace Fatura.Controllers
 
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest? request)
         {
             try
             {
-                if (request == null || request.ProductoId <= 0)
+                var cantidad = (request?.Cantidad ?? 0) < 1 ? 1 : (request?.Cantidad ?? 1);
+                var productoId = request?.ProductoId ?? 0;
+
+                if (productoId <= 0)
                 {
-                    return Json(new { success = false, message = "Datos inválidos" });
+                    return Json(new { success = false, message = "Datos inválidos", cartCount = 0 });
                 }
 
-                var producto = await _productoService.GetByIdAsync(request.ProductoId);
+                var producto = await _productoService.GetByIdAsync(productoId);
                 if (producto == null)
                 {
-                    return Json(new { success = false, message = "Producto no encontrado" });
+                    return Json(new { success = false, message = "Producto no encontrado", cartCount = 0 });
                 }
 
                 var cart = GetCart();
-                var existingItem = cart.Items.FirstOrDefault(x => x.ProductoId == request.ProductoId);
+                var existingItem = cart.Items.FirstOrDefault(x => x.ProductoId == productoId);
 
                 if (existingItem != null)
                 {
-                    existingItem.Cantidad += request.Cantidad;
+                    existingItem.Cantidad += cantidad;
                 }
                 else
                 {
                     cart.Items.Add(new CartItem
                     {
                         ProductoId = producto.IdProducto,
-                        Nombre = producto.NombreProducto,
+                        Nombre = producto.NombreProducto ?? "",
                         Precio = producto.Precio ?? 0,
-                        Cantidad = request.Cantidad,
-                        Imagen = GetProductImage(producto.NombreProducto)
+                        Cantidad = cantidad,
+                        Imagen = GetProductImage(producto.NombreProducto ?? "")
                     });
                 }
 
                 SaveCart(cart);
-                return Json(new { success = true, message = "Producto agregado al carrito", cartCount = cart.Items.Sum(x => x.Cantidad) });
+                var totalItems = cart.Items.Sum(x => x.Cantidad);
+                return Json(new { success = true, message = "Producto agregado al carrito", cartCount = totalItems });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Json(new { success = false, message = ex.Message });
+                try
+                {
+                    var cart = GetCart();
+                    return Json(new { success = false, message = "Intenta de nuevo", cartCount = cart.Items.Sum(x => x.Cantidad) });
+                }
+                catch
+                {
+                    return Json(new { success = false, message = "Intenta de nuevo", cartCount = 0 });
+                }
             }
         }
 
@@ -119,7 +139,16 @@ namespace Fatura.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Checkout(string metodoPago, string nombreCliente, string nitCliente)
+        public async Task<IActionResult> Checkout(
+            string metodoPago,
+            string nombreCliente,
+            string nitCliente,
+            string? direccionCliente,
+            string? telefonoCliente,
+            string? emailCliente,
+            string? nombreEnTarjeta,
+            string? ultimos4Digitos,
+            string? referenciaTarjeta)
         {
             try
             {
@@ -132,25 +161,36 @@ namespace Fatura.Controllers
 
                 // Buscar o crear cliente
                 var cliente = await _clienteService.GetClientesActivosAsync();
-                var clienteExistente = cliente.FirstOrDefault(c => c.NitDui == nitCliente);
+                var clienteExistente = !string.IsNullOrWhiteSpace(nitCliente)
+                    ? cliente.FirstOrDefault(c => c.NitDui == nitCliente.Trim())
+                    : null;
 
-                if (clienteExistente == null && !string.IsNullOrEmpty(nitCliente))
+                if (clienteExistente == null && (!string.IsNullOrWhiteSpace(nitCliente) || !string.IsNullOrWhiteSpace(nombreCliente)))
                 {
-                    // Crear cliente genérico si no existe
                     clienteExistente = new Models.Facturacion.Cliente
                     {
-                        Nombre = nombreCliente ?? "Cliente General",
-                        NitDui = nitCliente ?? "00000000-0",
+                        Nombre = string.IsNullOrWhiteSpace(nombreCliente) ? "Cliente General" : nombreCliente.Trim(),
+                        NitDui = string.IsNullOrWhiteSpace(nitCliente) ? "00000000-0" : nitCliente.Trim(),
+                        Direccion = string.IsNullOrWhiteSpace(direccionCliente) ? null : direccionCliente.Trim(),
+                        Telefono = string.IsNullOrWhiteSpace(telefonoCliente) ? null : telefonoCliente.Trim(),
+                        Email = string.IsNullOrWhiteSpace(emailCliente) ? null : emailCliente.Trim(),
                         Activo = true
                     };
                     await _clienteService.CreateAsync(clienteExistente);
+                }
+                else if (clienteExistente != null && (!string.IsNullOrWhiteSpace(direccionCliente) || !string.IsNullOrWhiteSpace(telefonoCliente) || !string.IsNullOrWhiteSpace(emailCliente)))
+                {
+                    if (!string.IsNullOrWhiteSpace(direccionCliente)) clienteExistente.Direccion = direccionCliente.Trim();
+                    if (!string.IsNullOrWhiteSpace(telefonoCliente)) clienteExistente.Telefono = telefonoCliente.Trim();
+                    if (!string.IsNullOrWhiteSpace(emailCliente)) clienteExistente.Email = emailCliente.Trim();
+                    await _clienteService.UpdateAsync(clienteExistente.Id, clienteExistente);
                 }
                 else if (clienteExistente == null)
                 {
                     clienteExistente = cliente.FirstOrDefault();
                     if (clienteExistente == null)
                     {
-                        TempData["Error"] = "Debe proporcionar datos del cliente";
+                        TempData["Error"] = "Debe proporcionar datos del cliente (nombre y NIT/DUI).";
                         return RedirectToAction(nameof(Index));
                     }
                 }
@@ -188,6 +228,20 @@ namespace Fatura.Controllers
                 var subTotal = detalles.Sum(d => d.Total);
                 var iva = subTotal * 0.13m;
 
+                var esTarjeta = string.Equals(metodoPago, "Tarjeta", StringComparison.OrdinalIgnoreCase);
+                var referenciaPago = "";
+                if (esTarjeta)
+                {
+                    var partes = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(nombreEnTarjeta))
+                        partes.Add("Titular: " + nombreEnTarjeta.Trim());
+                    if (!string.IsNullOrWhiteSpace(ultimos4Digitos))
+                        partes.Add("****" + ultimos4Digitos.Trim());
+                    if (!string.IsNullOrWhiteSpace(referenciaTarjeta))
+                        partes.Add("Ref: " + referenciaTarjeta.Trim());
+                    referenciaPago = partes.Count > 0 ? string.Join(" | ", partes) : "Pago con tarjeta";
+                }
+
                 var factura = new Models.Facturacion.Factura
                 {
                     ClienteId = clienteExistente.Id,
@@ -197,6 +251,8 @@ namespace Fatura.Controllers
                     TipoDocumento = "01",
                     SerieFactura = "F001",
                     FechaCreacion = DateTime.UtcNow,
+                    FechaPago = DateTime.UtcNow,
+                    ReferenciaMetodoPago = string.IsNullOrWhiteSpace(referenciaPago) ? null : referenciaPago,
                     MonedaSimbolo = "USD",
                     Estado = Models.Enums.EstadoFactura.Pagada,
                     UsuarioId = usuarioId,
@@ -252,7 +308,10 @@ namespace Fatura.Controllers
             {
                 return new CartViewModel { Items = new List<CartItem>() };
             }
-            return JsonSerializer.Deserialize<CartViewModel>(cartJson) ?? new CartViewModel { Items = new List<CartItem>() };
+            var cart = JsonSerializer.Deserialize<CartViewModel>(cartJson) ?? new CartViewModel { Items = new List<CartItem>() };
+            if (cart.Items == null)
+                cart.Items = new List<CartItem>();
+            return cart;
         }
 
         private void SaveCart(CartViewModel cart)
@@ -301,7 +360,9 @@ namespace Fatura.Controllers
 
     public class AddToCartRequest
     {
+        [JsonPropertyName("productoId")]
         public int ProductoId { get; set; }
+        [JsonPropertyName("cantidad")]
         public int Cantidad { get; set; } = 1;
     }
 }

@@ -1,3 +1,4 @@
+using Fatura.Infrastructure;
 using Fatura.Models;
 using Fatura.Models.Enums;
 using Fatura.Models.Facturacion;
@@ -10,10 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace Fatura.Controllers
 {
     /// <summary>
-    /// Controlador para gestionar facturas.
-    /// Proporciona funcionalidad para listar, buscar, filtrar, crear, editar y eliminar facturas.
+    /// Controlador para gestionar facturas. Solo visible para el administrador.
     /// </summary>
     [Route("Facturas")]
+    [SoloAdmin]
     public class FacturasController : Controller
     {
         private readonly IFacturaService _facturaService;
@@ -205,7 +206,7 @@ namespace Fatura.Controllers
                 }
                 
                 // Configurar headers para mostrar el PDF en el navegador
-                Response.Headers.Add("Content-Disposition", $"inline; filename=\"{fileName}\"");
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileName}\"";
                 
                 System.Diagnostics.Debug.WriteLine($"PDF generado exitosamente. Tamaño: {pdfBytes.Length} bytes. Archivo: {fileName}");
                 
@@ -389,7 +390,7 @@ namespace Fatura.Controllers
                 var fileName = $"Ticket_{factura.NumeroFactura ?? id.ToString()}.pdf";
                 
                 // Configurar headers para mostrar el PDF en el navegador en lugar de descargarlo
-                Response.Headers.Add("Content-Disposition", $"inline; filename=\"{fileName}\"");
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileName}\"";
                 
                 return File(pdfBytes, "application/pdf", fileName);
             }
@@ -538,7 +539,7 @@ namespace Fatura.Controllers
                         return View(model);
                     }
 
-                    // Validar cantidad
+                    // Validar cantidad (permite decimales: 0.5, 1.25, etc.)
                     if (item.Cantidad <= 0)
                     {
                         ModelState.AddModelError("", $"La cantidad del producto {producto.NombreProducto} debe ser mayor a cero.");
@@ -548,6 +549,7 @@ namespace Fatura.Controllers
                         return View(model);
                     }
 
+                    // Respetar siempre el precio que el usuario ingresó; solo usar precio del catálogo si no ingresó ninguno
                     var precioUnitario = item.PrecioUnitario > 0 ? item.PrecioUnitario : (producto.Precio ?? 0);
                     if (precioUnitario <= 0)
                     {
@@ -641,12 +643,11 @@ namespace Fatura.Controllers
                 };
 
                 var subTotal = detalles.Sum(d => d.Total);
-                var iva = subTotal * 0.13m;
                 factura.SubTotal = subTotal;
-                factura.Iva = iva;
+                factura.Iva = 0;
                 factura.Isr = 0;
                 factura.OtrosImpuestos = 0;
-                factura.Total = subTotal + iva;
+                factura.Total = subTotal;
 
                 var creada = await _facturaService.CreateAsync(factura);
                 TempData["Success"] = $"Factura #{creada.IdFactura} creada exitosamente.";

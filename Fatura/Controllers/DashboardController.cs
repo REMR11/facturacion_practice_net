@@ -1,12 +1,13 @@
+using Fatura.Infrastructure;
 using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fatura.Controllers
 {
     /// <summary>
-    /// Controlador para el dashboard principal de la aplicación.
-    /// Proporciona métricas, gráficos y datos resumidos.
+    /// Controlador para el dashboard. Solo visible para el administrador.
     /// </summary>
+    [SoloAdmin]
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;

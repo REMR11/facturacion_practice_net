@@ -1,3 +1,4 @@
+using Fatura.Infrastructure;
 using Fatura.Models.Facturacion;
 using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -5,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Fatura.Controllers
 {
     /// <summary>
-    /// Controlador para gestionar clientes.
-    /// Proporciona funcionalidad para listar, buscar, crear, editar y eliminar clientes.
+    /// Controlador para gestionar clientes. Solo visible para el administrador.
     /// </summary>
+    [SoloAdmin]
     public class ClientesController : Controller
     {
         private readonly IClienteService _clienteService;

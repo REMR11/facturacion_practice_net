@@ -244,7 +244,7 @@ namespace Fatura.Services.Implementations
                             foreach (var detalle in detalles)
                             {
                                 table.Cell().Element(CellBody).Text(detalle.NombreProducto);
-                                table.Cell().Element(CellBody).AlignCenter().Text(detalle.Cantidad.ToString());
+                                table.Cell().Element(CellBody).AlignCenter().Text(detalle.Cantidad.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
                                 table.Cell().Element(CellBody).AlignRight().Text($"{moneda}{detalle.PrecioUnitario:F2}");
                                 table.Cell().Element(CellBody).AlignRight().Text($"{moneda}{detalle.Descuento:F2}");
                                 table.Cell().Element(CellBody).AlignRight().Text($"{moneda}{detalle.Total:F2}");

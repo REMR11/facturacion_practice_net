@@ -9,171 +9,150 @@
     var emailEnvio = Model.ClienteEmail ?? Model.Cliente?.Email;
 }
 
-<div class="factura-page">
-    @* Mensajes de éxito/error *@
+<div class="container-fluid">
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check me-2"></i>@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     }
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     }
     @if (TempData["Info"] != null)
     {
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-            <i class="fas fa-info-circle"></i> @TempData["Info"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <div class="alert alert-info alert-dismissible fade show"><i class="fas fa-info-circle me-2"></i>@TempData["Info"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     }
     @if (TempData["Warning"] != null)
     {
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <div class="alert alert-warning alert-dismissible fade show"><i class="fas fa-exclamation-triangle me-2"></i>@TempData["Warning"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     }
 
-    <div class="factura-header-area">
-        <div class="header-left">
-            <a href="@Url.Action("Index", "Facturas")" class="btn-back">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-            </a>
-            <div>
-                <h1 class="page-title">Factura @Model.NumeroFactura</h1>
-                <p class="page-subtitle">Detalle de la factura emitida</p>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-controller="Facturas" asp-action="Index">Facturas</a></li>
+                    <li class="breadcrumb-item active">@Model.NumeroFactura</li>
+                </ol>
+            </nav>
+            <h1 class="h4 mb-1">Factura @Model.NumeroFactura</h1>
+            <p class="text-muted mb-0">Emitida el @Model.FechaCreacion.ToString("dd/MM/yyyy")</p>
         </div>
-        <div class="header-actions">
-            <a class="btn btn-secondary" style="margin-right: 8px;" href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })">
-                <i class="fas fa-print"></i> Imprimir Ticket
-            </a>
-            <a class="btn btn-info text-white" style="margin-right: 8px;" href="@Url.Action("TicketPdf", "Facturas", new { id = Model.IdFactura })">
-                <i class="fas fa-file-pdf"></i> PDF del Ticket
-            </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-secondary" asp-action="Ticket" asp-route-id="@Model.IdFactura" title="Imprimir ticket"><i class="fas fa-print"></i></a>
+            <a class="btn btn-outline-danger" asp-action="TicketPdf" asp-route-id="@Model.IdFactura" title="Generar y descargar PDF del ticket"><i class="fas fa-file-pdf me-1"></i>Generar PDF (ticket)</a>
             @if (!string.IsNullOrWhiteSpace(emailEnvio) && emailEnvio.Contains("@"))
             {
-                <a class="btn btn-outline-success" style="margin-right: 8px;" href="@Url.Action("EnviarPdf", "Facturas", new { id = Model.IdFactura })">
-                    <i class="fas fa-paper-plane"></i> Enviar PDF por correo
-                </a>
+                <a class="btn btn-outline-secondary" asp-action="EnviarPdf" asp-route-id="@Model.IdFactura" title="Enviar correo"><i class="fas fa-paper-plane"></i></a>
             }
-            <a class="btn btn-primary" href="@Url.Action("Pdf", "Facturas", new { id = Model.IdFactura })">
-                <i class="fas fa-download"></i> Descargar PDF
-            </a>
+            <a class="btn btn-primary" asp-action="Pdf" asp-route-id="@Model.IdFactura"><i class="fas fa-download me-1"></i>Descargar PDF</a>
         </div>
     </div>
 
-    <div class="factura-grid">
-        <div class="factura-main">
-            <div class="card p-4 mb-4">
-                <h3 class="card-title mb-3">Cliente</h3>
-                <div class="text-muted">@Model.ClienteNombre</div>
-                <div class="text-muted">@Model.ClienteNitDui</div>
-                <div class="text-muted">@Model.ClienteDireccion</div>
-                @if (!string.IsNullOrWhiteSpace(emailEnvio) && emailEnvio.Contains("@"))
-                {
-                    <div class="text-muted mt-2">
-                        <i class="fas fa-envelope text-primary"></i> <a href="mailto:@emailEnvio">@emailEnvio</a>
-                    </div>
-                    <div class="alert alert-info alert-sm mt-2 mb-0 py-2 small">
-                        <i class="fas fa-info-circle"></i> Al descargar el PDF se enviará también una copia a <strong>@emailEnvio</strong>.
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-warning alert-sm mt-2 mb-0 py-2 small">
-                        <i class="fas fa-exclamation-triangle"></i> No hay correo configurado. Agregue un email al crear la factura para poder enviar el PDF automáticamente.
-                    </div>
-                }
-            </div>
-
-            <div class="card p-4">
-                <h3 class="card-title mb-3">Detalle</h3>
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle">
-                        <thead>
-                            <tr>
-                                <th>Producto/Servicio</th>
-                                <th class="text-center">Cant.</th>
-                                <th class="text-end">Precio Unit.</th>
-                                <th class="text-end">Desc.</th>
-                                <th class="text-end">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model.DetalleFacturas != null && Model.DetalleFacturas.Any())
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0">Información del cliente</h5></div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-6"><label class="form-label text-muted small">Nombre</label><p class="mb-0">@Model.ClienteNombre</p></div>
+                        <div class="col-md-6"><label class="form-label text-muted small">Documento</label><p class="mb-0">@Model.ClienteNitDui</p></div>
+                        <div class="col-md-6"><label class="form-label text-muted small">Dirección</label><p class="mb-0">@Model.ClienteDireccion</p></div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Correo</label>
+                            @if (!string.IsNullOrWhiteSpace(emailEnvio) && emailEnvio.Contains("@"))
                             {
-                                foreach (var item in Model.DetalleFacturas)
-                                {
-                                    <tr>
-                                        <td>@item.NombreProducto</td>
-                                        <td class="text-center">@item.Cantidad</td>
-                                        <td class="text-end">@($"{moneda}{item.PrecioUnitario:F2}")</td>
-                                        <td class="text-end">@($"{moneda}{item.Descuento:F2}")</td>
-                                        <td class="text-end">@($"{moneda}{item.Total:F2}")</td>
-                                    </tr>
-                                }
+                                <p class="mb-0"><a href="mailto:@emailEnvio">@emailEnvio</a></p>
                             }
                             else
                             {
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">Sin ítems</td>
-                                </tr>
+                                <p class="mb-0 text-muted">Sin correo</p>
                             }
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(emailEnvio) && emailEnvio.Contains("@"))
+                    {
+                        <div class="alert alert-info mt-3 mb-0 small">Al descargar el PDF se envía una copia a <strong>@emailEnvio</strong>.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Detalle de productos/servicios</h5></div>
+                <div class="card-body">
+                    @if (Model.DetalleFacturas != null && Model.DetalleFacturas.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th class="text-end">Precio unit.</th>
+                                        <th class="text-end">Descuento</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.DetalleFacturas)
+                                    {
+                                        <tr>
+                                            <td>@item.NombreProducto <small class="text-muted">@item.UnidadMedida</small></td>
+                                            <td class="text-center">@item.Cantidad.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)</td>
+                                            <td class="text-end">@($"{moneda}{item.PrecioUnitario:F2}")</td>
+                                            <td class="text-end">@($"{moneda}{item.Descuento:F2}")</td>
+                                            <td class="text-end"><strong>@($"{moneda}{item.Total:F2}")</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Esta factura no tiene ítems asociados.</p>
+                    }
                 </div>
             </div>
         </div>
 
-        <div class="factura-sidebar">
-            <div class="card p-4 sticky-sidebar">
-                <h3 class="card-title mb-3">Estado</h3>
-                <form asp-action="UpdateEstado" asp-controller="Facturas" asp-route-id="@Model.IdFactura" method="post" class="mb-4">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
-                    <div class="mb-2 text-muted">Actualiza el estado para reflejarlo en el dashboard.</div>
-                    <div class="d-flex gap-2">
-                        <select class="form-select" name="estado">
-                            @foreach (EstadoFactura estado in Enum.GetValues(typeof(EstadoFactura)))
-                            {
-                                <option value="@estado" selected="@(estado == Model.Estado ? "selected" : null)">@estado</option>
-                            }
-                        </select>
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                    </div>
-                </form>
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-header"><h5 class="mb-0">Actualizar estado</h5></div>
+                <div class="card-body">
+                    <form asp-action="UpdateEstado" asp-route-id="@Model.IdFactura" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="@($"{Context.Request.Path}{Context.Request.QueryString}")" />
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" name="estado">
+                                @foreach (EstadoFactura estado in Enum.GetValues(typeof(EstadoFactura)))
+                                {
+                                    if (estado == Model.Estado)
+                                    {
+                                        <option value="@estado" selected>@estado</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@estado">@estado</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Guardar</button>
+                    </form>
+                </div>
+            </div>
 
-                <h3 class="card-title mb-3">Resumen</h3>
-                <div class="d-flex justify-content-between mb-2 text-muted">
-                    <span>Subtotal</span>
-                    <span>@($"{moneda}{Model.SubTotal:F2}")</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2 text-muted">
-                    <span>IGV (13%)</span>
-                    <span>@($"{moneda}{Model.Iva:F2}")</span>
-                </div>
-                <div class="d-flex justify-content-between mb-3 text-muted">
-                    <span>Total</span>
-                    <span class="fw-bold text-dark">@($"{moneda}{Model.Total:F2}")</span>
-                </div>
-                <div class="d-grid gap-2">
-                    <a class="btn btn-outline-dark"
-                       href="@Url.Action("Ticket", "Facturas", new { id = Model.IdFactura })">
-                        <i class="fas fa-print"></i> Imprimir Ticket
-                    </a>
-                    <a class="btn btn-outline-info"
-                       href="@Url.Action("TicketPdf", "Facturas", new { id = Model.IdFactura })">
-                        <i class="fas fa-file-pdf"></i> PDF del Ticket
-                    </a>
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Resumen</h5></div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2"><span class="text-muted">Subtotal</span><strong>@($"{moneda}{Model.SubTotal:F2}")</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span class="text-muted">IGV (13%)</span><strong>@($"{moneda}{Model.Iva:F2}")</strong></div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="text-muted">Total</span>
+                        <span class="badge bg-primary fs-6">@($"{moneda}{Model.Total:F2}")</span>
+                    </div>
                 </div>
             </div>
         </div>

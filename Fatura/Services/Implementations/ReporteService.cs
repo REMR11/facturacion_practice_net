@@ -52,7 +52,7 @@ namespace Fatura.Services.Implementations
             // Crear DataTable
             DataTable dt = new DataTable();
             dt.Columns.Add("Id", typeof(int));
-            dt.Columns.Add("Cantidad", typeof(int));
+            dt.Columns.Add("Cantidad", typeof(decimal));
             dt.Columns.Add("Producto", typeof(string));
             dt.Columns.Add("Marca", typeof(string));
             dt.Columns.Add("Precio", typeof(double));

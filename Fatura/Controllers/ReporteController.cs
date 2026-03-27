@@ -1,8 +1,10 @@
-﻿using Fatura.Services.Interfaces;
+using Fatura.Infrastructure;
+using Fatura.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fatura.Controllers
 {
+    [SoloAdmin]
     public class ReporteController : Controller
     {
         private readonly IReporteService _reporteService;

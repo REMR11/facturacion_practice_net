@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Fatura.Models.Core;
 using Fatura.Models.Catalogos;
@@ -47,9 +47,10 @@ namespace Fatura.Models.Facturacion
         public string? UnidadMedida { get; set; }
         
         /// <summary>
-        /// Cantidad de unidades del producto facturadas.
+        /// Cantidad de unidades del producto facturadas (permite decimales, ej. 0.5, 1.25).
         /// </summary>
-        public int Cantidad { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Cantidad { get; set; }
         
         /// <summary>
         /// Precio unitario del producto al momento de la facturación.

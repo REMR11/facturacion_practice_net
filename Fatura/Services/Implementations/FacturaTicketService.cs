@@ -195,11 +195,10 @@ namespace Fatura.Services
                                 // Contenedor con fondo blanco del PDF, pero el logo tiene su propio fondo oscuro
                                 col.Item()
                                    .AlignCenter()
-                                   .PaddingVertical(10)
+                                   .PaddingVertical(4)
                                    .PaddingHorizontal(10)
                                    .Background(Colors.White) // Fondo blanco del contenedor
-                                   .Height(140) // Aumentado para mejor visibilidad
-                                   .Width(220) // Ancho fijo para mantener proporción
+                                   .Width(200) // Ancho fijo para mantener proporción
                                    .Image(logoBytes)
                                    .FitArea();
                             }

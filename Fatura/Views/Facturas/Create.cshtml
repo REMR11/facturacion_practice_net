@@ -107,10 +107,10 @@
                                     </select>
                                 </div>
                                 <div class="col-cantidad">
-                                    <input type="number" class="form-control text-center cantidad" name="Items[0].Cantidad" value="1" min="1" step="1" required>
+                                    <input type="number" class="form-control text-center cantidad" name="Items[0].Cantidad" value="1" min="0.01" step="0.01" required>
                                 </div>
                                 <div class="col-precio">
-                                    <input type="number" class="form-control text-end precio-unit" name="Items[0].PrecioUnitario" step="0.01" value="0" readonly>
+                                    <input type="number" class="form-control text-end precio-unit" name="Items[0].PrecioUnitario" step="0.01" value="0" min="0">
                                 </div>
                                 <div class="col-desc">
                                     <input type="number" class="form-control text-center descuento" name="Items[0].Descuento" step="0.01" value="0" min="0">
@@ -779,7 +779,8 @@
         // Calcular totales
         document.addEventListener('input', function (e) {
             if (e.target.classList.contains('cantidad') || 
-                e.target.classList.contains('descuento')) {
+                e.target.classList.contains('descuento') ||
+                e.target.classList.contains('precio-unit')) {
                 calcularTotales();
             }
         });
@@ -840,10 +841,10 @@
                 </select>
             </div>
             <div class="col-cantidad">
-                <input type="number" class="form-control text-center cantidad" name="Items[${contador - 1}].Cantidad" value="1" min="1" step="1" required>
+                <input type="number" class="form-control text-center cantidad" name="Items[${contador - 1}].Cantidad" value="1" min="0.01" step="0.01" required>
             </div>
             <div class="col-precio">
-                <input type="number" class="form-control text-end precio-unit" name="Items[${contador - 1}].PrecioUnitario" step="0.01" value="0.00" readonly>
+                <input type="number" class="form-control text-end precio-unit" name="Items[${contador - 1}].PrecioUnitario" step="0.01" value="0.00" min="0">
             </div>
             <div class="col-desc">
                 <input type="number" class="form-control text-center descuento" name="Items[${contador - 1}].Descuento" step="0.01" value="0" min="0">
@@ -865,6 +866,7 @@
         const item = document.getElementById(`item-${id}`);
         if (item) {
             item.remove();
+            reindexarFilasProductos();
             calcularTotales();
         }
     }
@@ -875,37 +877,43 @@
 
         document.querySelectorAll('.product-row').forEach((row) => {
             const selectProducto = row.querySelector('.producto-select');
-            const cantidad = parseFloat(row.querySelector('.cantidad').value) || 0;
-            const descuento = parseFloat(row.querySelector('.descuento').value) || 0;
-            const precioUnitInput = row.querySelector('.precio-unit');
+            const cantidadInput = row.querySelector('input.cantidad');
+            const precioUnitInput = row.querySelector('input[name*="PrecioUnitario"]');
             const subtotalInput = row.querySelector('.subtotal');
+            if (!cantidadInput || !precioUnitInput) return;
+
+            let cantidad = parseFloat(cantidadInput.value) || 0;
+            const descuento = parseFloat(row.querySelector('.descuento').value) || 0;
+            let precio = parseFloat(precioUnitInput.value) || 0;
 
             if (selectProducto.value) {
                 const producto = obtenerProductoPorId(selectProducto.value);
                 if (producto) {
-                    const precio = parseFloat(producto.precio) || 0;
-                    precioUnitInput.value = precio.toFixed(2);
-
+                    if (precio <= 0) {
+                        precio = parseFloat(producto.precio) || 0;
+                        precioUnitInput.value = precio.toFixed(2);
+                    }
+                    if (cantidad <= 0) {
+                        cantidad = 1;
+                        cantidadInput.value = '1.00';
+                    }
                     const lineaSubtotal = Math.max(0, (precio * cantidad) - descuento);
                     subtotalInput.value = `${moneda}${lineaSubtotal.toFixed(2)}`;
                     subtotal += lineaSubtotal;
                 } else {
-                    precioUnitInput.value = '0.00';
+                    if (precio <= 0) precioUnitInput.value = '0.00';
                     subtotalInput.value = `${moneda}0.00`;
                 }
             } else {
-                precioUnitInput.value = '0.00';
+                if (precio <= 0) precioUnitInput.value = '0.00';
                 subtotalInput.value = `${moneda}0.00`;
             }
         });
 
-        const iva = subtotal * 0.13;
-        const total = subtotal + iva;
-
         document.getElementById('subtotalValue').textContent = `${moneda}${subtotal.toFixed(2)}`;
-        document.getElementById('ivaValue').textContent = `${moneda}${iva.toFixed(2)}`;
-        document.getElementById('totalValue').textContent = `${moneda}${total.toFixed(2)}`;
-        document.getElementById('finalTotal').textContent = `${moneda}${total.toFixed(2)}`;
+        document.getElementById('ivaValue').textContent = `${moneda}0.00`;
+        document.getElementById('totalValue').textContent = `${moneda}${subtotal.toFixed(2)}`;
+        document.getElementById('finalTotal').textContent = `${moneda}${subtotal.toFixed(2)}`;
     }
 
     function mostrarPreview() {
@@ -1001,8 +1009,18 @@
             return;
         }
 
+        reindexarFilasProductos();
         guardarBorradorLocal();
         form.submit();
+    }
+
+    function reindexarFilasProductos() {
+        document.querySelectorAll('.product-row').forEach((row, index) => {
+            row.querySelector('.producto-select')?.setAttribute('name', `Items[${index}].IdProducto`);
+            row.querySelector('.cantidad')?.setAttribute('name', `Items[${index}].Cantidad`);
+            row.querySelector('.precio-unit')?.setAttribute('name', `Items[${index}].PrecioUnitario`);
+            row.querySelector('.descuento')?.setAttribute('name', `Items[${index}].Descuento`);
+        });
     }
 
     function limpiarBorradorExpirado() {
@@ -1060,10 +1078,10 @@
                             </select>
                         </div>
                         <div class="col-cantidad">
-                            <input type="number" class="form-control text-center cantidad" name="Items[${index}].Cantidad" value="${item.cantidad ?? 1}" min="1" step="1" required>
+                            <input type="number" class="form-control text-center cantidad" name="Items[${index}].Cantidad" value="${(parseFloat(item.cantidad) || 1).toFixed(2)}" min="0.01" step="0.01" required>
                         </div>
                         <div class="col-precio">
-                            <input type="number" class="form-control text-end precio-unit" name="Items[${index}].PrecioUnitario" step="0.01" value="${(parseFloat(item.precioUnitario) || 0).toFixed(2)}" readonly>
+                            <input type="number" class="form-control text-end precio-unit" name="Items[${index}].PrecioUnitario" step="0.01" value="${(parseFloat(item.precioUnitario) || 0).toFixed(2)}" min="0">
                         </div>
                         <div class="col-desc">
                             <input type="number" class="form-control text-center descuento" name="Items[${index}].Descuento" step="0.01" value="${item.descuento ?? 0}" min="0">
